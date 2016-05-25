@@ -76,7 +76,7 @@ sub get_sequence_from_name
 
   # Get the gene's stable id
   my $gene_id = get_geneid($gene_name);
-  print "GENE_ID\t $gene_id \n";
+  print "GENE_ID\t $gene_id \n"; # Prints the gene id as a side effect
   # Get the gene's sequence from the id
   my $sequence = get_sequence_from_id($gene_id);
 
