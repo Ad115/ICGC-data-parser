@@ -3,9 +3,11 @@
 
 Hola!, si estás leyendo esto es porque quieres utilizar el script **get_gene_sequences.pl**. Realmente no es muy dificil de usar, sólo lo ejecutas, le das la lista de los genes cuando te la pida y listo!
 
- *PERO* el detalle está en las dependencias, para correrlo necesitas SQL, Expat BioPerl y unos módulos especiales de Ensembl.org, en lo sucesivo te ayudaré a instalarlo todo.
+ > Hay un scipt de prueba en la carpeta tests, puedes utilizarlo para ver si hiciste correctamente la instalación y como ejemplo de cómo usar el programa.
 
- > Estas instrucciones són para Linux, si tienes Windows, tendrás que leer las instrucciones directamente de la página de [la API de Ensembl](http://feb2014.archive.ensembl.org/info/docs/api/api_installation.html).
+ **PERO** el detalle está en las dependencias, para correrlo necesitas SQL, Expat BioPerl y unos módulos especiales de Ensembl.org, en lo sucesivo te ayudaré a instalarlo todo.
+
+ > Estas instrucciones són para Linux, si tienes Windows, lamentablemente no puedo ayudar :( y tendrás que leer las instrucciones directamente de la página de [la API de Ensembl](http://feb2014.archive.ensembl.org/info/docs/api/api_installation.html).
 
  (*Nota*: Esos requerimientos los pide la misma base de datos, por mi no habría tanto relajo pero parece que es un mal necesario :S)
 
