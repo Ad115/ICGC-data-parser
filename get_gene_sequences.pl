@@ -7,8 +7,8 @@ Gene secuence obtainer.
 Script to get the nucleotide sequence of a list of genes.
 The sequences are obtained from the Ensembl database.
 Requires BioPerl and the Ensembl Perl API library installed to work.
-Installation instructions are in the SEQUENCES_README.md file or 
-in https://github.com/Ad115/ICGC-data-parser/blob/develop/SEQUENCES_README.md
+Installation instructions are in the SEQUENCES_README.md file or in
+https://github.com/Ad115/ICGC-data-parser/blob/develop/SEQUENCES_README.md
 =cut
 
 use Bio::EnsEMBL::Registry; # From the Ensembl API, allows to conect to the db.
