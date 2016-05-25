@@ -13,14 +13,14 @@ Hola!, si estás leyendo esto es porque quieres utilizar el script **get_gene_se
 
  --------------------------------------------------------
 
- Instalar SQL
- ------------
+Instalar SQL
+------------
  A mi me funcionó sólo abrir una terminal y escribir `sudo apt-get install libmysqlclient-dev`, si tienes Ubuntu o parecido debería de funcionar también.
 
 --------------------------------------------------------
 
- Instalar Expat
- --------------
+Instalar Expat
+--------------
  (*Referencia*: [expat](http://expat.sourceforge.net/))
  Esto lo requiere BioPerl (no estoy seguro de si es esencial, pero por si las moscas también lo instalé), para instalarlo, puedes descargar el archivo desde [source-forge](https://sourceforge.net/projects/expat/) o bien con en la terminal:
  ```
