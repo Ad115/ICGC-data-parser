@@ -25,7 +25,7 @@ foreach my $gene_name (@genes)
     print "GENE\t $gene_name \n";
 
     # Query for the sequence
-    my $sequence = get_sequence_from_name($gene_name);
+    my $sequence = get_sequence_from_name($gene_name); # As a side effect it prints the gene id
     print "$sequence \n";
 }
 #===============>> END OF MAIN ROUTINE <<=====================
