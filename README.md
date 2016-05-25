@@ -3,7 +3,7 @@ Scripts to automate cancer mutations and related data from the International Can
 
 ## Current files
  - **get_gene_sequences.pl** Prompts for a list of gene names and outputs their sequences, downloaded from the Ensembl database.
- >To use it you must have BioPerl and the Ensembl Perl API files installed, detailed instructions are in the **SEQUENCES_README.md** file.
+ >To use it you must have BioPerl and the Ensembl Perl API files installed, detailed instructions are in the [**SEQUENCES_README.md**](https://github.com/Ad115/ICGC-data-parser/blob/develop/SEQUENCES_README.md) file.
 
  - **TSVfilter.pl** To select specific columns from a TSV file, the format of the data in the ICGC database.
 
