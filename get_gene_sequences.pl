@@ -111,6 +111,6 @@ sub get_sequence_from_id
           -> fetch_by_gene_stable_id(
                   $gene_id
                   );
-  my $sequence = $slice -> subseq(1,200);
+  my $sequence = $slice -> subseq(1,500);
   return $sequence;
 }#------------------------------------------------------
