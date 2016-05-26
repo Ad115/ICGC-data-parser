@@ -16,7 +16,9 @@ use Bio::EnsEMBL::Registry; # From the Ensembl API, allows to conect to the db.
 
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 
+
 # Initialize a connection to the db.
+print "Waiting connection to database...\n";
 my $connection = ensembldb_connect();
 
 # Get list of genes
