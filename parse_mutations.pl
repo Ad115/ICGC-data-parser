@@ -60,13 +60,24 @@ use Bio::EnsEMBL::Registry; # From the Ensembl API, allows to conect to the db.
 	my @fields = get_vcf_line($inputfile);
 	print_array(\@fields, "Fields");
 	# Get the column position of the important fields
-	my $INFO_pos = get_col_number('INFO', \@fields); # The column that specifies the genes affected
-	my $MUT_ID_pos = get_col_number('ID', \@fields); # Mutation ID
-	my $chrom_pos = get_col_number('CHROM', \@fields); # The column that specifies chromosome number
-	my $pos_in_chrom_pos = get_col_number('POS', \@fields); # Position in chromosome
-	my $ref_seq_pos = get_col_number('REF', \@fields); # Sequence or base in the reference, this is the one we care to compare
-	my $alt_seq_pos = get_col_number('ALT', \@fields); # Alternate sequence. This is found instead of the reference
-	# Convert the position to GRChr38 assembly coordinates
+	# Get the column position of the important fields
+	my %fields = (
+		'INFO'	=>	get_col_number('INFO', \@fields), # The column that specifies the genes affected
+		'ID'	=>	get_col_number('ID', \@fields), # Mutation ID
+		'CHROM'	=>	get_col_number('CHROM', \@fields), # The column that specifies chromosome number
+		'POS'	=>	get_col_number('POS', \@fields), # Position in chromosome
+		'REF'	=>	get_col_number('REF', \@fields), # Sequence or base in the reference, this is the one we care to compare
+		'ALT'	=>	get_col_number('ALT', \@fields), # Alternate sequence. This is found instead of the reference
+	);
+	
+## COUNTERS INITIALIZATION
+	
+	my $total_mutations = 0;
+	my $coding_mutations = 0;
+	my %mutations_with_phase = ( 0 => 0, 1 => 0, 2 => 0 );
+	my %mutations = (); # Associates ID to a mutation data hash
+	my %genes = (); # Associates gene ID's to a list of the associated mutation ID's
+
 
 ## WEB DATA INITIALIZATION
 	
@@ -74,35 +85,29 @@ use Bio::EnsEMBL::Registry; # From the Ensembl API, allows to conect to the db.
 	my $connection = ensembldb_connect();
 	my $slice_adaptor = $connection->get_adaptor( 'Human', 'Core', 'Slice' );
 	
-	
-## COUNTERS INITIALIZATION
-	my $total_mutations = 0;
-	my $coding_mutations = 0;
-	my %mutations_with_phase = (
-		0 => 0,
-		1 => 0,
-		2 => 0
-	);
-	
 ## DATA QUERY
+	
 while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 {
 	$total_mutations++;
 	
 	# Read the local data (ICGC)
-	my $INFO = $line[$INFO_pos];
-	my $MUT_ID = $line[$MUT_ID_pos];
-	my $chrom = $line[$chrom_pos];
-	my $pos_in_chrom = $line[$pos_in_chrom_pos];
-	my $ref_seq = $line[$ref_seq_pos];
-	my $alt_seq = $line[$alt_seq_pos];
-	my $seq_length = length $ref_seq;
+	my %mutation = (
+		'ID'	=>	$line[ $fields{'ID'} ],
+		'CHROM'	=>	$line[ $fields{'CHROM'} ],
+		'POS'	=>	$line[ $fields{'POS'} ],
+		'REF'	=>	$line[ $fields{'REF'} ],
+		'ALT'	=>	$line[ $fields{'ALT'} ],
+		);
+	
+	my $INFO = $line[ $fields{'INFO'} ];
 	
 	# Convert the position to GRChr38 assembly coordinates
-	my ($mapped_pos_in_chrom, $mapped_end_pos) = map_GRChr37_to_GRChr38($slice_adaptor, $chrom, $pos_in_chrom, $seq_length);
+	my $seq_length = length $mutation{'REF'};
+	my ($mapped_pos_in_chrom, $mapped_end_pos) = map_GRChr37_to_GRChr38($slice_adaptor, $mutation{'CHROM'}, $mutation{'POS'}, $seq_length);
 	
 	#Print mutation data
-	print "\nMUTATION:$MUT_ID @ chromosome $chrom, position (GRChr38:$mapped_pos_in_chrom-$mapped_end_pos) ($ref_seq > $alt_seq).\n";
+	print "\nMUTATION:$mutation{'ID'} @ chromosome $mutation{'CHROM'}, position (GRChr38:$mapped_pos_in_chrom-$mapped_end_pos) ($mutation{'REF'} > $mutation{'ALT'}).\n";
 	
 	# Get the genes affected for the current mutation
 	my @genes = ( $INFO =~ /(ENSG[0-9]+)/g );

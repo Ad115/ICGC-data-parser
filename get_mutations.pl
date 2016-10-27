@@ -74,6 +74,7 @@ use Data::Dumper; # To print easily data structures
 	
 	
 ## COUNTERS INITIALIZATION
+	
 	my $total_mutations = 0;
 	my $coding_mutations = 0;
 	my %mutations_with_phase = ( 0 => 0, 1 => 0, 2 => 0 );
