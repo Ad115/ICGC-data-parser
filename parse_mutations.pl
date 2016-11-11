@@ -1,6 +1,5 @@
 #! /usr/bin/perl 
 
-
 my $doc_str = <<END;
 
 Usage: ./parse_mutations.pl [--in=<vcffile>] [--out=<outfile>] [--help]
