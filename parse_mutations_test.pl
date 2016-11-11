@@ -123,6 +123,7 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 		'POS'	=>	$line[ $fields{'POS'} ],
 		'REF'	=>	$line[ $fields{'REF'} ],
 		'ALT'	=>	$line[ $fields{'ALT'} ],
+		'PHASE' => 'UNDEF_PHASE'
 		);
 	
 	my $INFO = $line[ $fields{'INFO'} ];
