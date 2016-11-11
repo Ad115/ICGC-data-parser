@@ -229,7 +229,7 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 					#print "\n\t\t-----------------------------------------------------------------\n";
 					
 					# Get phase of mutation
-					my $mutation_phase = ($phase + ($mapped_pos_in_chrom-$start)) % 3;
+					my $mutation_phase = ($exon{'PHASE'} + ($mapped_pos_in_chrom-$exon{'START'})) % 3;
 					foreach my $project (@projects_matched)
 					{
 						if ($phase == -1)
