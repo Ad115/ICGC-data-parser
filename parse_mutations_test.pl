@@ -129,9 +129,9 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 	
 	# If projects where specified, check if the mutation belongs to any of them
 	my @projects_matched = search_patterns(\@projects, $INFO);
-	push( @projects_matched, 'all' ) unless (@projects_matched);
 	
 	next unless (@projects_matched or ($projects[0] eq 'all')); # Skip if not in a specified project
+	push( @projects_matched, 'all' ) unless (@projects_matched);
 	
 	foreach my $project (@projects_matched)
 	{
