@@ -61,7 +61,6 @@ use Data::Dumper; # To preety print hashes easily
 	
 	# Check if some project was specified
 	my @projects = split(/,/, $project);
-	print_array(\@projects, "Projects");
 
 	# Check if user asked for help
 	if($help) { print_and_exit($doc_str); }
@@ -79,7 +78,6 @@ use Data::Dumper; # To preety print hashes easily
 								'REF', # Sequence or base in the reference, this is the one we care to compare
 								'ALT' # Alternate sequence. This is found instead of the reference
 								);
-	#print_hash(\%fields, "Fields");
 	
 
 	
@@ -90,11 +88,10 @@ use Data::Dumper; # To preety print hashes easily
 		$counters{$project} = {'total' => 0,
 							   'intergenic' => 0,
 							   'intronic' => 0,
-							   'noncodingexon' => 0,
+							   'non_coding_exon' => 0,
 							   'coding' => { 0 => 0, 1 => 0, 2 => 0}
 							   };
 	}
-	print_hash(\%counters, "Counters");
 	
 	my %mutations = (); # Associates ID to a mutation data hash
 	my %genes = (); # Associates gene ID's to a list of the associated mutation ID's
@@ -111,6 +108,10 @@ use Data::Dumper; # To preety print hashes easily
 	
 ## DATA QUERY
 	
+	# Print table header
+	my @table_line = ( 'MUT', 'GENES_OVERLAPPED', 'GENES_AFFECTED', 'PHASE', 'COUNTERS', 'PROJECT' );
+	print join("\t", @table_line)."\n";
+	
 while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 {
 	$counters{'total'}++;
@@ -123,7 +124,6 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 		'REF'	=>	$line[ $fields{'REF'} ],
 		'ALT'	=>	$line[ $fields{'ALT'} ],
 		);
-	#print_hash(\%mutation, "Mutation");
 	
 	my $INFO = $line[ $fields{'INFO'} ];
 	
@@ -144,7 +144,7 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 
 	
 	#Print mutation data
-	print "\nMUTATION:$mutation{'ID'} @ chromosome $mutation{'CHROM'}, position (GRChr38:$mapped_pos_in_chrom-$mapped_end_pos) ($mutation{'REF'} > $mutation{'ALT'}).\n";
+	#print "\nMUTATION:$mutation{'ID'} @ chromosome $mutation{'CHROM'}, position (GRChr38:$mapped_pos_in_chrom-$mapped_end_pos) ($mutation{'REF'} > $mutation{'ALT'}).\n";
 	
 	# Get the genes the mutation is in
 	my $end_slice = $mutation{'POS'} + ($seq_length - 1);
@@ -163,7 +163,8 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 		foreach my $project (@projects_matched)
 		{
 			$counters{$project}{'intergenic'}++;
-			print "Mutation $mutation{'ID'} doesn't overlap any gene, so it is INTERGENIC.\n";
+			$mutation{'PHASE'} = 'INTERGENIC';
+			#print "Mutation $mutation{'ID'} doesn't overlap any gene, so it is INTERGENIC.\n";
 		}
 	}
 	
@@ -219,13 +220,13 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 					last;
 					
 					# Report match
-					print "\n\t\t-----------------------------------------------------------------\n";
-					print "\t\tMATCH: The exon (@ $exon{'START'}-$exon{'END'}) contains in $position_in_exon the mutation @ $mapped_pos_in_chrom-$mapped_end_pos\n";
+					#print "\n\t\t-----------------------------------------------------------------\n";
+					#print "\t\tMATCH: The exon (@ $exon{'START'}-$exon{'END'}) contains in $position_in_exon the mutation @ $mapped_pos_in_chrom-$mapped_end_pos\n";
 					
 					my $sequence_in_exon = substr($exon_slice->seq(), ($position_in_exon-1)-6, ($exon{'LENGTH'})+12);
 					my $sequence_in_chrom = $slice_adaptor->fetch_by_region( 'chromosome', $exon{'SEQ_REGION'}, $mapped_pos_in_chrom-1, $mapped_end_pos+1)->seq();
-					print "\t\tMATCH: ICGC reference: $ref_seq, Ensembl reference: $sequence_in_chrom, Exon reference: $sequence_in_exon\n";
-					print "\n\t\t-----------------------------------------------------------------\n";
+					#print "\t\tMATCH: ICGC reference: $ref_seq, Ensembl reference: $sequence_in_chrom, Exon reference: $sequence_in_exon\n";
+					#print "\n\t\t-----------------------------------------------------------------\n";
 					
 					# Get phase of mutation
 					my $mutation_phase = ($phase + ($mapped_pos_in_chrom-$start)) % 3;
@@ -233,13 +234,15 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 					{
 						if ($phase == -1)
 						{
-							$counters{$project}{'noncodingexon'}++;
-							print "Mutation $mutation{'ID'} is in a NON-CODING EXON.\n";
+							$counters{$project}{'non_coding_exon'}++;
+							$mutation{'PHASE'} = 'NON_CODING_EXON';
+							#print "Mutation $mutation{'ID'} is in a NON-CODING EXON.\n";
 						}
 						else	
 						{ 
 							$counters{$project}{'coding'}{$mutation_phase}++;
-							print "Mutation $mutation{'ID'} is in a CODING exon with PHASE $mutation_phase.\n";		
+							$mutation{'PHASE'} = $mutation_phase;
+							#print "Mutation $mutation{'ID'} is in a CODING exon with PHASE $mutation_phase.\n";		
 						}
 					}
 				}
@@ -264,12 +267,32 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 		foreach my $project (@projects_matched)
 		{
 			$counters{$project}{'intronic'}++;
-			print "Mutation $mutation{'ID'} isn't found in any exon, so it is INTRONIC.\n";
+			$mutation{'PHASE'} = 'INTRONIC';
+			#print "Mutation $mutation{'ID'} isn't found in any exon, so it is INTRONIC.\n";
 		}
 	}
 	
 	# Check the status of the counters
-	print_hash(\%counters, "Counts");
+	#print_hash(\%counters, "Counts");
+	
+	# Print gathered data
+	@table_line = ( $mutation{'ID'}, $mutation{'OVERLAPPED'}, $mutation{'AFFECTED'}, $mutation{'PHASE'} );
+	my @counters = ("total=$counters{'total'}");
+	foreach my $project (@projects)
+	{
+		my @project_counters = ("project_total($project)=$counters{$project}{'total'}",
+							 "intergenic($project)=$counters{$project}{'intergenic'}",
+							 "intronic($project)=$counters{$project}{'intronic'}",
+							 "non_coding_exon($project)=$counters{$project}{'non_coding_exon'}",
+							 "phase_0($project)=$counters{$project}{'coding'}{0}",
+							 "phase_1($project)=$counters{$project}{'coding'}{1}",
+							 "phase_2($project)=$counters{$project}{'coding'}{0}"
+							 );
+		push( @counters, @project_counters );
+	}
+	push ( @table_line, join(',', @counters) );
+	push ( @table_line, join(',', @projects_matched) );
+	print join("\t", @table_line)."\n";
 }
 
 #===============>> END OF MAIN ROUTINE <<=====================
@@ -472,7 +495,6 @@ sub get_fields_from
 	
 	# Get the fields
 	my @fields = get_vcf_line($inputfile);
-	print_array(\@fields, "Fields");
 	
 	# Get the column position of the searched fields
 	my %fields = ();
