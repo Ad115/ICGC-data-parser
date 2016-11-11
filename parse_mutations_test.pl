@@ -141,7 +141,7 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 	# Convert the position to GRChr38 assembly coordinates
 	my $seq_length = length $mutation{'REF'};
 	my ($mapped_pos_in_chrom, $mapped_end_pos) = map_GRChr37_to_GRChr38($slice_adaptor, $mutation{'CHROM'}, $mutation{'POS'}, $seq_length);
-
+	next if ($mapped_pos_in_chrom == -1);
 	
 	#Print mutation data
 	#print "\nMUTATION:$mutation{'ID'} @ chromosome $mutation{'CHROM'}, position (GRChr38:$mapped_pos_in_chrom-$mapped_end_pos) ($mutation{'REF'} > $mutation{'ALT'}).\n";
@@ -443,7 +443,13 @@ sub map_GRChr37_to_GRChr38
 	
 	$slice = @{ fetch_GRCh38_slice_from_GRCh37_region($slice_adaptor, $chromosome, $begin_slice, $end_slice) }[0];
 	
-	return ($slice->start(), $slice->end());
+	my @return = ();
+	eval { @return = ($slice->start(), $slice->end()); };
+	if ($@) 
+	{ 
+		warn $@;
+		return (-1, -1);
+	}
 }#-----------------------------------------------------------
 
 sub contains
