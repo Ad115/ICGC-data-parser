@@ -85,17 +85,13 @@ use Data::Dumper; # To preety print hashes easily
 	my %counters = ('total' => 0);
 	foreach my $project (@projects)
 	{
-		$counters{$project} = {'total' => 0,
-							   'intergenic' => 0,
-							   'intronic' => 0,
-							   'non_coding_exon' => 0,
-							   'coding' => { 0 => 0, 1 => 0, 2 => 0}
+		$counters{$project} = {'TOTAL' => 0,
+							   'INTERGENIC' => 0,
+							   'INTRONIC' => 0,
+							   'NON_CODING_EXON' => 0,
+							   'CODING' => { 0 => 0, 1 => 0, 2 => 0}
 							   };
 	}
-	
-	my %mutations = (); # Associates ID to a mutation data hash
-	my %genes = (); # Associates gene ID's to a list of the associated mutation ID's
-
 
 	
 ## WEB DATA INITIALIZATION
@@ -108,50 +104,46 @@ use Data::Dumper; # To preety print hashes easily
 	
 ## DATA QUERY
 	
-	# Print table header
-	my @table_line = ( 'MUT', 'GENES_OVERLAPPED', 'GENES_AFFECTED', 'PHASE', 'COUNTERS', 'PROJECT' );
+	# Print table header to output
+	my @output_header = ( 'MUT_ID', 'POSITION', 'MUTATION', 'GENES_OVERLAPPED', 'GENES_AFFECTED', 'PHASE', 'COUNTERS', 'PROJECT' );
 	print join("\t", @table_line)."\n";
+	
 	
 while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 {
 	$counters{'total'}++;
 	
-	# Read the local data (ICGC)
-	my %mutation = (
-		'ID'	=>	$line[ $fields{'ID'} ],
-		'CHROM'	=>	$line[ $fields{'CHROM'} ],
-		'POS'	=>	$line[ $fields{'POS'} ],
-		'REF'	=>	$line[ $fields{'REF'} ],
-		'ALT'	=>	$line[ $fields{'ALT'} ],
-		'PHASE' => 'UNDEF_PHASE'
-		);
-	
 	my $INFO = $line[ $fields{'INFO'} ];
 	
 	# If projects where specified, check if the mutation belongs to any of them
 	my @projects_matched = search_patterns(\@projects, $INFO);
+	my $all_projects = $projects[0] eq 'all';
+	next unless (@projects_matched or $all_projects); # Skip if not in a specified project
 	
-	next unless (@projects_matched or ($projects[0] eq 'all')); # Skip if not in a specified project
-	push( @projects_matched, 'all' ) unless (@projects_matched);
-	
+	push( @projects_matched, 'all' ) if ($all_projects);
 	foreach my $project (@projects_matched)
 	{
 		$counters{$project}{'total'}++;
 	}
 	
-	# Convert the position to GRChr38 assembly coordinates
-	my $seq_length = length $mutation{'REF'};
-	my ($mapped_pos_in_chrom, $mapped_end_pos) = map_GRChr37_to_GRChr38($slice_adaptor, $mutation{'CHROM'}, $mutation{'POS'}, $seq_length);
-	next if ($mapped_pos_in_chrom == -1);
+	# Read the local data (ICGC)
+	my %mutation = %{ read_line_as_hash(\@line, \%fields) };
+	$mutation{'LENGTH'} = length $mutation{'REF'};
+	$mutation{'PHASE'} = 'UNDEF';
+	
+	# Fetch a slice with the mutation
+	my $end_slice = $mutation{'POS'} + ($mutation{'LENGTH'} - 1);
+	$mutation_slice = @{ fetch_GRCh38_slice_from_GRCh37_region($slice_adaptor, $mutation{'CHROM'}, $mutation{'POS'}, $end_slice) }[0];
+	$mutation{'GRCh38_POS'} = $mutation_slice -> start();
 	
 	#Print mutation data
-	#print "\nMUTATION:$mutation{'ID'} @ chromosome $mutation{'CHROM'}, position (GRChr38:$mapped_pos_in_chrom-$mapped_end_pos) ($mutation{'REF'} > $mutation{'ALT'}).\n";
+	my $to = $mutation{'POS'} + $seq_length -1;
+	$mapped_end_pos = $mutation{'GRCh38_POS'} + $seq_length -1;
+	print "\nMUTATION:$mutation{'ID'} @ chromosome $mutation{'CHROM'}, position (GRCh37:$mutation{'POS'}-$to GRCh38:$mutation{'GRCh38_POS'}-$mapped_end_pos) ($mutation{'REF'} > $mutation{'ALT'}).\n";
 	
-	# Get the genes the mutation is in
-	my $end_slice = $mutation{'POS'} + ($seq_length - 1);
-	$mutation_slice = @{ fetch_GRCh38_slice_from_GRCh37_region($slice_adaptor, $mutation{'CHROM'}, $mutation{'POS'}, $end_slice) }[0];
-	my @overlapped_genes = get_overlapped_genes($mutation_slice);
-	$mutation{'OVERLAPPED'} = join(',', @overlapped_genes);
+	# Get the genes that overlap the mutation
+	my @overlapped_genes = $mutation_slice -> get_all_Genes();
+	$mutation{'OVERLAPPED'} = join(',', get_stable_ids(\@overlapped_genes));
 	
 	# Get the genes affected for the current mutation
 	my @affected_genes = ( $INFO =~ /(ENSG[0-9]+)/g );
@@ -170,7 +162,7 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 	}
 	
 	my $found_in_exon = undef;
-	foreach my $gene_ID (@overlapped_genes)
+	foreach my $gene (@overlapped_genes)
 	{
 		my $gene_slice;
 		eval { $gene_slice = $slice_adaptor->fetch_by_gene_stable_id($gene_ID, 3); };
@@ -214,7 +206,7 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 # 					}
 				
 				# Check if the mutation resides in the current exon
-				if (my $position_in_exon = contains($exon, $mapped_pos_in_chrom))
+				if (my $position_in_exon = contains($exon->start(), $exon->end(), $mutation{'GRCh38_POS'}))
 				{	
 					# Found, declare the end of the exons loop
 					$found_in_exon = 1;
@@ -224,8 +216,8 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 					#print "\n\t\t-----------------------------------------------------------------\n";
 					#print "\t\tMATCH: The exon (@ $exon{'START'}-$exon{'END'}) contains in $position_in_exon the mutation @ $mapped_pos_in_chrom-$mapped_end_pos\n";
 					
-					my $sequence_in_exon = substr($exon_slice->seq(), ($position_in_exon-1)-6, ($exon{'LENGTH'})+12);
-					my $sequence_in_chrom = $slice_adaptor->fetch_by_region( 'chromosome', $exon{'SEQ_REGION'}, $mapped_pos_in_chrom-1, $mapped_end_pos+1)->seq();
+					#my $sequence_in_exon = substr($exon_slice->seq(), ($position_in_exon-1)-6, ($exon{'LENGTH'})+12);
+					#my $sequence_in_chrom = $slice_adaptor->fetch_by_region( 'chromosome', $exon{'SEQ_REGION'}, $mapped_pos_in_chrom-1, $mapped_end_pos+1)->seq();
 					#print "\t\tMATCH: ICGC reference: $ref_seq, Ensembl reference: $sequence_in_chrom, Exon reference: $sequence_in_exon\n";
 					#print "\n\t\t-----------------------------------------------------------------\n";
 					
@@ -233,7 +225,7 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 					my $mutation_phase = ($exon{'PHASE'} + ($mapped_pos_in_chrom-$exon{'START'})) % 3;
 					foreach my $project (@projects_matched)
 					{
-						if ($phase == -1)
+						if ($exon{'PHASE'} == -1)
 						{
 							$counters{$project}{'non_coding_exon'}++;
 							$mutation{'PHASE'} = 'NON_CODING_EXON';
@@ -259,7 +251,7 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 		}
 		
 		# Stop searching if mutation was already found
-		last unless ($found_in_exon);
+		last if ($found_in_exon);
 	}
 	
 	# Mutation wasn't found in gene exons, so it is intronic
@@ -277,7 +269,10 @@ while(my @line = get_vcf_line($inputfile)) # Get mutation by mutation
 	#print_hash(\%counters, "Counts");
 	
 	# Print gathered data
-	@table_line = ( $mutation{'ID'}, $mutation{'OVERLAPPED'}, $mutation{'AFFECTED'}, $mutation{'PHASE'} );
+	@table_line = ( $mutation{'ID'}, "CHR$mutation{'CHROM'}\@$mutation{'GRCh38_POS'}",
+					"$mutation{'REF'}>$mutation{'ALT'}", $mutation{'OVERLAPPED'}, 
+					$mutation{'AFFECTED'}, $mutation{'PHASE'} 
+				  );
 	my @counters = ("total=$counters{'total'}");
 	foreach my $project (@projects)
 	{
@@ -431,8 +426,8 @@ sub any
 	return 0;
 }#-----------------------------------------------------------
 
-sub map_GRChr37_to_GRChr38
-# Maps a coordinate in the reference assembly GRChr37 to GRChr38
+sub map_GRCh37_to_GRCh38
+# Maps a coordinate in the reference assembly GRCh37 to GRCh38
 {
 	my $slice_adaptor = shift;
 	my $chromosome = shift;
@@ -442,7 +437,7 @@ sub map_GRChr37_to_GRChr38
 	my $begin_slice = $position;
 	my $end_slice = $position + ($length - 1);
 	
-	$slice = @{ fetch_GRCh38_slice_from_GRCh37_region($slice_adaptor, $chromosome, $begin_slice, $end_slice) }[0];
+	my $slice = @{ fetch_GRCh38_slice_from_GRCh37_region($slice_adaptor, $chromosome, $begin_slice, $end_slice) }[0];
 	
 	my @return = ();
 	eval { @return = ($slice->start(), $slice->end()); };
@@ -451,22 +446,22 @@ sub map_GRChr37_to_GRChr38
 		warn $@;
 		return (-1, -1);
 	}
+	return @return;
 }#-----------------------------------------------------------
 
 sub contains
 # Gets a scalar and an array as arguments, if the scalar is in the array returns 1
 {
-	my $exon = shift;
+	my $start = shift;
+	my $end = shift;
 	my $mapped_pos_in_chrom = shift;
 	
-	$exon_start = $exon->seq_region_start();
-	$exon_end = $exon->seq_region_end();
-	if ($exon_start < $mapped_pos_in_chrom && $mapped_pos_in_chrom < $exon_end)
+	if ($start < $mapped_pos_in_chrom && $mapped_pos_in_chrom < $end)
 	{
-		return $mapped_pos_in_chrom - $exon_start + 1;
+		return $mapped_pos_in_chrom - $start + 1;
 	}
 	
-	else { return 0; }
+	else { return undef; }
 }#-----------------------------------------------------------
 
 sub fetch_GRCh38_slice_from_GRCh37_region
@@ -486,7 +481,7 @@ sub fetch_GRCh38_slice_from_GRCh37_region
 
 	foreach my $segment ( @{$projection} ) 
 	{
-      $slice = $segment->to_Slice();
+      my $slice = $segment->to_Slice();
 	  push @slices, $slice;
 	}
 	
@@ -530,18 +525,32 @@ sub search_patterns
 	return @matches;
 }#-----------------------------------------------------------
 
-sub get_overlapped_genes
-# Usage: get_overlapped_genes(\SLICE)
-# Retuns a list with the IDs of the genes overlapping the slice
+sub get_stable_ids
+# Usage: get_stable_ids(\@features);
+# Retuns the list with the stable id of the features in the array
 {
-	my $mutation_slice = shift;
+	my @features = @{shift()};
 	
-	my @slice_genes = @{ $mutation_slice -> get_all_Genes() };
-	my @gene_IDs = ();
-	foreach my $gene (@slice_genes)
+	my @stable_ids = ();
+	foreach my $feature (@features)
 	{
-		push( @gene_IDs, $gene -> stable_id() );
+		push( @stable_ids, $feature -> stable_id() );
 	}
 
-	return @gene_IDs;
+	return @stable_ids;
+}#-----------------------------------------------------------
+
+sub read_line_as_hash
+# Retuns the hash with the header associaciated with its respective information
+{
+	my @line = @{shift()};
+	my %headers = %{shift()};
+	
+	my %line = ();
+	foreach my $header (keys %headers)
+	{
+		$line{ $header } = $line[ $headers{$header} ];
+	}
+
+	return \%line;
 }#-----------------------------------------------------------
