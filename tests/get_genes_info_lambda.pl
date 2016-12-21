@@ -41,7 +41,7 @@ use Data::Dumper; # To preety print hashes easily
 
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 
-	my $results_path = "../../results";
+	my $results_path = "/u/scratch/andres/results";
 	my @files = `ls -1 $results_path | grep count`;
 	chomp @files;
 	my $input = STDIN;

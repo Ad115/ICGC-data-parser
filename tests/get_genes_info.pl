@@ -2,12 +2,12 @@
 
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 
-	my @genes = ('ENSG00000141510', 'ENSG00000141736', 'ENSG00000135679', 'ENSG00000012048', 'ENSG00000149311', 'ENSG00000123374', '');
+	my @genes = ('TP53', 'ERBB2', 'MDM2', 'BRCA1', 'ATM', 'CDK2', '');
 	# TP53(ENSG00000141510), HER2(ERBB2)(ENSG00000141736), MDM2(ENSG00000135679), BRCA1(ENSG00000012048), ATM(ENSG00000149311), CDK2(ENSG00000123374)
-	my @projects = ('', 'BRCA-EU', 'GBM-EU');
+	my @projects = ('BRCA-EU', 'GBM-EU', '');
 
-	my $data = "../../data_release_22/ssm.aggregated.vcf";
-	my $results_path = "../../results";
+	my $data = "/u/scratch/andres/release22.ssm.vcf";
+	my $results_path = "/u/scratch/andres/results";
 	my $error_file = "$results_path/log.err";
 
 	foreach my $project (@projects)
@@ -25,14 +25,14 @@
 			#	MUTATION ANALYSIS
 			##########################
 			
-			print STDERR "\t\tAnalysis...";
+			print STDERR "\t\tAnalysis...\n";
 			
 			my $header = "\nGene: $gene_str\tProject: $project_str";
 			system("echo \"$header\" >> $error_file");
 			
 			# Start analysis
 			my $analysis_file = "$results_path/$gene-$project-analysis.tsv";
-			my $command = "../get_gene_info.pl --gene=$gene --project=$project -i $data -o $analysis_file 2>> $error_file";
+			my $command = "../get_gene_info.pl --gene=$gene --project=$project -i $data -o $analysis_file";
 			system($command);
 			
 			print STDERR "Done\n";
