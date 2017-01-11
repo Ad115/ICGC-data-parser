@@ -79,7 +79,8 @@ use Data::Dumper; # To preety print hashes easily
 								'CHROM', # The column that specifies chromosome number
 								'POS', # Position in chromosome
 								'REF', # Sequence or base in the reference, this is the one we care to compare
-								'ALT' # Alternate sequence. This is found instead of the reference
+								'ALT', # Alternate sequence. This is found instead of the reference
+                                'INFO' # Other information of the gene
 								);
 
 ## WEB DATA INITIALIZATION
@@ -108,8 +109,8 @@ use Data::Dumper; # To preety print hashes easily
 	print "Project: $project_str\tGene: $gene_str $gene_id_str\n";
 
 
-	my @output_line_fields = ('MUTATION_ID', 'POSITION', 'MUTATION', 'PROJ_AFFECTED_DONORS', 'PROJ_TESTED_DONORS', 'PROJ_MUTATION_FREQUENCY');
-	unless($project) { @output_line_fields = ('MUTATION_ID', 'POSITION', 'MUTATION', 'TOTAL_AFFECTED_DONORS', 'TOTAL_TESTED_DONORS', 'TOTAL_MUTATION_FREQUENCY', 'PROJECT'); }
+	my @output_line_fields = ('MUTATION_ID', 'POSITION', 'MUTATION', 'AFFECTED_GENES', 'PROJ_AFFECTED_DONORS', 'PROJ_TESTED_DONORS', 'PROJ_MUTATION_FREQUENCY');
+	unless($project) { @output_line_fields = ('MUTATION_ID', 'POSITION', 'MUTATION', 'AFFECTED_GENES', 'TOTAL_AFFECTED_DONORS', 'TOTAL_TESTED_DONORS', 'TOTAL_MUTATION_FREQUENCY', 'PROJECT(S)'); }
 	print join( "\t", @output_line_fields)."\n";
 
 ## MAIN QUERY
@@ -120,6 +121,12 @@ use Data::Dumper; # To preety print hashes easily
 			# If project was specified
 			if ($project and $line =~ $project_re)
 			{
+                # Get affected genes
+                my @affected_genes = ($line =~ /(ENSG[0-9]+)/g);
+                @affected_genes = uniq(\@affected_genes);
+                my $affected_genes = join( ',', @affected_genes );
+
+                # Get occurrence data
 				$line =~ /OCCURRENCE=(.*?);/;
 				my @occurrences = split( /,/ , $1);
 
@@ -133,12 +140,13 @@ use Data::Dumper; # To preety print hashes easily
 							'MUTATION_ID' => $line[$header{'ID'}],
 							'POSITION' => "Chrom$line[$header{'CHROM'}]($line[$header{'POS'}])",
 							'MUTATION' => "$line[$header{'REF'}]>$line[$header{'ALT'}]",
+                            'AFFECTED_GENES' => $affected_genes,
 							'PROJ_AFFECTED_DONORS' => "$occurrence[1]",
 							'PROJ_TESTED_DONORS' => "$occurrence[2]",
 							'PROJ_MUTATION_FREQUENCY' => "$occurrence[3]"
 							);
 
-						print_fields(\%mutation, ['MUTATION_ID', 'POSITION', 'MUTATION', 'PROJ_AFFECTED_DONORS', 'PROJ_TESTED_DONORS', 'PROJ_MUTATION_FREQUENCY']);
+						print_fields(\%mutation, ['MUTATION_ID', 'POSITION', 'MUTATION', 'AFFECTED_GENES', 'PROJ_AFFECTED_DONORS', 'PROJ_TESTED_DONORS', 'PROJ_MUTATION_FREQUENCY']);
 					}
 				}
 			}
@@ -146,12 +154,22 @@ use Data::Dumper; # To preety print hashes easily
 			# If project was not specified
 			elsif (!$project)
 			{
+                # Get affected genes
+                my @affected_genes = ($line =~ /(ENSG[0-9]+)/g);
+                @affected_genes = uniq(\@affected_genes);
+                my $affected_genes = join( ',', @affected_genes );
+
+                # Get occurrence data
 				$line =~ /OCCURRENCE=(.*?);(.*)/;
 				my $total_occurrence = $2;
 
-				my $project = $1;
-				$project =~ /(.*?)\|/;
-				$project = $1;
+                my @occurrences = split /,/,  $1;
+                my @projects = ();
+                foreach my $occurrence (@occurrences)
+                {
+                    $occurrence =~ /^([A-Z-]*)\|/;
+                    push @projects, $1;
+                }
 
 				my @line = split( /\t/, $line );
 				my @total_occurrence = split( /;/, $total_occurrence );
@@ -160,15 +178,16 @@ use Data::Dumper; # To preety print hashes easily
 							'MUTATION_ID' => $line[$header{'ID'}],
 							'POSITION' => "Chrom$line[$header{'CHROM'}]($line[$header{'POS'}])",
 							'MUTATION' => "$line[$header{'REF'}]>$line[$header{'ALT'}]",
+                            'AFFECTED_GENES' => $affected_genes
 							);
 				$total_occurrence =~ /affected_donors=([0-9]*)/;
 				$mutation{'TOTAL_AFFECTED_DONORS'} = $1;
 				$total_occurrence =~ /tested_donors=([0-9]*)/;
 				$mutation{'TOTAL_TESTED_DONORS'} = $1;
 				$mutation{'TOTAL_MUTATION_FREQUENCY'} = $mutation{'TOTAL_AFFECTED_DONORS'} / $mutation{'TOTAL_TESTED_DONORS'};
-				$mutation{'PROJECT'} = $project;
+				$mutation{'PROJECT(S)'} = join ",", @projects;
 
-				print_fields(\%mutation, ['MUTATION_ID', 'POSITION', 'MUTATION', 'TOTAL_AFFECTED_DONORS', 'TOTAL_TESTED_DONORS', 'TOTAL_MUTATION_FREQUENCY', 'PROJECT']);
+				print_fields(\%mutation, ['MUTATION_ID', 'POSITION', 'MUTATION', 'AFFECTED_GENES', 'TOTAL_AFFECTED_DONORS', 'TOTAL_TESTED_DONORS', 'TOTAL_MUTATION_FREQUENCY', 'PROJECT(S)']);
 			}
 		}
 	}
@@ -352,4 +371,13 @@ sub print_hash
 	my $name = shift;
 
 	print "$name: ".Dumper \%hash;
+}#-----------------------------------------------------------
+
+sub uniq
+# Remove repeated entries from array
+{
+	my @array = @{shift()};
+	my %seen;
+
+	return grep !($seen{$_}++), @array;
 }#-----------------------------------------------------------

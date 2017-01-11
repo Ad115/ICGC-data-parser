@@ -4,18 +4,14 @@ my $doc_str = <<END;
 
 Usage: ./get_gene_info.pl [--gene=<genename>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--help]
 
-===============
- Get gene info
-===============
+======================================================
+ Searches occurrence of mutations in several projects
+======================================================
 
-Searches through input file for mutations related to the given gene and the given project.
+Searches through input file for mutations related to the given gene
 
 	-g, --gene
 		Gene name, in display form.
-
-	-p, --project
-		Project name.
-		If present, shows only mutations found in that project.
 
 	-i, --in, --vcf
 		Name of the input VCF file.
@@ -45,13 +41,12 @@ use Data::Dumper; # To preety print hashes easily
 
 	# Declare variables to hold command-line arguments
 	my $inputfile_name = ''; my $out_name = '';
-	my $gene = ''; my $project = '';
+	my $gene = '';
 	my $help;
 	GetOptions(
 		'i|in|vcf=s' => \$inputfile_name,
 		'o|out=s' => \$out_name,
 		'g|gene=s' => \$gene,
-		'p|project=s' => \$project,
 		'h|help' => \$help
 		);
 
@@ -71,16 +66,6 @@ use Data::Dumper; # To preety print hashes easily
 
 	#Get project
 	my $project_re = undef;
-	$project_re = qr/$project/ if ($project);
-
-	# Get header
-	my %header = get_fields_from($inputfile,
-								'ID', # Mutation ID
-								'CHROM', # The column that specifies chromosome number
-								'POS', # Position in chromosome
-								'REF', # Sequence or base in the reference, this is the one we care to compare
-								'ALT' # Alternate sequence. This is found instead of the reference
-								);
 
 ## WEB DATA INITIALIZATION
 
@@ -102,75 +87,23 @@ use Data::Dumper; # To preety print hashes easily
 	my $gene_id_str = ($gene_id) ? "($gene_id)" : '';
 	my $gene_re = ($gene) ? qr/$gene_id/ : qr/.*/;
 
-	my $project_str = ($project) ? $project : "All projects";
-	my $project_re = ($project) ? qr/$project/ : qr/.*/;
+	my $project_str = "All projects";
+	my $project_re = qr/.*/;
 
 	print "Project: $project_str\tGene: $gene_str $gene_id_str\n";
-
-
-	my @output_line_fields = ('MUTATION_ID', 'POSITION', 'MUTATION', 'PROJ_AFFECTED_DONORS', 'PROJ_TESTED_DONORS', 'PROJ_MUTATION_FREQUENCY');
-	unless($project) { @output_line_fields = ('MUTATION_ID', 'POSITION', 'MUTATION', 'TOTAL_AFFECTED_DONORS', 'TOTAL_TESTED_DONORS', 'TOTAL_MUTATION_FREQUENCY', 'PROJECT'); }
-	print join( "\t", @output_line_fields)."\n";
 
 ## MAIN QUERY
 	while(my $line = get_vcf_line($inputfile)) # Get mutation by mutation
 	{
-		if ($line =~ $gene_re)
-		{
-			# If project was specified
-			if ($project and $line =~ $project_re)
-			{
-				$line =~ /OCCURRENCE=(.*?);/;
-				my @occurrences = split( /,/ , $1);
-
-				foreach my $occurrence (@occurrences)
-				{
-					if ($occurrence =~ $project_re)
-					{
-						my @line = split( /\t/, $line );
-						my @occurrence = split( /\|/, $occurrence);
-						my %mutation = (
-							'MUTATION_ID' => $line[$header{'ID'}],
-							'POSITION' => "Chrom$line[$header{'CHROM'}]($line[$header{'POS'}])",
-							'MUTATION' => "$line[$header{'REF'}]>$line[$header{'ALT'}]",
-							'PROJ_AFFECTED_DONORS' => "$occurrence[1]",
-							'PROJ_TESTED_DONORS' => "$occurrence[2]",
-							'PROJ_MUTATION_FREQUENCY' => "$occurrence[3]"
-							);
-
-						print_fields(\%mutation, ['MUTATION_ID', 'POSITION', 'MUTATION', 'PROJ_AFFECTED_DONORS', 'PROJ_TESTED_DONORS', 'PROJ_MUTATION_FREQUENCY']);
-					}
-				}
-			}
-
-			# If project was not specified
-			elsif (!$project)
-			{
-				$line =~ /OCCURRENCE=(.*?);(.*)/;
-				my $total_occurrence = $2;
-
-				my $project = $1;
-				$project =~ /(.*?)\|/;
-				$project = $1;
-
-				my @line = split( /\t/, $line );
-				my @total_occurrence = split( /;/, $total_occurrence );
-
-				my %mutation = (
-							'MUTATION_ID' => $line[$header{'ID'}],
-							'POSITION' => "Chrom$line[$header{'CHROM'}]($line[$header{'POS'}])",
-							'MUTATION' => "$line[$header{'REF'}]>$line[$header{'ALT'}]",
-							);
-				$total_occurrence =~ /affected_donors=([0-9]*)/;
-				$mutation{'TOTAL_AFFECTED_DONORS'} = $1;
-				$total_occurrence =~ /tested_donors=([0-9]*)/;
-				$mutation{'TOTAL_TESTED_DONORS'} = $1;
-				$mutation{'TOTAL_MUTATION_FREQUENCY'} = $mutation{'TOTAL_AFFECTED_DONORS'} / $mutation{'TOTAL_TESTED_DONORS'};
-				$mutation{'PROJECT'} = $project;
-
-				print_fields(\%mutation, ['MUTATION_ID', 'POSITION', 'MUTATION', 'TOTAL_AFFECTED_DONORS', 'TOTAL_TESTED_DONORS', 'TOTAL_MUTATION_FREQUENCY', 'PROJECT']);
-			}
-		}
+        		$line =~ /OCCURRENCE=(.*?);/g;
+                my @occurrences = split /,/,  $1;
+                my @projects = ();
+                foreach my $occurrence (@occurrences)
+                {
+                    $occurrence =~ /^([A-Z-]*)\|/;
+                    push @projects, $1;
+                }
+				print join( ",", @projects )."\n";
 	}
 
 #===============>> END OF MAIN ROUTINE <<=====================
@@ -289,7 +222,8 @@ sub print_array
 	my @array = @{shift()};
 	my $name = shift;
 
-	print "$name: (" . join(',', @array) . ")\n";
+	print "$name: (" . join(',', @array) . ")\n" if ($name);
+    print "(" . join(',', @array) . ")\n" if (! $name);
 }#-----------------------------------------------------------
 
 sub get_fields_from
