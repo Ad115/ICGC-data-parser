@@ -17,6 +17,7 @@ use Bio::EnsEMBL::Registry; # From the Ensembl API, allows to conect to the db.
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 
 # Initialize a connection to the db.
+print "Waiting connection to database...\n";
 my $connection = ensembldb_connect();
 
 # Get list of genes
@@ -76,7 +77,7 @@ sub get_sequence_from_name
 
   # Get the gene's stable id
   my $gene_id = get_geneid($gene_name);
-  print "GENE_ID\t $gene_id \n";
+  print "GENE_ID\t $gene_id \n"; # Prints the gene id as a side effect
   # Get the gene's sequence from the id
   my $sequence = get_sequence_from_id($gene_id);
 
@@ -111,6 +112,6 @@ sub get_sequence_from_id
           -> fetch_by_gene_stable_id(
                   $gene_id
                   );
-  my $sequence = $slice -> subseq(1,200);
+  my $sequence = $slice -> subseq(1,500);
   return $sequence;
 }#------------------------------------------------------
