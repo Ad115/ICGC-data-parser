@@ -8,7 +8,7 @@ Usage: ./locate_in_genome.pl [--in=<file>] [--out=<outfile>] [--help]
  Locate mutations in genome
 ============================
 
-With the output from filter_gene_&_project.pl queries the Ensembl database about
+With the output from filter_gene_project.pl queries the Ensembl database about
 the location of each mutation in the genome, assigning one of the labels INTERGENIC,
 EXONIC:#, NON-CODING-EXONIC, INTRONIC to each of them, where the '#' stands for
 the *phase* understood as the position in the codon, and can be 0, 1 or 2.
@@ -62,8 +62,8 @@ use Data::Dumper; # To preety print hashes easily
 ## DATA INITIALIZATION
 
     # Get header and pass it directly to output
-    my $header = get_tsv_line($in);
-    print $out "$header\n"; # --->
+    my $header = <$in>;
+    print $out "$header"; # --->
 
     # Get project from the header
     my $project = undef;
@@ -91,6 +91,7 @@ use Data::Dumper; # To preety print hashes easily
     # Initialize a connection to the db.
     my $connection = ensembldb_connect();
     my $slice_adaptor = $connection -> get_adaptor( 'Human', 'Core', 'Slice' );
+	my %gene_name = ();# Associates gene's stable_id -> display_label
 
 ## MAIN SEARCH
     while(my @line = get_tsv_fields($in)) # Get mutation by mutation
@@ -155,7 +156,6 @@ use Data::Dumper; # To preety print hashes easily
             }
 
         print_fields(\%mutation, \@output_fields); # --->
-        print_hash(\%mutation, "Final mutation info");
     }
 
 #===============>> END OF MAIN ROUTINE <<=====================
@@ -453,7 +453,7 @@ sub get_overlapping_genes
 	my $slice = shift;
 
     @overlapping = @{ $slice -> get_all_Genes() };
-    return get_stable_ids(\@overlapping);
+    return get_print_data(\@overlapping);
 }#-----------------------------------------------------------
 
 sub is_intronic
@@ -462,9 +462,6 @@ sub is_intronic
 	my $slice = shift;
 
     my @overlapping = @{ $slice -> get_all_Exons() };
-
-    @IDs = get_stable_ids(\@overlapping);
-    print_array(\@IDs, "Overlapping exons (is_intronic)");
 
     return (@overlapping) ? 0:1;
 }#-----------------------------------------------------------
@@ -487,8 +484,6 @@ sub get_phase
             $mutation_phase = ( $exon_phase + ($slice_start - $exon_start) ) % 3;
             $mutation_phase = -1 if ($exon_phase == -1);
 
-            print STDERR "Mutation start:$slice_start, Exon start: $exon_start, Exon phase:$exon_phase => Mutation phase:$mutation_phase\n";
-
             last;
         }
     }
@@ -503,9 +498,7 @@ sub slice_in_exon
     my $exon = shift;
 
     my @slice = ($slice->start(), $slice->end());
-    print_array(\@slice, "Slice coords");
     my @exon = ($exon->seq_region_start(), $exon->seq_region_end());
-    print_array(\@exon, "Exon coords");
 
     return ($slice[0] <= $exon[0]) ? ($slice[1] >= $exon[0]) : ($slice[0] <= $exon[1]);
 }#-----------------------------------------------------------
@@ -525,6 +518,36 @@ sub print_fields
     }
 
 	print "\n";
-
-	return;
 }#-----------------------------------------------------------
+
+sub get_print_data
+{
+	my @genes = @{ shift() };
+	
+	my @gene_data = get_stable_ids(\@genes);
+	foreach my $gene (@gene_data)
+	{
+		#Get common name if not provided
+		$display_label = get_display_label($gene);
+		$gene = "$gene($display_label)";
+	}
+	
+	return @gene_data;
+}#-----------------------------------------------------------
+
+sub get_display_label()
+# Remove repeated entries from array
+{
+	my $gene = shift;
+	
+	unless ($gene_name{$gene})
+	{
+		$gene_name{$gene} = $connection 
+								-> get_adaptor( 'Human', 'Core', 'Gene' )
+								-> fetch_by_stable_id($gene)
+								-> external_name();
+	}
+	
+	return $gene_name{$gene};
+}#-----------------------------------------------------------
+

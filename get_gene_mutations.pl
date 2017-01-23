@@ -45,7 +45,7 @@ use Data::Dumper; # To preety print hashes easily
 
 	# Declare variables to hold command-line arguments
 	my $inputfile_name = ''; my $out_name = '';
-	my $gene = ''; my $project = ''; 
+	my $gene = ''; my $project = '';
 	my $help;
 	GetOptions(
 		'i|in|vcf=s' => \$inputfile_name,
@@ -66,43 +66,55 @@ use Data::Dumper; # To preety print hashes easily
 	# Check if user asked for help
 	if($help) { print_and_exit($doc_str); }
 
-	
+
 ## LOCAL DATA INITIALIZATION
-	
+
+	#Get project
+	my $project_re = undef;
+	$project_re = qr/$project/ if ($project);
+
 	# Get header
-	my %header = get_fields_from($inputfile, 
+	my %header = get_fields_from($inputfile,
 								'ID', # Mutation ID
 								'CHROM', # The column that specifies chromosome number
 								'POS', # Position in chromosome
 								'REF', # Sequence or base in the reference, this is the one we care to compare
-								'ALT' # Alternate sequence. This is found instead of the reference
+								'ALT', # Alternate sequence. This is found instead of the reference
+                                'INFO' # Other information of the gene
 								);
-	
+
 ## WEB DATA INITIALIZATION
+
+	# Initialize a connection to the db.
+	$connection = ensembldb_connect();
 	
+	# Get gene's stable id	
+	my %gene_name = (); # To store an association of gene's stable_id -> display_label
 	my $gene_id = undef;
-	my $connection = undef;
 	# Get the gene id if user didn't provided it
 	if ($gene =~ /ENSG[0-9]{11}/)
 	{
 		$gene_id = $gene;
+		# Get common name
+		$gene = $connection -> get_adaptor( 'Human', 'Core', 'Gene' )
+							-> fetch_by_stable_id($gene)
+							-> external_name();
+		$gene_name{$gene_id} = $gene;
 	}
-	elsif($gene)
-	{
-		# Initialize a connection to the db.
-		$connection = ensembldb_connect();
-		$gene_id = get_gene_id($gene);
+	elsif($gene) 
+	{ 
+		$gene_id = get_gene_id($gene); 
+		$gene_name{$gene_id} = $gene;
 	}
-	
+
 	my $gene_str = ($gene) ? $gene : "All genes";
-	my $gene_id_str = ($gene_id) ? "($gene_id)" : '';
-	my $gene_re = ($gene) ? qr/$gene_id/ : qr/.*/; 
-	
+	$gene_str = ($gene_id) ? "$gene_str($gene_id)" : "$gene_str";
+	my $gene_re = ($gene) ? qr/$gene_id/ : qr/.*/;
+
 	my $project_str = ($project) ? $project : "All projects";
 	my $project_re = ($project) ? qr/$project/ : qr/.*/;
-	
-	print "Project: $project_str\tGene: $gene_str $gene_id_str\n";
 
+	print "# Project: $project_str\tGene: $gene_str\n";
 	
 ## MAIN QUERY
 	while(my $line = get_vcf_line($inputfile)) # Get mutation by mutation
