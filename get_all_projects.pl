@@ -69,15 +69,11 @@ use Data::Dumper; # To preety print hashes easily
 		{
 			my @line = split( /\t/, $line );
 			my @occurrence = split( /\|/, $occurrence);
-			$newfound = any("\'$occurrence[0]\'", \@projects);
-			print STDERR "Project found: $occurrence[0]\n" unless ( $newfound );
-			push @projects, "\'$occurrence[0]\'";
+			push @projects, "$occurrence[0]";
 			@projects = uniq(\@projects);
-			print_array(\@projects, "Projects found") unless ( $newfound );
 		}
 	}
-	print_array(\@projects, "Projects found");
-	print $out join "\n", @projects;
+	print $out join( "\n", @projects). "\n";
 #===============>> END OF MAIN ROUTINE <<=====================
 
 
