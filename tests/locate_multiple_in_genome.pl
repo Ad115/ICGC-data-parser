@@ -38,7 +38,7 @@
 			#	MUTATION ANALYSIS
 			##########################
 
-			print STDERR "\t\tAnalysis...\n".
+			print STDERR "\t\tAnalysis(`date +%F\@%R`)...\n".
 			"================================\n";
 
 			# Start analysis
@@ -53,7 +53,7 @@
 			#	LOCATING IN GENOME
 			###########################
 
-			print STDERR "\t\tClassifying mutations...\n".
+			print STDERR "\t\tClassifying mutations(`date +%F\@%R`)...\n".
 			"================================\n";
 
 			my $classification_file = "$results_path/$gene\_$project\_locations.tsv";
@@ -70,7 +70,7 @@
 			#	COUNTING
 			###########################
 
-			print STDERR "\t\tCounting mutations...\n".
+			print STDERR "\t\tCounting mutations(`date +%F\@%R`)...\n".
 			"================================\n";
 
 			my $count_file = "$results_path/$gene\_$project\_locations-count.tsv";
@@ -87,7 +87,7 @@
 			#	FILE CLEANUP
 			###########################
 
-			print STDERR "\t\tCleanup...\n".
+			print STDERR "\t\tCleanup(`date +%F\@%R`)...\n".
 			"================================\n";
 
 			system("rm $analysis_file");
