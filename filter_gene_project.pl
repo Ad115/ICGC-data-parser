@@ -415,10 +415,18 @@ sub get_display_label()
 	
 	unless ($gene_name{$gene})
 	{
-		$gene_name{$gene} = $connection 
+		eval 
+		{ 
+			$gene_name{$gene} = $connection 
 								-> get_adaptor( 'Human', 'Core', 'Gene' )
 								-> fetch_by_stable_id($gene)
-								-> external_name();
+								-> external_name(); 
+			
+		}; if ($@)
+		{
+			warn $@;
+			return 'NOLABEL';
+		}
 	}
 	
 	return $gene_name{$gene};

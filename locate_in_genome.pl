@@ -444,7 +444,7 @@ sub is_intergenic
 	my $slice = shift;
 
     my @overlapping = @{ $slice -> get_all_Genes() };
-    return ($#overlapping) ? 1:0;
+    return (@overlapping) ? 0:1;
 }#-----------------------------------------------------------
 
 sub get_overlapping_genes
@@ -536,16 +536,24 @@ sub get_print_data
 }#-----------------------------------------------------------
 
 sub get_display_label()
-# Remove repeated entries from array
+# Get the display label for the genes in the gene array
 {
 	my $gene = shift;
 	
 	unless ($gene_name{$gene})
 	{
-		$gene_name{$gene} = $connection 
+		eval 
+		{ 
+			$gene_name{$gene} = $connection 
 								-> get_adaptor( 'Human', 'Core', 'Gene' )
 								-> fetch_by_stable_id($gene)
-								-> external_name();
+								-> external_name(); 
+			
+		}; if ($@)
+		{
+			warn $@;
+			return 'NOLABEL';
+		}
 	}
 	
 	return $gene_name{$gene};
