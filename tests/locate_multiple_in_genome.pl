@@ -1,6 +1,83 @@
 #! /usr/bin/perl
 
+
+my $doc_str = <<END;
+
+Usage: ./locate_in_genome.pl [--in=<file>] [--out=<outfile>] [--help]
+
+============================
+ Locate multiple in genome
+============================
+
+Script to run locate_in_genome.pl with multiple genes and projects.
+
+Common genes: TP53(ENSG00000141510), ERBB2(HER2)(ENSG00000141736), MDM2(ENSG00000135679), BRCA1(ENSG00000012048), ATM(ENSG00000149311), CDK2(ENSG00000123374).
+Common projects: BRCA-EU, GBM-EU.
+
+Command-line arguments:
+
+	-g, --gene, --genes
+		Genes to analize. Is a comma separated list.
+		May be a common name or the display ID.
+		An empty gene or the gene 'all' stands for analizing all genes
+
+	-p, --project, --projects
+		Projects to analize. Is a comma separated list.
+		An empty project or the project 'all' stands for analizing all projects
+		
+	-gf, --gene_file
+		Specifies a file from which to read the genes to analyse.
+		
+	-pf --project_file
+		Specifies a file from which to read the projects to analyse.
+
+	-h, --help
+		Show this text and exit.
+
+Author: Andrés García García @ Oct 2016.
+
+END
+
+
+use Getopt::Long; # To parse command-line arguments
+
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
+
+## INITIALIZATION
+
+	# Declare variables to hold command-line arguments
+	my $genes = ''; my $projects = '';
+	my $genes_file = ''; my $projects_file = '';
+	my $help;
+	GetOptions(
+		'g|gene|genes=s' => \$genes,
+		'p|project|projects=s' => \$projects,
+		'gf|gene_file=s' => \$genes_file,
+		'pf|project_file=s' => \$projects_file,
+		'h|help' => \$help
+		);
+
+	# Check if user asked for help
+	if($help) { print_and_exit($doc_str); }
+	
+	my @genes = grep {chomp;} split( ',', $genes );
+	my @projects = grep {chomp;} split( ',', $projects );
+	
+	if ($genes_file)	
+	{ 
+		push @genes, grep(chomp, `cat $genes_file`); 
+		@genes = uniq(\@genes);
+		
+	}
+	if ($projects_file)
+	{ 
+		push @projects, grep(chomp, `cat $projects_file`); 
+		@projects = uniq(\@projects);
+		
+	}
+	
+	print STDERR "Genes: ".join(',', @genes)."\n";
+	print STDERR "Projects: ".join(',', @projects)."\n";
 
 	# Get the output and input directories
 	my $programs_path = `echo -n \$PROGRAMS_PATH`;
@@ -11,16 +88,9 @@
 	
 	my $results_path = `echo -n \$RESULTS_PATH`;
 	print STDERR "Results path: $results_path\n";
-
-	# Get the genes and projects to analyze
-	my @genes = `$programs_path/get_all_affected_genes.pl -i $data`;
-	chomp @genes;
-	print STDERR "Genes: ".join(',', @genes)."\n";
-	# TP53(ENSG00000141510), HER2(ERBB2)(ENSG00000141736), MDM2(ENSG00000135679), BRCA1(ENSG00000012048), ATM(ENSG00000149311), CDK2(ENSG00000123374)
-	my @projects = `get_all_projects.pl -i $data`;
-	chomp @projects;
-	print STDERR "Projects: ".join(',', @projects)."\n";
-
+	
+## MAIN LOOP
+	
 	foreach my $project (@projects)
 	{
 		my $project_str = ($project) ? $project : "All projects";
@@ -38,7 +108,8 @@
 			#	MUTATION ANALYSIS
 			##########################
 
-			print STDERR "\t\tAnalysis(`date +%F\@%R`)...\n".
+			my $date = `date +%F\@%R`;
+			print STDERR "\t\tAnalysis($date)...\n".
 			"================================\n";
 
 			# Start analysis
@@ -53,7 +124,8 @@
 			#	LOCATING IN GENOME
 			###########################
 
-			print STDERR "\t\tClassifying mutations(`date +%F\@%R`)...\n".
+			my $date = `date +%F\@%R`;
+			print STDERR "\t\tClassifying mutations($date)...\n".
 			"================================\n";
 
 			my $classification_file = "$results_path/$gene\_$project\_locations.tsv";
@@ -70,7 +142,8 @@
 			#	COUNTING
 			###########################
 
-			print STDERR "\t\tCounting mutations(`date +%F\@%R`)...\n".
+			my $date = `date +%F\@%R`;
+			print STDERR "\t\tCounting mutations($date)...\n".
 			"================================\n";
 
 			my $count_file = "$results_path/$gene\_$project\_locations-count.tsv";
@@ -87,7 +160,8 @@
 			#	FILE CLEANUP
 			###########################
 
-			print STDERR "\t\tCleanup(`date +%F\@%R`)...\n".
+			my $date = `date +%F\@%R`;
+			print STDERR "\t\tCleanup($date)...\n".
 			"================================\n";
 
 			system("rm $analysis_file");
@@ -99,7 +173,8 @@
 		print STDERR "Done $project_str\n";
 	}
 
-	print STDERR "All done\n";
+	my $date = `date +%F\@%R`;
+	print STDERR "All done($date)\n";
 
 #===============>> END OF MAIN ROUTINE <<=====================
 
@@ -111,30 +186,19 @@
 #	Subroutines
 #	===========
 
-sub open_input
-# Prints given message and opens input file
-# Exit with error if it fails to open the file
+sub uniq
+# Remove repeated entries from array
 {
-	my $file_handler = shift;
-	my $file_name = shift;
-	my $message = shift;
+	my @array = @{shift()};
+	my %seen;
 
-	# Open input file
-	print $message;
-	open ($file_handler, "<", $file_name)
-		or die "Can't open $file_name for input : $!";
+	return grep !($seen{$_}++), @array;
 }#-----------------------------------------------------------
 
-sub open_output
-# Prints given message and opens file for output
-# Exit with error if it fails to open the file
+sub print_and_exit
+# Prints given message and exits
 {
-	my $file_handler = shift;
-	my $file_name = shift;
 	my $message = shift;
-
-	# Open output file
 	print $message;
-	open ($file_handler, ">", $file_name)
-		or die "Can't open $file_name for output : $!";
+	exit;
 }#-----------------------------------------------------------

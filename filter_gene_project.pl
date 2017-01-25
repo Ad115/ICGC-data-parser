@@ -70,6 +70,7 @@ use Data::Dumper; # To preety print hashes easily
 ## LOCAL DATA INITIALIZATION
 
 	#Get project
+	$project = '' if (lc $project eq 'all');
 	my $project_re = undef;
 	$project_re = qr/$project/ if ($project);
 
@@ -92,19 +93,26 @@ use Data::Dumper; # To preety print hashes easily
 	my %gene_name = (); # To store an association of gene's stable_id -> display_label
 	my $gene_id = undef;
 	# Get the gene id if user didn't provided it
-	if ($gene =~ /ENSG[0-9]{11}/)
+	if ($gene)
 	{
-		$gene_id = $gene;
-		# Get common name
-		$gene = $connection -> get_adaptor( 'Human', 'Core', 'Gene' )
-							-> fetch_by_stable_id($gene)
-							-> external_name();
-		$gene_name{$gene_id} = $gene;
-	}
-	elsif($gene) 
-	{ 
-		$gene_id = get_gene_id($gene); 
-		$gene_name{$gene_id} = $gene;
+		if ($gene =~ /ENSG[0-9]{11}/) # User provided stable ID
+		{
+			$gene_id = $gene;
+			# Get common name
+			$gene = $connection -> get_adaptor( 'Human', 'Core', 'Gene' )
+								-> fetch_by_stable_id($gene)
+								-> external_name();
+			$gene_name{$gene_id} = $gene;
+		}
+		elsif (lc $gene eq 'all') # User wants to search in all genes
+		{
+			$gene = '';
+		}
+		else # User provided the display label
+		{ 
+			$gene_id = get_gene_id($gene); 
+			$gene_name{$gene_id} = $gene;
+		}
 	}
 
 	my $gene_str = ($gene) ? $gene : "All genes";

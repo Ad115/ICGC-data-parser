@@ -49,9 +49,8 @@ use Getopt::Long; # To parse command-line arguments
 	
 	
 ## MAIN QUERY
-	@genes = `grep -P -o ENSG[0-9.]+ $inputfile_name | sort | uniq`;
-	chomp @genes;
-	print $out join("\n", @genes)."\n";
+	my @genes = `grep -P -o ENSG[0-9.]+ < $inputfile_name | sort | uniq`;
+	print $out join('', @genes);
 	
 #===============>> END OF MAIN ROUTINE <<=====================
 
