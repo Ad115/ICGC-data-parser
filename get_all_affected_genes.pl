@@ -33,10 +33,10 @@ use Getopt::Long; # To parse command-line arguments
 ## INITIALIZATION
 
 	# Declare variables to hold command-line arguments
-	my $inputfile_name = ''; my $out_name = '';
+	my $input_name = ''; my $out_name = '';
 	my $help;
 	GetOptions(
-		'i|in|vcf=s' => \$inputfile_name,
+		'i|in|vcf=s' => \$input_name,
 		'o|out=s' => \$out_name,
 		'h|help' => \$help
 		);
@@ -49,7 +49,7 @@ use Getopt::Long; # To parse command-line arguments
 	
 	
 ## MAIN QUERY
-	my @genes = `grep -P -o ENSG[0-9.]+ < $inputfile_name | sort | uniq`;
+	my @genes = `grep -P -o "[^A-Za-z]ENSG[0-9.]+[^A-Za-z]" < $input_name | grep -P -o "ENSG[0-9.]+" | sort | uniq`;
 	print $out join('', @genes);
 	
 #===============>> END OF MAIN ROUTINE <<=====================

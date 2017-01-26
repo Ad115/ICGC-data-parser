@@ -124,7 +124,7 @@ use Getopt::Long; # To parse command-line arguments
 			#	LOCATING IN GENOME
 			###########################
 
-			my $date = `date +%F\@%R`;
+			$date = `date +%F\@%R`;
 			print STDERR "\t\tClassifying mutations($date)...\n".
 			"================================\n";
 
@@ -142,7 +142,7 @@ use Getopt::Long; # To parse command-line arguments
 			#	COUNTING
 			###########################
 
-			my $date = `date +%F\@%R`;
+			$date = `date +%F\@%R`;
 			print STDERR "\t\tCounting mutations($date)...\n".
 			"================================\n";
 
@@ -160,7 +160,7 @@ use Getopt::Long; # To parse command-line arguments
 			#	FILE CLEANUP
 			###########################
 
-			my $date = `date +%F\@%R`;
+			$date = `date +%F\@%R`;
 			print STDERR "\t\tCleanup($date)...\n".
 			"================================\n";
 
@@ -173,7 +173,7 @@ use Getopt::Long; # To parse command-line arguments
 		print STDERR "Done $project_str\n";
 	}
 
-	my $date = `date +%F\@%R`;
+	$date = `date +%F\@%R`;
 	print STDERR "All done($date)\n";
 
 #===============>> END OF MAIN ROUTINE <<=====================
