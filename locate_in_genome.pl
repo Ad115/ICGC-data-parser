@@ -552,7 +552,7 @@ sub get_display_label()
 		}; if ($@)
 		{
 			warn $@;
-			return 'NOLABEL';
+			$gene_name{$gene} = 'NOLABEL';
 		}
 	}
 	

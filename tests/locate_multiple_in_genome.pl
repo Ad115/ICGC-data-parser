@@ -3,7 +3,7 @@
 
 my $doc_str = <<END;
 
-Usage: ./locate_in_genome.pl [--in=<file>] [--out=<outfile>] [--help]
+Usage: ./locate_multiple_in_genome.pl [--genes=<g1,g2,...>] [--projects=<p1,p2,...>] [-gf <genes.list>] [-pf <proyects.list>][--help]
 
 ============================
  Locate multiple in genome

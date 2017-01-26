@@ -2,7 +2,7 @@
 
 my $doc_str = <<END;
 
-Usage: ./get_gene_info.pl [--gene=<genename>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--help]
+Usage: ./get_gene_info.pl [--gene=<gene name>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--help]
 
 ===============
  Get gene info
@@ -433,7 +433,7 @@ sub get_display_label()
 		}; if ($@)
 		{
 			warn $@;
-			return 'NOLABEL';
+			$gene_name{$gene} = 'NOLABEL';
 		}
 	}
 	
