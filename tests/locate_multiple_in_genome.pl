@@ -60,8 +60,10 @@ use Getopt::Long; # To parse command-line arguments
 	# Check if user asked for help
 	if($help) { print_and_exit($doc_str); }
 	
-	my @genes = grep {chomp;} split( ',', $genes );
-	my @projects = grep {chomp;} split( ',', $projects );
+	print $genes."\n";
+	print $projects."\n";
+	my @genes = split( ',', $genes );
+	my @projects = split( ',', $projects );
 	
 	if ($genes_file)	
 	{ 
@@ -108,7 +110,7 @@ use Getopt::Long; # To parse command-line arguments
 			#	MUTATION ANALYSIS
 			##########################
 
-			my $date = `date +%F\@%R`;
+			my $date = date("%F\@%R");
 			print STDERR "\t\tAnalysis($date)...\n".
 			"================================\n";
 
@@ -124,7 +126,7 @@ use Getopt::Long; # To parse command-line arguments
 			#	LOCATING IN GENOME
 			###########################
 
-			$date = `date +%F\@%R`;
+			$date = date("%F\@%R");
 			print STDERR "\t\tClassifying mutations($date)...\n".
 			"================================\n";
 
@@ -142,7 +144,7 @@ use Getopt::Long; # To parse command-line arguments
 			#	COUNTING
 			###########################
 
-			$date = `date +%F\@%R`;
+			$date = date("%F\@%R");
 			print STDERR "\t\tCounting mutations($date)...\n".
 			"================================\n";
 
@@ -160,7 +162,7 @@ use Getopt::Long; # To parse command-line arguments
 			#	FILE CLEANUP
 			###########################
 
-			$date = `date +%F\@%R`;
+			$date = date("%F\@%R");
 			print STDERR "\t\tCleanup($date)...\n".
 			"================================\n";
 
@@ -173,7 +175,7 @@ use Getopt::Long; # To parse command-line arguments
 		print STDERR "Done $project_str\n";
 	}
 
-	$date = `date +%F\@%R`;
+	$date = date("%F\@%R");
 	print STDERR "All done($date)\n";
 
 #===============>> END OF MAIN ROUTINE <<=====================
@@ -201,4 +203,14 @@ sub print_and_exit
 	my $message = shift;
 	print $message;
 	exit;
+}#-----------------------------------------------------------
+
+sub date
+# Prints given message and exits
+{
+	my $format = shift;
+	
+	my $date = `date +$format`;
+	chomp $date;
+	return $date;
 }#-----------------------------------------------------------
