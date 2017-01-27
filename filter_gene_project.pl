@@ -4,18 +4,25 @@ my $doc_str = <<END;
 
 Usage: ./get_gene_info.pl [--gene=<gene name>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--help]
 
-===============
- Get gene info
-===============
+============================
+ Filter by gene and project
+============================
 
 Searches through input file for mutations related to the given gene and the given project.
+Prints important data of each in tsv format.
+
+Common genes: TP53(ENSG00000141510), ERBB2(HER2)(ENSG00000141736), MDM2(ENSG00000135679), BRCA1(ENSG00000012048), ATM(ENSG00000149311), CDK2(ENSG00000123374).
+Common projects: BRCA-EU, GBM-US.
 
 	-g, --gene
-		Gene name, in display form.
+		Gene name, in display form or as stable ID.
+		If present, shows only mutations that affect the gene.
+		Empty gene or gene 'all' stands for mutations in any gene.
 
 	-p, --project
-		Project name.
+		ICGC project name.
 		If present, shows only mutations found in that project.
+		Empty project or project 'all' stands for mutations in any project.
 
 	-i, --in, --vcf
 		Name of the input VCF file.
@@ -28,7 +35,7 @@ Searches through input file for mutations related to the given gene and the give
 	-h, --help
 		Show this text and exit.
 
-Author: Andrés García García @ Oct 2016.
+Author: Andrés García García @ Dic 2016.
 
 END
 
@@ -89,20 +96,16 @@ use Data::Dumper; # To preety print hashes easily
 	# Initialize a connection to the db.
 	$connection = ensembldb_connect();
 	
-	# Get gene's stable id	
 	my %gene_name = (); # To store an association of gene's stable_id -> display_label
+	# Get gene's stable id and common name	
 	my $gene_id = undef;
-	# Get the gene id if user didn't provided it
 	if ($gene)
 	{
 		if ($gene =~ /ENSG[0-9]{11}/) # User provided stable ID
 		{
 			$gene_id = $gene;
 			# Get common name
-			$gene = $connection -> get_adaptor( 'Human', 'Core', 'Gene' )
-								-> fetch_by_stable_id($gene)
-								-> external_name();
-			$gene_name{$gene_id} = $gene;
+			$gene = get_display_label($gene_id);
 		}
 		elsif (lc $gene eq 'all') # User wants to search in all genes
 		{
@@ -116,8 +119,8 @@ use Data::Dumper; # To preety print hashes easily
 	}
 
 	my $gene_str = ($gene) ? $gene : "All genes";
-	$gene_str = ($gene_id) ? "$gene_str($gene_id)" : "$gene_str";
-	my $gene_re = ($gene) ? qr/$gene_id/ : qr/.*/;
+	$gene_str = ($gene_id) ? "$gene_name{$gene_id}($gene_id)" : "$gene_str";
+	my $gene_re = ($gene_id) ? qr/$gene_id/ : qr/.*/;
 
 	my $project_str = ($project) ? $project : "All projects";
 	my $project_re = ($project) ? qr/$project/ : qr/.*/;
@@ -419,23 +422,23 @@ sub get_genes
 sub get_display_label()
 # Get the display label for the genes in the gene array
 {
-	my $gene = shift;
+	my $gene_id = shift;
 	
-	unless ($gene_name{$gene})
+	unless ($gene_name{$gene_id})
 	{
 		eval 
 		{ 
-			$gene_name{$gene} = $connection 
+			$gene_name{$gene_id} = $connection 
 								-> get_adaptor( 'Human', 'Core', 'Gene' )
-								-> fetch_by_stable_id($gene)
+								-> fetch_by_stable_id($gene_id)
 								-> external_name(); 
 			
 		}; if ($@)
 		{
 			warn $@;
-			$gene_name{$gene} = 'NOLABEL';
+			$gene_name{$gene_id} = 'NOLABEL';
 		}
 	}
 	
-	return $gene_name{$gene};
+	return $gene_name{$gene_id};
 }#-----------------------------------------------------------

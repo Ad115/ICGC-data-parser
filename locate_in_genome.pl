@@ -26,7 +26,7 @@ Command-line arguments:
 	-h, --help
 		Show this text and exit.
 
-Author: Andrés García García @ Oct 2016.
+Author: Andrés García García @ Dic 2016.
 
 END
 

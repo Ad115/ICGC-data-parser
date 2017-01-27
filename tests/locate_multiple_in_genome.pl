@@ -12,7 +12,7 @@ Usage: ./locate_multiple_in_genome.pl [--genes=<g1,g2,...>] [--projects=<p1,p2,.
 Script to run locate_in_genome.pl with multiple genes and projects.
 
 Common genes: TP53(ENSG00000141510), ERBB2(HER2)(ENSG00000141736), MDM2(ENSG00000135679), BRCA1(ENSG00000012048), ATM(ENSG00000149311), CDK2(ENSG00000123374).
-Common projects: BRCA-EU, GBM-EU.
+Common projects: BRCA-EU, GBM-US.
 
 Command-line arguments:
 
@@ -34,7 +34,7 @@ Command-line arguments:
 	-h, --help
 		Show this text and exit.
 
-Author: Andrés García García @ Oct 2016.
+Author: Andrés García García @ Ene 2017.
 
 END
 
@@ -95,12 +95,12 @@ use Getopt::Long; # To parse command-line arguments
 	
 	foreach my $project (@projects)
 	{
-		my $project_str = ($project) ? $project : "All projects";
+		my $project_str = (!$project or ($project equ 'all')) ? "All projects" : $project;
 		print STDERR "Project: $project_str\n";
 
 		foreach my $gene (@genes)
 		{
-			my $gene_str = ($gene) ? $gene : "All genes";
+			my $gene_str = (!$gene or ($gene equ 'all')) ? "All genes" : $gene;
 			print STDERR "\tGene: $gene_str\n";
 			
 			my $header = "Gene: $gene_str, Project: $project_str";
