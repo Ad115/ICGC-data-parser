@@ -60,8 +60,6 @@ use Getopt::Long; # To parse command-line arguments
 	# Check if user asked for help
 	if($help) { print_and_exit($doc_str); }
 	
-	print $genes."\n";
-	print $projects."\n";
 	my @genes = split( ',', $genes );
 	my @projects = split( ',', $projects );
 	
