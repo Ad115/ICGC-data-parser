@@ -95,12 +95,12 @@ use Getopt::Long; # To parse command-line arguments
 	
 	foreach my $project (@projects)
 	{
-		my $project_str = (!$project or ($project equ 'all')) ? "All projects" : $project;
+		my $project_str = (!$project or ($project eq 'all')) ? "All projects" : $project;
 		print STDERR "Project: $project_str\n";
 
 		foreach my $gene (@genes)
 		{
-			my $gene_str = (!$gene or ($gene equ 'all')) ? "All genes" : $gene;
+			my $gene_str = (!$gene or ($gene eq 'all')) ? "All genes" : $gene;
 			print STDERR "\tGene: $gene_str\n";
 			
 			my $header = "Gene: $gene_str, Project: $project_str";
