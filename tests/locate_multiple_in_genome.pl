@@ -30,6 +30,9 @@ Command-line arguments:
 		
 	-pf --project_file
 		Specifies a file from which to read the projects to analyse.
+	
+	-nc --no_cleanup
+		Switch to avoid cleaning up intermediate analysis files.
 
 	-h, --help
 		Show this text and exit.
@@ -48,12 +51,13 @@ use Getopt::Long; # To parse command-line arguments
 	# Declare variables to hold command-line arguments
 	my $genes = ''; my $projects = '';
 	my $genes_file = ''; my $projects_file = '';
-	my $help;
+	my $no_cleanup; my $help;
 	GetOptions(
 		'g|gene|genes=s' => \$genes,
 		'p|project|projects=s' => \$projects,
 		'gf|gene_file=s' => \$genes_file,
 		'pf|project_file=s' => \$projects_file,
+		'nc|no_cleanup' => \$no_cleanup,
 		'h|help' => \$help
 		);
 
@@ -159,14 +163,19 @@ use Getopt::Long; # To parse command-line arguments
 			###########################
 			#	FILE CLEANUP
 			###########################
+			
+			unless ($no_cleanup)
+			{
+				$date = date("%F\@%R");
+				print STDERR "\t\tCleanup($date)...\n".
+				"================================\n";
 
-			$date = date("%F\@%R");
-			print STDERR "\t\tCleanup($date)...\n".
-			"================================\n";
+				system("rm $analysis_file");
 
-			system("rm $analysis_file");
-
-			print STDERR "\t\tDone cleanup\n";
+				print STDERR "\t\tDone cleanup\n";
+			}
+			
+			
 			print STDERR "\tDone ==> $header <==\n";
 		}
 

@@ -119,6 +119,12 @@ use Data::Dumper; # To preety print hashes easily
             # Convert coordinates from assembly GRCh37 to assembly GRCh38
             $mutation{'POS_38'} = @{ map_GRCh37_to_GRCh38( $mutation{'CHROM'}, $mutation{'POS_37'}, $length ) }[0];
             $mutation{'POSITION'} = "Chrom$mutation{'CHROM'}($mutation{'POS_38'})";
+			# If 
+			if ($mutation{'POS_38'} == -1)
+			{
+				print_fields(\%mutation, \@output_fields);
+				next;
+			}
 
             # Fetch a slice from the mutation
             my $mutation_slice = fetch_slice( $mutation{'CHROM'}, $mutation{'POS_38'}, $length );
@@ -307,7 +313,8 @@ sub map_GRCh37_to_GRCh38
 
 	my $begin_slice = $position;
 
-	my $slice = @{ fetch_GRCh38_slice_from_GRCh37_region($chromosome, $begin_slice, $length) }[0];
+	my $slice = fetch_GRCh38_slice_from_GRCh37_region($chromosome, $begin_slice, $length);
+	return (-1, -1) unless ($slice)
 
 	my @return = ();
 	eval { @return = ($slice->start(), $slice->end()); };
@@ -344,7 +351,14 @@ sub fetch_GRCh38_slice_from_GRCh37_region
     my $end = $begin + ($length - 1);
 
 	# Fetch slice in the GRCh37 assembly
-	my $GRCh37_slice = $slice_adaptor->fetch_by_region( 'chromosome', $chromosome, $begin, $end, '1', 'GRCh37' );
+	my $GRCh37_slice = undef;
+	eval 
+		{ $GRCh37_slice = $slice_adaptor->fetch_by_region( 'chromosome', $chromosome, $begin, $end, '1', 'GRCh37' ); };
+		if ($@)
+		{
+			warn $@;
+			return undef;
+		}
 
 	# Make a projection onto the GRCh38 coordinates
 	my $projection = $GRCh37_slice->project('chromosome', 'GRCh38');
@@ -356,7 +370,7 @@ sub fetch_GRCh38_slice_from_GRCh37_region
 	  push @slices, $slice;
 	}
 
-	return \@slices;
+	return @slices[0];
 }#-----------------------------------------------------------
 
 sub get_fields_from
