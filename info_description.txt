@@ -1,6 +1,0 @@
-INFO=<ID=CONSEQUENCE,Number=.,Type=String,Description="Mutation consequence predictions annotated by SnpEff (subfields: gene_symbol|gene_affected|gene_strand|transcript_name|transcript_affected|protein_affected|consequence_type|cds_mutation|aa_mutation)">
-INFO=<ID=OCCURRENCE,Number=.,Type=String,Description="Mutation occurrence counts broken down by project (subfields: project_code|affected_donors|tested_donors|frequency)">
-INFO=<ID=affected_donors,Number=1,Type=Integer,Description="Number of donors with the current mutation">
-INFO=<ID=mutation,Number=1,Type=String,Description="Somatic mutation definition">
-INFO=<ID=project_count,Number=1,Type=Integer,Description="Number of projects with the current mutation">
-INFO=<ID=tested_donors,Number=1,Type=Integer,Description="Total number of donors with SSM data available">
