@@ -2,7 +2,7 @@
 
 my $doc_str = <<END;
 
-Usage: get_gene_sequences.pl --genes=<gene1>,<gene2>,... [--length=<l>] [--help]
+Usage: $0 --genes=<gene1>,<gene2>,... [--length=<l>] [--help]
 
 =======================
 Gene secuence obtainer.
