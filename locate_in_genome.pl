@@ -316,13 +316,9 @@ sub map_GRCh37_to_GRCh38
 	my $slice = fetch_GRCh38_slice_from_GRCh37_region($chromosome, $begin_slice, $length);
 	return (-1, -1) unless ($slice);
 
-	my @return = ();
+	my @return = (-1, -1);
 	eval { @return = ($slice->start(), $slice->end()); };
-	if ($@)
-	{
-		warn $@;
-		return (-1, -1);
-	}
+	if ($@) { warn $@; }
 	return \@return;
 }#-----------------------------------------------------------
 

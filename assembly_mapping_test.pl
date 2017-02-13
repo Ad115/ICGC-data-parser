@@ -3,13 +3,14 @@
 
 my $doc_str = <<END;
 
-Usage: ./compare_ICGC_vs_ensembl.pl [--in=<tsvfile>] [--out=<outfile>] [--help]
+Usage: ./assembly_mapping_test.pl [--in=<tsvfile>] [--out=<outfile>] [--help]
 
-===========================
-Filtering cols in TSV files
-===========================
+=======================
+ Assembly mapping test
+=======================
 
-Receives a tsv file with the reference information of the ICGC database and compares it with data obtained directly from ensembl database at the moment.
+Comparison of the output of several attempts to retrieve a sequence from a specific location in a chromosome.
+Inputs a VCF file with mutation data from the ICGC, to have a reference in the GRCh37 assembly.
 Reads the columns CHROM, POS and REF.
 Command-line arguments:
 
@@ -31,39 +32,41 @@ END
 
 use Getopt::Long; # To parse command-line arguments
 use Bio::EnsEMBL::Registry; # From the Ensembl API, allows to conect to the db.
+use Data::Dumper; # To preety print hashes easily
+	local $Data::Dumper::Terse = 1;
+	local $Data::Dumper::Indent = 1;
+
 
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 
 ## INITIALIZATION
 
 	# Declare variables to hold command-line arguments
-	my $tsvfile_name = ''; my $out_name = ''; my $help;
+	my $input_name = ''; my $output_name = ''; my $help;
 	GetOptions(
-		'i|in|tsv=s' => \$tsvfile_name,
-		'o|out=s' => \$out_name,
+		'i|in|tsv=s' => \$input_name,
+		'o|out=s' => \$output_name,
 		'h|help' => \$help
 		);
 
-
-	my $tsvfile = STDIN;# Open input file
-	if($tsvfile_name)  { open_input($tsvfile, $tsvfile_name); }
-
-
-	my $out = STDOUT; # Open output file
-	if ($out_name)  { open_output($out, $out_name,); }
-
 	# Check if user asked for help
 	if($help) { print_and_exit($doc_str); }
+
+	my $input = STDIN;# Open input file
+	if($input_name)  { open_input($input, $input_name); }
+
+
+	my $output = STDOUT; # Open output file
+	if ($output_name)  { open_output($output, $output_name); }
 	
 ## LOCAL DB DATA AQUISITION
 
 	# Get the fields available in the TSV file
-	my @fields = get_tsv_line($tsvfile);
-	# Get the column position of the important fields
-	my $chrom_pos = get_col_number('CHROM', \@fields); # The column that specifies chromosome number
-	my $pos_in_chrom_pos = get_col_number('POS', \@fields); # Position in chromosome
-	my $ref_seq_pos = get_col_number('REF', \@fields); # Sequence or base in the reference, this is the one we care to compare
-
+	my %fields = get_fields_from($input,
+								'CHROM', # The column that specifies chromosome number
+								'POS', # Position in chromosome
+								'REF', # Sequence or base in the reference, this is the one we care to compare
+								);
 
 ## WEB DATA AQUISITION
 	
@@ -71,84 +74,55 @@ use Bio::EnsEMBL::Registry; # From the Ensembl API, allows to conect to the db.
 	my $connection = ensembldb_connect();
 	my $slice_adaptor = $connection->get_adaptor( 'Human', 'Core', 'Slice' );
 	
-## Experiment: get the available coord. systems
-	my $cs_adaptor = $connection->get_adaptor( 'Human', 'Core', 'CoordSystem' );
-	my @coord_systems = @{ $cs_adaptor->fetch_all() };
-	foreach $cs (@coord_systems) {
-		printf "Coordinate system: %s %s\n", $cs->name(), $cs->version;
-	}
+	# Get the available coord. systems
+	my @coord_systems = @{ $connection
+							-> get_adaptor( 'Human', 'Core', 'CoordSystem' )
+							-> fetch_all() 
+						};
+	print $output "Available coordinate systems:\n";
+	foreach my $cs (@coord_systems) 
+		{ printf $output "\t%s %s\n", $cs->name(), $cs->version; }
 	
 ## DATA COMPARISON
-
-my $match_count = 0;
-my $query_count = 0;
-while(my @line = get_tsv_line($tsvfile))
-{
-	# Read the local data (ICGC)
-	my $chrom = $line[$chrom_pos];
-	my $pos_in_chrom = $line[$pos_in_chrom_pos];
-	my $ref_seq = $line[$ref_seq_pos];
-	my $seq_length = length $ref_seq;
 	
+	my @output_fields = ('ICGC_data', 'fetch_GRCh37(EnsemblPerlAPI)', 'to_GRCh38(EnsemblPerlAPI)', 'to_GRCh38(EnsemblREST_API)');
+	output_array_as_tsv(\@output_fields);
 	
-	# Convert the position to GRChr38 assembly coordinates
-	my $mapped_pos_in_chrom = map_GRChr37_to_GRChr38($chrom, $pos_in_chrom);
-	
-	
-	# Read the web data (ENSembl)
-	my $mapped_begin_slice = $mapped_pos_in_chrom-1;
-	my $mapped_end_slice = $mapped_pos_in_chrom + ($seq_length - 1)+1;
-	my $begin_slice = $pos_in_chrom-1;
-	my $end_slice = $pos_in_chrom + ($seq_length - 1) +1;
-
- 	my $mapped_slice = $slice_adaptor->fetch_by_region( 'chromosome', $chrom, $mapped_begin_slice, $mapped_end_slice);
-	my $unmapped_slice = $slice_adaptor->fetch_by_region( 'chromosome', $chrom, $begin_slice, $end_slice, '1', 'GRCh37' );
-
-
-	# Get the sequence in ensembl
-	my $unmapped_sequence = $unmapped_slice->seq();
-	my $mapped_sequence = $mapped_slice->seq();
-	
-	print "Mapped to GRCh38 by Ensembl REST API:\t\t$mapped_sequence\t:\t$ref_seq\t@ ($mapped_begin_slice-$mapped_end_slice)\n";
-	print "Directly queried in GRCh37 from Perl API:\t\t$unmapped_sequence\t:\t$ref_seq\t@ ($begin_slice-$end_slice)\n";
-	
-	
-	##########################################################################################################
-	#EXPERIMENTAL
-	my $projection = $unmapped_slice->project('chromosome', 'GRCh38');
-	my $slice = ""; my $sequence = ""; my $start = ""; my $end = "";
-
-	foreach my $segment ( @{$projection} ) 
+	while(my @line = get_vcf_fields($input))
 	{
-      $slice = $segment->to_Slice();
-	  $sequence = $slice->seq(); $start = $slice->start(); $end = $slice->end();
-      print "Slice mapped from GRCh37 to GRCh38 with Perl API:\t\t$sequence\t:\t$ref_seq\t@ ($start-$end)\n";
-	}
-	########################################################################################################3
-	# And all that may be resumed in the following...
-	$slice = @{ fetch_GRCh38_slice_from_GRCh37_region($slice_adaptor, $chrom, $begin_slice, $end_slice) }[0];
-	
-	$sequence = $slice->seq(); $start = $slice->start(); $end = $slice->end();
-	print "Mapping with function resuming previous steps:\t\t$sequence\t:\t$ref_seq\t@ ($start-$end)\n";
-	########################################################################################################3
-	
-	
-	
-	
-	$sequence =~ /\b[ACGT](.*?)[ACGT]\b/;
-	$sequence = $1;
-	print "$sequence\t:\t$ref_seq\n";
-	
-	# They match?
-	if ($sequence eq $ref_seq)
-	{
-		$match_count++;
-		print "MATCH! ";
-	}
-	else { print "Not a match. "; }
-	
-	$query_count++;
-	print "Matched: $match_count, Lines queried: $query_count\n\n";
+		# Read the local data (ICGC)
+		my %ICGC = (
+			'CHROM' => $line[ $fields{'CHROM'} ],
+			'POS' => $line[ $fields{'POS'} ],
+			'SEQ' => $line[ $fields{'REF'} ]
+			);
+		my $seq_length = length $ICGC{'SEQ'};
+		
+		# Fetch directly from GRCh37 assembly using Ensembl Perl API
+		my $unmapped_seq = $slice_adaptor
+							->fetch_by_region('chromosome', $ICGC{'CHROM'}, $ICGC{'POS'}-1, ($ICGC{'POS'}+$seq_length-1)+1, '1', 'GRCh37')
+							->seq();
+		
+		# Map to GRCh38 by the Ensembl REST API
+		my $PERL_mapped = PERL_map_GRCh37_to_GRCh38($ICGC{'CHROM'}, $ICGC{'POS'});
+		my $PERL_mapped_seq = $slice_adaptor
+								->fetch_by_region('chromosome', $ICGC{'CHROM'}, $PERL_mapped-1, ($PERL_mapped+$seq_length-1)+1)
+								->seq();
+		
+		# Map to GRCh38 by the Ensembl REST API
+		my $REST_mapped = REST_map_GRCh37_to_GRCh38($ICGC{'CHROM'}, $ICGC{'POS'});
+		my $REST_mapped_seq = $slice_adaptor
+								->fetch_by_region('chromosome', $ICGC{'CHROM'}, $REST_mapped-1, ($REST_mapped+$seq_length-1)+1)
+								->seq();
+		
+		# Prepare and print output
+		my %output = (
+			'ICGC_data'	=>	"$ICGC{'SEQ'}\@$ICGC{'POS'}",
+			'fetch_GRCh37(EnsemblPerlAPI)'	=>	"$unmapped_seq\@$ICGC{'POS'}",
+			'to_GRCh38(EnsemblPerlAPI)'	=>	"$PERL_mapped_seq\@$PERL_mapped",
+			'to_GRCh38(EnsemblREST_API)'	=>	"$REST_mapped_seq\@$REST_mapped"
+			);
+		print_fields(\%output, \@output_fields);
 }
 
 #===============>> END OF MAIN ROUTINE <<=====================
@@ -171,40 +145,10 @@ sub ensembldb_connect
       -user => 'anonymous'
       );
   
-  print STDERR "Connected to database...\n";
+  print STDERR "...Connected to database\n";
   
   return $registry;
 }#------------------------------------------------------ 
-
-sub get_tsv_line
-# Get a line of a TSV file already splitted in an array
-{
-	my $tsvfile = shift;
-	
-	# Skip comments
-	my $line;
-	do	{ $line = <$tsvfile>; }
-	while($line =~ /^#.*/);
-		
-	my @fields = split(/\t/, $line);
-	chomp @fields;
-	return @fields;
-}#-----------------------------------------------------------
-
-sub get_col_number
-# Get the numeric position of the column whose name is given
-{
-	my $col_name = shift;
-	my @fields = @{shift()};
-	
-	# Get the column numbers
-	foreach my $i (0..$#fields)
-	{
-		return $i if ($col_name eq $fields[$i]);
-	}
-	
-	die "Column '$colname' not found!\n!";
-}#-----------------------------------------------------------
 
 sub open_input
 # Prints given message and opens input file
@@ -242,21 +186,85 @@ sub print_and_exit
 	exit;
 }#-----------------------------------------------------------
 
-sub print_array
-# Prints the content of the passed array
+sub get_vcf_line
+# Get a line from a VCF file
 {
-	my @array = @{shift()};
-	my $message = shift;
-	
-	print $message;
-	foreach my $i (0..$#array)
-	{
-		print "$array[$i]\n";
-	}
+	my $vcffile = shift;
+
+	# Skip comments
+	my $line;
+	do	{ $line = <$vcffile>; }
+	while($line =~ /^##.*/);
+
+	# Check wether you are in the headers line
+	if ($line =~ /^#(.*)/) { $line = $1; }
+
+	return $line;
 }#-----------------------------------------------------------
 
-sub map_GRChr37_to_GRChr38
-# Maps a coordinate in the reference assembly GRChr37 to GRChr38
+sub get_vcf_fields
+# Get a line from a VCF file splitted in fields
+{
+	my $vcffile = shift;
+
+	return split( /\t/, get_vcf_line($vcffile));
+}#-----------------------------------------------------------
+
+sub get_col_number
+# Get the numeric position of the column whose name is given
+{
+	my $col_name = shift;
+	my @fields = @{shift()};
+
+	# Get the column numbers
+	foreach my $i (0..$#fields)
+	{
+		return $i if ($col_name eq $fields[$i]);
+	}
+	die "Column '$colname' not found!\n!";
+}#-----------------------------------------------------------
+
+sub get_fields_from
+# returns a dictionary with the positions of the fields
+{
+	my $inputfile = shift; # The input file
+	my @fields = ();	# The fields to search
+	while (my $field = shift) { push @fields, $field; }
+
+	# Get the fields
+	my @fields = get_vcf_fields($inputfile);
+
+	# Get the column position of the searched fields
+	my %fields = ();
+	foreach my $field (@fields)
+	{
+		$fields{$field} = get_col_number($field, \@fields);
+	}
+
+	return %fields;
+}#-----------------------------------------------------------
+
+sub print_fields
+# USAGE: print_fields(\%hash, \@keys)
+# Print orderly the values corresponding to the given keys of the hash
+# Prints in TSV format
+{
+	my %hash = %{shift()};
+	my @keys = @{shift()};
+
+	# Print the given fields
+	foreach my $key (@keys)
+	{
+		print $output "$hash{$key}\t";
+	}
+	print "\n";
+
+	return;
+}#-----------------------------------------------------------
+
+sub REST_map_GRCh37_to_GRCh38
+# Maps a coordinate in the reference assembly GRCh37 to GRCh38
+# by using the Ensembl REST API
 {
 	my $chromosome = shift;
 	my $position = shift;
@@ -278,7 +286,6 @@ sub map_GRChr37_to_GRChr38
 		print STDERR "Query failed!\n" unless $response->{success};
 	} while ( !($response->{success}) );
 	
-	
 	use JSON;
 	if(length $response->{content}) 
 	{
@@ -291,7 +298,6 @@ sub map_GRChr37_to_GRChr38
 sub fetch_GRCh38_slice_from_GRCh37_region
 # Fetches a slice in the GRCh38 assembly from GRCh37 coordinates
 {
-	my $slice_adaptor = shift;
 	my $chromosome = shift;
 	my $begin = shift;
 	my $end = shift;
@@ -310,4 +316,40 @@ sub fetch_GRCh38_slice_from_GRCh37_region
 	}
 	
 	return \@slices;
+}#-----------------------------------------------------------
+
+sub PERL_map_GRCh37_to_GRCh38
+# Maps a coordinate in the reference assembly GRCh37 to GRCh38
+# by using the Ensembl Perl API
+{
+	my $chromosome = shift;
+	my $position = shift;
+
+	my $begin_slice = $position;
+
+	my $return = -1;
+	eval {
+		my $slice = @{fetch_GRCh38_slice_from_GRCh37_region($chromosome, $begin_slice, $begin_slice)}[0];
+		$return = $slice->start(); 
+		
+	};
+	if ($@)	{ warn $@; }
+	return $return;
+}#-----------------------------------------------------------
+
+sub print_hash
+# Prints the content of the passed hash
+{
+	my %hash = %{shift()};
+	my $name = shift;
+
+	print "$name: ".Dumper \%hash;
+}#-----------------------------------------------------------
+
+sub output_array_as_tsv
+# Prints the content of the passed array
+{
+	my @array = @{shift()};
+
+	print $output join("\t", @array) . "\n";
 }#-----------------------------------------------------------

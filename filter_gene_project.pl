@@ -2,7 +2,7 @@
 
 my $doc_str = <<END;
 
-Usage: ./get_gene_info.pl [--gene=<gene name>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--help]
+Usage: filter_gene_project.pl [--gene=<gene name>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--help]
 
 ============================
  Filter by gene and project
@@ -26,6 +26,7 @@ Common projects: BRCA-EU, GBM-US.
 
 	-i, --in, --vcf
 		Name of the input VCF file.
+		The file should be in the format of the ICGC simple-somatic-mutation summary
 		If not present, input from standard input.
 
 	-o, --out
@@ -81,8 +82,8 @@ use Data::Dumper; # To preety print hashes easily
 	my $project_re = undef;
 	$project_re = qr/$project/ if ($project);
 
-	# Get header
-	my %header = get_fields_from($inputfile,
+	# Get fields
+	my %fields = get_fields_from($inputfile,
 								'ID', # Mutation ID
 								'CHROM', # The column that specifies chromosome number
 								'POS', # Position in chromosome
@@ -118,8 +119,7 @@ use Data::Dumper; # To preety print hashes easily
 		}
 	}
 
-	my $gene_str = ($gene) ? $gene : "All genes";
-	$gene_str = ($gene_id) ? "$gene_name{$gene_id}($gene_id)" : "$gene_str";
+	my $gene_str = ($gene) ? "$gene_name{$gene_id}($gene_id)" : "All genes";
 	my $gene_re = ($gene_id) ? qr/$gene_id/ : qr/.*/;
 
 	my $project_str = ($project) ? $project : "All projects";
@@ -142,12 +142,11 @@ use Data::Dumper; # To preety print hashes easily
 			# Check for specified project
 			if (!$project or ($project and $line =~ $project_re))
 			{				
-                # Get affected genes
-                my @affected_genes = @{ get_genes($line) };
-                my $affected_genes = join( ',', @affected_genes );
-				
 				# Split line in fields
 				my @line = split( /\t/, $line );
+				
+                # Get affected genes
+                my $affected_genes = join( ',', @{ get_genes($line) } );
 
 				# If project was specified
 				if ($project)
@@ -162,9 +161,9 @@ use Data::Dumper; # To preety print hashes easily
 						{
 							my @occurrence = split( /\|/, $occurrence);
 							my %mutation = (
-								'MUTATION_ID' => $line[$header{'ID'}],
-								'POSITION' => "Chrom$line[$header{'CHROM'}]($line[$header{'POS'}])",
-								'MUTATION' => "$line[$header{'REF'}]>$line[$header{'ALT'}]",
+								'MUTATION_ID' => $line[$fields{'ID'}],
+								'POSITION' => "Chrom$line[$fields{'CHROM'}]($line[$fields{'POS'}])",
+								'MUTATION' => "$line[$fields{'REF'}]>$line[$fields{'ALT'}]",
 								'AFFECTED_GENES' => $affected_genes,
 								'PROJ_AFFECTED_DONORS' => "$occurrence[1]",
 								'PROJ_TESTED_DONORS' => "$occurrence[2]",
@@ -193,9 +192,9 @@ use Data::Dumper; # To preety print hashes easily
 					my @total_occurrence = split( /;/, $total_occurrence );
 
 					my %mutation = (
-								'MUTATION_ID' => $line[$header{'ID'}],
-								'POSITION' => "Chrom$line[$header{'CHROM'}]($line[$header{'POS'}])",
-								'MUTATION' => "$line[$header{'REF'}]>$line[$header{'ALT'}]",
+								'MUTATION_ID' => $line[$fields{'ID'}],
+								'POSITION' => "Chrom$line[$fields{'CHROM'}]($line[$fields{'POS'}])",
+								'MUTATION' => "$line[$fields{'REF'}]>$line[$fields{'ALT'}]",
 								'AFFECTED_GENES' => $affected_genes
 								);
 					$total_occurrence =~ /affected_donors=([0-9]*)/;
