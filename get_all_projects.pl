@@ -2,13 +2,13 @@
 
 my $doc_str = <<END;
 
-Usage: ./get_gene_info.pl [--in=<vcffile>] [--out=<outfile>] [--help]
+Usage: ./get_all_projects.pl [--in=<vcffile>] [--out=<outfile>] [--help]
 
 =================
  Get all projects
 =================
 
-Searches through input file for cancer projects
+Searches through ICGC's simple-somatic-mutation aggregated file for cancer projects.
 
 	-i, --in, --vcf
 		Name of the input VCF file.

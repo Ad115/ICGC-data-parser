@@ -2,7 +2,7 @@
 
 my $doc_str = <<END;
 
-Usage: ./get_gene_info.pl [--gene=<genename>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--help]
+Usage: ./get_all_affected_genes.pl [--in=<vcffile>] [--out=<outfile>] [--help]
 
 ========================
  Get all affected genes
