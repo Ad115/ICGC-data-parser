@@ -5,9 +5,9 @@ my $doc_str = <<END;
 
 Usage: ./tsv_col_selector.pl [--in=<tsvfile>] [--out=<outfile>] [--cols=<field1>,<field2>,..] [--n-cols=n1,n2,...] [--help]
 
-===========================
-Filtering cols in TSV files
-===========================
+=============================
+ Select columns in TSV files
+=============================
 
 Script to select columns to keep in a tsv file.
 Command-line arguments:
@@ -28,8 +28,19 @@ Command-line arguments:
 		Numbers of the fields to print.
 		Is a comma-separated list.
 		
+	-o, -ordered
+		Switch to print the output fields in the 
+		order they appear in the input.
 		
-	-s, --show-fields
+	-u, --uniq
+		Switch to avoid repeating fields in output.
+		
+	-v, --invert
+		Switch to invert the columns to print.
+		If present, prints the columns that otherwise would be omitted
+		and ommits the columns given in --cols and --n_cols options
+		
+	-f, --fields
 		Show available fields and exit.
 		
 	-h, --help
@@ -41,20 +52,25 @@ END
 
 
 
-use Getopt::Long; # To parse command-line arguments
-
+use Getopt::Long;  # To parse command-line arguments
+	Getopt::Long::Configure ("bundling");
 
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 
 # Declare variables to hold command-line arguments
-my $tsvfile_name = ''; my $out_name = ''; my $fields = '';
+my $tsvfile_name = ''; my $out_name = '';
+my $fields; my $ordered; 
+my $uniq; my $invert;
 my $cols = ''; my $n_cols = '';
 GetOptions(
 	'i|in|tsv=s' => \$tsvfile_name,
 	'o|out=s' => \$out_name,
 	'c|cols=s' => \$cols,
 	'n|n-cols=s' => \$n_cols,
-	's|show-fields' => \$fields,
+	'f|fields' => \$fields,
+	'r|ordered' => \$ordered,
+	'u|uniq' => \$uniq,
+	'v|invert' => \$invert,
 	'h|help' => \$help
 	);
 
@@ -161,11 +177,10 @@ sub array_to_tsvfile
 	my @indexes = @{shift()};
 	my $outfile = shift;
 	
-	my $max_index = $indexes[$#indexes];
-	foreach my $i (@indexes)
+	foreach my $i (0..$#indexes)
 	{
-		print $outfile "$array[$i]";
-		print $outfile "\t" unless ($i == $max_index);
+		print $outfile "$array[$indexes[$i]]";
+		print $outfile "\t" unless ($i == $#indexes);
 	}
 	print $outfile "\n";
 }#-----------------------------------------------------------
@@ -222,17 +237,17 @@ sub get_col_numbers
 	# Get the columns from the list of names
 	my @col_numbers = col_numbers_from_names($col_names, \@fields);
 	
-	# Get the columns from the list of numbers
-	my @n_cols = split(',', $n_cols);
-	
-	# Join both lists
-	push(@col_numbers, @n_cols);
-	
-	# Sort joint list
- 	@col_numbers = sort {$a <=> $b} @col_numbers;
-	
-	# Remove repeated elements
-	@col_numbers = uniq(\@col_numbers);
+	# Get the columns from the list of numbers and join both lists
+	push(@col_numbers, split(',', $n_cols));
+		
+		# Sort joint list if asked to
+		@col_numbers = sort {$a <=> $b} @col_numbers if ($ordered);
+		
+		# Remove repeated elements if asked to
+		@col_numbers = uniq(\@col_numbers) if ($uniq);
+		
+		# Invert match if asked to
+		@col_numbers = complement(\@col_numbers, [0..$#fields]) if ($invert);
 	
 	return @col_numbers;
 }#-----------------------------------------------------------
@@ -243,16 +258,33 @@ sub col_numbers_from_names
 	my $col_names = shift;
 	my @fields = @{shift()};
 	
-	my @col_names = split(',', $col_names);
-	my @col_numbers = ();
-	
 	# Get the column numbers
-	foreach my $i (0..$#fields)
+	my @col_numbers = ();
+	foreach my $col_name ( split ',', $col_names )
 	{
-		push(@col_numbers, $i) if any($fields[$i], \@col_names);
+		my $i = get_col_number($col_name, \@fields);
+		push(@col_numbers, $i) if (defined $i);
 	}
 	
 	return @col_numbers;
+}#-----------------------------------------------------------
+
+sub get_col_number
+# Get the numeric positions of the given string in the array
+{
+	my $col_name = shift;
+	my @fields = @{shift()};
+	
+	my $position = undef;
+	foreach my $i (0..$#fields)
+	{	if ($col_name eq $fields[$i])
+		{	
+			$position = $i;
+			break;
+		}
+	}
+	
+	return $position;
 }#-----------------------------------------------------------
 
 sub print_filtered_array
@@ -287,4 +319,20 @@ sub uniq
 	my %seen;
 	
 	return grep !($seen{$_}++), @array;
-}
+}#-----------------------------------------------------------
+
+sub complement
+# Gets the complement of an array given a universe (as another array)
+# Usage: @complement = complement(\@original, \@universe)
+{
+	my @original = @{shift()};
+	my @universe = @{shift()};
+	my @complement = ();
+	
+	foreach my $i (0..$#universe)
+	{
+		push(@complement, $universe[$i]) 
+			unless any	($universe[$i], \@original);
+	}
+	return @complement;
+}#-----------------------------------------------------------

@@ -26,7 +26,10 @@ Command-line arguments:
 	-n, --n-col
 		Number of the column to sort by.
 		
-	-s, --show-fields
+	-r, --reverse
+		Reverse the sorting order
+		
+	-f, --fields
 		Show available fields and exit.
 		
 	-h, --help
@@ -40,20 +43,19 @@ END
 
 use Getopt::Long; # To parse command-line arguments
 
-
-
 #=============>> BEGINNING OF MAIN ROUTINE <<===================
 
 
 # Declare variables to hold command-line arguments
-my $tsvfile_name = ''; my $out_name = ''; my $fields = '';
-my $col = ''; my $n_col = '';
+my $tsvfile_name = ''; my $out_name = ''; my $fields;
+my $col = ''; my $n_col = ''; my $reverse;
 GetOptions(
 	'i|in|tsv=s' => \$tsvfile_name,
 	'o|out=s' => \$out_name,
 	'c|col=s' => \$col,
 	'n|n-col=s' => \$n_col,
-	's|show-fields' => \$fields,
+	'f|fields' => \$fields,
+	'r|reverse' => \$reverse,
 	'h|help' => \$help
 	);
 
@@ -325,7 +327,9 @@ sub get_sorting
 	}
 	
 	# Sort the array
-	@array = sort {$a <=> $b} @array;
+	if (!$reverse)
+		{ @array = sort {$a <=> $b} @array; }
+	else { @array = sort {$b <=> $a} @array; }
 	
 	# Save the changes
 	my @sorted_positions = ();
