@@ -72,6 +72,6 @@ sudo tar -zxvf ensembl-api.tar.gz
   PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl-tools/modules
   export PERL5LIB
   ```
-  And to avoid having to type that every time you statr a terminal window, add those lines at the end of the file .bashrc in your home.
+  And to avoid having to type that every time you start a terminal window, add those lines at the end of the file .bashrc in your home.
   
   Aaaaanddd... We're done! :D

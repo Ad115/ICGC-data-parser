@@ -28,7 +28,7 @@ Command-line arguments:
 		Numbers of the fields to print.
 		Is a comma-separated list.
 		
-	-o, -ordered
+	-r, -ordered
 		Switch to print the output fields in the 
 		order they appear in the input.
 		
@@ -39,6 +39,9 @@ Command-line arguments:
 		Switch to invert the columns to print.
 		If present, prints the columns that otherwise would be omitted
 		and ommits the columns given in --cols and --n_cols options
+		
+	-d, --no-comments
+		If present, doesn't prints comments of the input to output
 		
 	-f, --fields
 		Show available fields and exit.
@@ -61,6 +64,7 @@ use Getopt::Long;  # To parse command-line arguments
 my $tsvfile_name = ''; my $out_name = '';
 my $fields; my $ordered; 
 my $uniq; my $invert;
+my $no_comments;
 my $cols = ''; my $n_cols = '';
 GetOptions(
 	'i|in|tsv=s' => \$tsvfile_name,
@@ -71,6 +75,7 @@ GetOptions(
 	'r|ordered' => \$ordered,
 	'u|uniq' => \$uniq,
 	'v|invert' => \$invert,
+	'd|no-comments' => \$no_comments,
 	'h|help' => \$help
 	);
 
@@ -119,9 +124,14 @@ sub get_tsv_line
 	
 	# Skip comments
 	my $line;
-	do	{ $line = <$tsvfile>; }
-	while($line =~ /^#.*/);
-		
+	while ($line = <$tsvfile>)
+	{	
+		# Pass directly to output if line is a comment
+		if ($line =~ /^#.*/)
+			{ print $line unless ($no_comments || $fields); }
+		else 
+			{ last; }
+	}
 	my @fields = split(/\t/, $line);
 	chomp @fields;
 	return @fields;
