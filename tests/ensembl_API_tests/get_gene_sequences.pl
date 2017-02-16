@@ -11,7 +11,7 @@ Gene secuence obtainer.
 Script to get the nucleotide sequence of a list of genes.
 The sequences are obtained from the Ensembl database.
 Requires BioPerl and the Ensembl Perl API library installed to work.
-Installation instructions are in 
+Installation instructions are in
 [REQUIREMENTS_INSTALL_README.md](https://github.com/Ad115/ICGC-data-parser/blob/develop/REQUIREMENTS_INSTALL_README.md).
 
 Command-line arguments:
@@ -20,43 +20,67 @@ Command-line arguments:
 		Genes to query.
 		A comma separated list of genes in display form or as stable ID.
 
-	-l --length
+	-l --length (optional)
 		A number that specifies the maximum length of the obtained sequences
-		Default is to get all the sequence.
+		Default is 100, value 'all' gets the entire sequence.
+
+	-s --species (optional)
+		Specifies a species to look in.
+		Defaults to 'Homo sapiens'.
+
+	-S --list-species (optional)
+		Lists available species to query data from and exits.
 
 	-h, --help
 		Show this text and exit.
 
-Example call: get_gene_sequences.pl -g TP53,ENSG00000141736,MDM2,ENSG00000012048,ATM,ENSG00000123374 -l 100
-		
+Example calls:
+	$0 -g TP53,ENSG00000141736 -l200
+	$0 -g BRCA1 -s 'Homo sapiens'
+	$0 -g Cntnap1 -s mouse
+	$0 -g kif6 -s danio_rerio
+
 Author: Andrés García García @ May 2016.
 
 END
 
 use Bio::EnsEMBL::Registry; # From the Ensembl API, allows to conect to the db.
-use Getopt::Long; # To parse command-line arguments
+use Getopt::Long qw(:config bundling); # To parse command-line arguments
 
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 
 ## INITIALIZATION
-	my $genes = ''; my $length = 0;
-	my $help;
+	my $genes = ''; my $length = '100';
+	my $species = 'Homo sapiens';
+	my $list_species; my $help;
 	GetOptions(
 		'g|gene|genes=s' => \$genes,
-		'l|length=i' => \$length,
+		'l|length=s' => \$length,
+		's|species=s' => \$species,
+		'S|list-species=s' => \$list_species,
 		'h|help' => \$help
 		);
-	
+
 	# Check if user asked for help
 	if($help || !$genes) { print_and_exit($doc_str); }
-	
+
 	my @genes = split( ',', $genes );
 
 ## WEB INITIALIZATION
 	# Initialize a connection to the db.
 	my $connection = ensembldb_connect();
-	my $slice_adaptor = $connection -> get_adaptor( 'Homo sapiens', 'Core', 'Slice' ); # Declare a slicer to get the sequences
-	my $gene_adaptor = $connection -> get_adaptor( 'Homo sapiens', 'Core', 'Gene' ); # Declare a gene adaptor to get the gene ids
+
+	# Check if user asked for the available species
+    if( $opts{'list-species'} )
+    {
+        print_and_exit( "Available species: "
+                        .join( ', ', get_available_species() )
+                        );
+    }
+
+	# Get the adaptors for getting genes and slices
+	my $slice_adaptor = $connection -> get_adaptor( $species, 'Core', 'Slice' ); # Declare a slicer to get the sequences
+	my $gene_adaptor = $connection -> get_adaptor( $species, 'Core', 'Gene' ); # Declare a gene adaptor to get the gene ids
 
 ## MAIN LOOP
 	foreach my $gene (@genes)
@@ -70,17 +94,28 @@ use Getopt::Long; # To parse command-line arguments
 			$gene = get_display_label($gene_id);
 		}
 		else # User provided the display label
-		{ 
-			$gene_id = get_gene_id($gene); 
+		{
+			$gene_id = get_gene_id($gene);
 		}
-		
-		print "==> Gene: $gene($gene_id) <==\n";
+
+		# Get gene position
+		my $position = get_position($gene_id);
 
 		# Query for the sequence
 		my $sequence = '';
 		$sequence = get_sequence($gene_id, $length) if ($gene_id);
-		print "Sequence: $sequence \n";
+
+		print <<END;
+<===============================================================================>
+Gene: $gene($gene_id) in $species
+Position: $position
+Sequence: $sequence
+<===============================================================================>
+
+END
 	}
+
+
 #===============>> END OF MAIN ROUTINE <<=====================
 
 
@@ -98,15 +133,15 @@ sub ensembldb_connect
   my $registry = 'Bio::EnsEMBL::Registry';
 
   # Connect to the Ensembl database
-  print STDERR "Waiting connection to database...\n";
-  
+  print STDERR "Waiting connection to database... ";
+
 	$registry->load_registry_from_db(
 		-host => 'ensembldb.ensembl.org', # Alternatively 'useastdb.ensembl.org'
 		-user => 'anonymous'
 		);
-	
-  print STDERR "...Connected to database\n";
- 
+
+  print STDERR "Connected to database!\n";
+
   return $registry;
 }#------------------------------------------------------
 
@@ -124,13 +159,13 @@ sub get_gene_id
   my $gene_name = shift;
 
   my $stable_id = undef;
-  eval 
-	{ 
+  eval
+	{
 		# Get stable_id
-		$stable_id = $gene_adaptor 
+		$stable_id = $gene_adaptor
 						-> fetch_by_display_label($gene_name)
 						-> stable_id();
-	}; if ($@) 
+	}; if ($@)
 	{ warn $@; }
 
   # Get the gene's EnsembleStableID
@@ -141,15 +176,15 @@ sub get_display_label
 # Get the display label for the genes in the gene array
 {
 	my $gene_id = shift;
-	
+
 	my $gene_name = '';
-	eval 
-	{ 
+	eval
+	{
 		$gene_name = $gene_adaptor
 						-> fetch_by_stable_id($gene_id)
-						-> external_name(); 
+						-> external_name();
 	}; if ($@) { warn $@; }
-	
+
 	return $gene_name;
 } #-------------------------------------------------------
 
@@ -160,15 +195,50 @@ sub get_sequence
   my $length = shift; # Get the length to obtain
 
   my $sequence = '';
-  eval 
-	{ 
+  eval
+	{
 		# Point a slice to where the gene is located, using the gene's ID
 		my $slice = $slice_adaptor
 						-> fetch_by_gene_stable_id($gene_id);
 		# Get sequence
-		$sequence = ($length) ? $slice->subseq(1, $length) : $slice->seq();
-		
+		$sequence = (lc $length eq 'all') ? $slice->seq() : $slice->subseq(1, $length);
+
 	}; if ($@) { warn $@; }
-  
+
   return $sequence;
 } #------------------------------------------------------
+
+sub get_position
+# From the stable id of a gene, query the db for the nucleotide sequence
+{
+  my $gene_id = shift; # Get the gene ID
+
+  my $position = '';
+  eval
+	{
+		# Point a slice to where the gene is located, using the gene's ID
+		my $slice = $slice_adaptor
+						-> fetch_by_gene_stable_id($gene_id);
+		# Assemble the position text
+		$position = "Chromosome ".$slice->seq_region_name().' '.$slice->start().'-'.$slice->end();
+
+	}; if ($@) { warn $@; }
+
+  return $position;
+} #------------------------------------------------------
+
+sub get_available_species
+# Returns a list of the available species to query in the Ensembl database
+{
+    my @db_adaptors = @{ $connection->get_all_DBAdaptors() };
+
+    my @species = ();
+	foreach my $db_adaptor (@db_adaptors)
+	{
+        if( lc $db_adaptor->group() eq 'core')
+        {
+            push @species, $db_adaptor->species();
+        }
+    }
+    return @species;
+}#-----------------------------------------------------------
