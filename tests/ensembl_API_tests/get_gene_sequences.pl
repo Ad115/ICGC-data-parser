@@ -55,8 +55,8 @@ use Getopt::Long; # To parse command-line arguments
 ## WEB INITIALIZATION
 	# Initialize a connection to the db.
 	my $connection = ensembldb_connect();
-	my $slice_adaptor = $connection -> get_adaptor('Human', 'Core', 'Slice'); # Declare a slicer to get the sequences
-	my $gene_adaptor = $connection -> get_adaptor( 'Human', 'Core', 'Gene' ); # Declare a gene adaptor to get the gene ids
+	my $slice_adaptor = $connection -> get_adaptor( 'Homo sapiens', 'Core', 'Slice' ); # Declare a slicer to get the sequences
+	my $gene_adaptor = $connection -> get_adaptor( 'Homo sapiens', 'Core', 'Gene' ); # Declare a gene adaptor to get the gene ids
 
 ## MAIN LOOP
 	foreach my $gene (@genes)
