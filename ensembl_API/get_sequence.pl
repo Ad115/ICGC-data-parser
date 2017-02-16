@@ -92,9 +92,8 @@ use Data::Dumper; # To preety print hashes easily
     # Check if user asked for the available species
     if( $opts{'list-species'} )
     {
-        print_and_exit( "Available species: "
-                        .join( ', ', get_available_species() )
-                        );
+		my @species = get_available_species(); $" = ', ';
+        print_and_exit( "Available species: @species\n" );
     }
 
 ## MAIN QUERY

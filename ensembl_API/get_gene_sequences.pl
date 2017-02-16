@@ -46,6 +46,7 @@ END
 
 use Bio::EnsEMBL::Registry; # From the Ensembl API, allows to conect to the db.
 use Getopt::Long qw(:config bundling); # To parse command-line arguments
+$" = ", "; # Default list separator
 
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 
@@ -73,10 +74,8 @@ use Getopt::Long qw(:config bundling); # To parse command-line arguments
 	# Check if user asked for the available species
     if( $list_species )
     {
-        print_and_exit( "Available species: "
-                        .join( ', ', get_available_species() )
-						."\n"
-                        );
+		my @species = get_available_species();
+        print_and_exit( "Available species: @species\n" );
     }
 
 	# Get the adaptors for getting genes and slices
@@ -209,7 +208,7 @@ sub get_sequence
 } #------------------------------------------------------
 
 sub get_position
-# From the stable id of a gene, query the db for the nucleotide sequence
+# From the stable id of a gene, query the db for the chromosome and position in chromosome
 {
   my $gene_id = shift; # Get the gene ID
 

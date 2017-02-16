@@ -62,14 +62,14 @@ sub ensembldb_connect
   my $registry = 'Bio::EnsEMBL::Registry';
 
   # Connect to the Ensembl database
-  print STDERR "Waiting connection to database...\n";
+  print STDERR "Waiting connection to database... ";
   
 	$registry->load_registry_from_db(
 		-host => 'ensembldb.ensembl.org', # Alternatively 'useastdb.ensembl.org'
 		-user => 'anonymous'
 		);
 	
-  print STDERR "...Connected to database\n";
+  print STDERR "...Connected to database!\n";
  
   return $registry;
 }#------------------------------------------------------
