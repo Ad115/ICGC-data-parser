@@ -162,36 +162,19 @@ sub get_available_species
 {
     my @db_adaptors = @{ $connection->get_all_DBAdaptors() };
 
-    my @species = ();
-	foreach my $db_adaptor (@db_adaptors)
-	{
-        if( lc $db_adaptor->group() eq 'core')
-        {
-            push @species, $db_adaptor->species();
-        }
-    }
+    # Assemble the species array
+    my @species = map {$_->species()}
+					grep {lc $_->group() eq 'core'}
+						@db_adaptors;
+
     return @species;
 }#-----------------------------------------------------------
-
 sub get_overlapping_genes
 # Returns a list of all genes overlapping the slice
 {
 	my $slice = shift;
 
-    @overlapping = @{ $slice -> get_all_Genes() };
-    return get_display_labels(\@overlapping);
-}#-----------------------------------------------------------
-
-sub get_display_labels
-# Retuns the list with the display labels of the features in the array
-{
-	my @features = @{shift()};
-
-	my @display_labels = ();
-	foreach my $feature (@features)
-	{
-		push( @display_labels, $feature -> external_name() );
-	}
-
-	return @display_labels;
+    @overlapping = map {$_->external_name()}
+                    @{ $slice -> get_all_Genes() };
+    return @overlapping;
 }#-----------------------------------------------------------

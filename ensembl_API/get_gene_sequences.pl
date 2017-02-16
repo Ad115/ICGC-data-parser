@@ -57,12 +57,12 @@ use Getopt::Long qw(:config bundling); # To parse command-line arguments
 		'g|gene|genes=s' => \$genes,
 		'l|length=s' => \$length,
 		's|species=s' => \$species,
-		'S|list-species=s' => \$list_species,
+		'S|list-species' => \$list_species,
 		'h|help' => \$help
 		);
 
 	# Check if user asked for help
-	if($help || !$genes) { print_and_exit($doc_str); }
+	if($help || !($genes||$list_species) ) { print_and_exit($doc_str); }
 
 	my @genes = split( ',', $genes );
 
@@ -71,10 +71,11 @@ use Getopt::Long qw(:config bundling); # To parse command-line arguments
 	my $connection = ensembldb_connect();
 
 	# Check if user asked for the available species
-    if( $opts{'list-species'} )
+    if( $list_species )
     {
         print_and_exit( "Available species: "
                         .join( ', ', get_available_species() )
+						."\n"
                         );
     }
 
@@ -87,7 +88,7 @@ use Getopt::Long qw(:config bundling); # To parse command-line arguments
 	{
 		# Get display label and stable ID
 		my $gene_id = '';
-		if ($gene =~ /ENSG[0-9]{11}/) # User provided stable ID
+		if ($gene =~ /ENS[A-Z]*[0-9.]*/) # User provided stable ID
 		{
 			$gene_id = $gene;
 			# Get common name
@@ -114,7 +115,6 @@ Sequence: $sequence
 
 END
 	}
-
 
 #===============>> END OF MAIN ROUTINE <<=====================
 
@@ -232,13 +232,10 @@ sub get_available_species
 {
     my @db_adaptors = @{ $connection->get_all_DBAdaptors() };
 
-    my @species = ();
-	foreach my $db_adaptor (@db_adaptors)
-	{
-        if( lc $db_adaptor->group() eq 'core')
-        {
-            push @species, $db_adaptor->species();
-        }
-    }
+    # Assemble the species array
+    my @species = map {$_->species()}
+					grep {lc $_->group() eq 'core'}
+						@db_adaptors;
+
     return @species;
 }#-----------------------------------------------------------
