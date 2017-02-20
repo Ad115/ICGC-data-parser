@@ -1,9 +1,9 @@
 REQUIREMENTS INSTALLATION README
 ================================
 
- Most of the scripts used are written in Perl using the Ensembl Perl API to access easily to the data in their databases. So, those libraries must be installed, and, in turn, they depend on BioPerl, Expat and mySQL. D:!
+ Most of the scripts used are written in Perl using the Ensembl Perl API to access easily to the data in their databases. So, those libraries must be installed, and, in turn, they depend on BioPerl, Expat and mySQL! n(O.O)n
 
- What follows are the instructions to install these dependencies. Note this instructions are for Ubuntu Linux only, to use it in another OS you might better read the instructions from the [Ensembl Perl API webpage](http://feb2014.archive.ensembl.org/info/docs/api/api_installation.html).
+ What follows are the instructions to install these dependencies. Note this instructions are for Ubuntu-based Linux only, to use it in another OS you might better read the instructions from the [Ensembl Perl API webpage](http://feb2014.archive.ensembl.org/info/docs/api/api_installation.html).
 
  --------------------------------------------------------
 
@@ -73,5 +73,5 @@ sudo tar -zxvf ensembl-api.tar.gz
   export PERL5LIB
   ```
   And to avoid having to type that every time you start a terminal window, add those lines at the end of the file .bashrc in your home.
-  
+
   Aaaaanddd... We're done! :D

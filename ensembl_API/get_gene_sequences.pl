@@ -44,6 +44,7 @@ Author: Andrés García García @ May 2016.
 
 END
 
+use 5.010; use strict; use warnings; # To have a clean code
 use Bio::EnsEMBL::Registry; # From the Ensembl API, allows to conect to the db.
 use Getopt::Long qw(:config bundling); # To parse command-line arguments
 $" = ", "; # Default list separator

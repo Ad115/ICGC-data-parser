@@ -15,12 +15,13 @@ Command-line arguments:
 
 	-h, --help
 		Show this text and exit.
-		
+
 Author: Based on an example in:
 [Ensembl Perl API's core tutorial](http://www.ensembl.org/info/docs/api/core/core_tutorial.html).
 
 END
 
+use 5.010; use strict; use warnings; # To have a clean code
 use Bio::EnsEMBL::Registry; # From the Ensembl API, allows to conect to the db.
 use Getopt::Long; # To parse command-line arguments
 
@@ -28,7 +29,7 @@ use Getopt::Long; # To parse command-line arguments
 
 	my $help;
 	GetOptions('h|help' => \$help);
-	
+
 	# Check if user asked for help
 	if($help) { print_and_exit($doc_str); }
 
@@ -40,9 +41,9 @@ use Getopt::Long; # To parse command-line arguments
 	foreach my $db_adaptor (@db_adaptors)
 	{
 		my $db_connection = $db_adaptor->dbc();
-		
+
 		printf(
-			"species/group\t%s/%s\ndatabase\t%s\nhost:port\t%s:%s\n\n", 
+			"species/group\t%s/%s\ndatabase\t%s\nhost:port\t%s:%s\n\n",
 			$db_adaptor->species(), $db_adaptor->group(),
 			$db_connection->dbname(), $db_connection->host(),
 			$db_connection->port()
@@ -50,7 +51,7 @@ use Getopt::Long; # To parse command-line arguments
 	}
 
 #===============>> END OF MAIN ROUTINE <<=====================
- 
+
 #	===========
 #	Subroutines
 #	===========
@@ -63,14 +64,14 @@ sub ensembldb_connect
 
   # Connect to the Ensembl database
   print STDERR "Waiting connection to database... ";
-  
+
 	$registry->load_registry_from_db(
 		-host => 'ensembldb.ensembl.org', # Alternatively 'useastdb.ensembl.org'
 		-user => 'anonymous'
 		);
-	
+
   print STDERR "...Connected to database!\n";
- 
+
   return $registry;
 }#------------------------------------------------------
 
