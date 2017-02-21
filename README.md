@@ -8,12 +8,6 @@ To download the files, you can use the green Download button on the [GitHub repo
  ```
 
 ## Usage
- Most of the scripts are written in Perl and use BioPerl and the Ensembl Perl API, detailed instructions to install those are in the [**REQUIREMENTS_INSTALL_README.md**](https://github.com/Ad115/ICGC-data-parser/blob/develop/REQUIREMENTS_INSTALL_README.md) file.
+ Most of the scripts are written in Perl and use the Ensembl Perl API, detailed instructions of installation are in [How to install the Ensembl Perl API](https://github.com/Ad115/ICGC-data-parser/blob/develop/REQUIREMENTS_INSTALL_README.md).
 
- Besides, they expect as input the VCF file from ICGC that contains the simple somatic mutation data, which can be downloaded using:
- ```
- wget https://dcc.icgc.org/api/v1/download?fn=/current/Summary/simple_somatic_mutation.aggregated.vcf.gz
- ```
- or, to resume an interrupted download use the `-c` switch on the previous command.
-
-Then, the file can be extracted with the `gunzip` command.
+ Besides, they expect as input the VCF file from ICGC that contains the simple somatic mutation data. To know more about this file and how to retrieve it, please read [About the ICGC's simple somatic mutations file](https://github.com/Ad115/ICGC-data-parser/blob/develop/SSM_DATA_README.md)
