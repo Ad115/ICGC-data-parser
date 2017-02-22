@@ -3,6 +3,8 @@ About the ICGC's simple somatic mutations file
 
 This is about the infamous `simple_somatic_mutations.aggregated.vcf` file presented in each ICGC Data Release in which the information of all simple somatic mutations found accross all patients in all cancer projects is found.
 
+The top 500 of this file (ICGC daa release 22) can be found at the [sample-data](https://github.com/Ad115/ICGC-data-parser/tree/develop/sample-data) folder of this repo named as `ssm_head500.vcf`
+
 Download
 --------
 This file can be downloaded using:
@@ -63,7 +65,7 @@ This is what we can see in those lines:
    - **FILTER**.
    - **INFO**: Additional annotation on the mutation consequences, and occurrence along patients and projects. It is further commented on [The INFO Field](#the-info-field)
 
-  - **a sample mutation**: We can see the data for the mutation **MU39532371**, which is in the chromosome number *1*, at the position *100000022*, and is defined as *C>T*, with no quality or filtering information available. We can also see in the INFO that is a mutation ocurring in an intergenic region, and affects the *ENSG00000224445* gene and it's *ENST00000438829* transcript provoking an *upstream_gene_variant*. Besides, it was found in a sample from the Great Britain's skin cancer ICGC project (*SKCA-BR*) with *1* patient affected out of the *70* in the project and of the *10638* accross all projects.
+ - **a sample mutation**: We can see the data for the mutation **MU39532371**, which is in the chromosome number *1*, at the position *100000022*, and is defined as *C>T*, with no quality or filtering information available. We can also see in the INFO that is a mutation ocurring in an intergenic region, and affects the *ENSG00000224445* gene and it's *ENST00000438829* transcript provoking an *upstream_gene_variant*. Besides, it was found in a sample from the Great Britain's skin cancer ICGC project (*SKCA-BR*) with *1* patient affected out of the *70* in the project and of the *10638* accross all projects.
 
 ### The INFO field
 
