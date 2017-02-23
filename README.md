@@ -31,7 +31,7 @@ Usage
 -------
 The scripts are divided in workflows or pipelines. The pipelines currently implemented are the following:
 
- -  **Mutation recurrence count**: Automates the process of extracting reccurrence of mutations across patients, it answers the question: *How many mutations appear in multiple patients?* or, specifying further, *how many mutations are repeated in `n` different patients in a given cancer project and a given gene?* ***TODO:*** This workflow is further documented in [The mutation recurrence workflow](https://github.com/Ad115/ICGC-data-parser/blob/develop/MUTATION_RECCURRENCE_WORKFLOW_README.md)
+ -  **Mutation recurrence count**: Automates the process of extracting reccurrence of mutations across patients, it answers the question: *How many mutations appear in multiple patients?* or, specifying further, *how many mutations are repeated in `n` different patients in a given cancer project and a given gene?* ***TODO:*** This workflow is further documented in [The mutation recurrence workflow](https://github.com/Ad115/ICGC-data-parser/blob/develop/MUTATION_RECURRENCE_WORKFLOW_README.md)
 
  -  **Locating mutations in the genome**: Automates the process of searching where does each mutation fall relative to a gene. In particular, it answers the questions: *How many (and which) mutations fall in INTRONIC, EXONIC or INTERGENIC regions?* and *if a mutation falls in an exon, which base of the codon does it affects?* ***TODO:*** This pipeline is further documented in [The mutation locating workflow](https://github.com/Ad115/ICGC-data-parser/blob/develop/MUTATION_RECCURRENCE_WORKFLOW_README.md)
 
