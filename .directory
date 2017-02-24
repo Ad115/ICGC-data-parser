@@ -2,5 +2,8 @@
 GroupedSorting=true
 PreviewsShown=true
 SortRole=date
-Timestamp=2016,11,29,21,37,58
+Timestamp=2017,2,23,17,26,43
 Version=3
+
+[Settings]
+HiddenFilesShown=true
