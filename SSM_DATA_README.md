@@ -23,7 +23,7 @@ In general, the format is similar to a TSV file in which the comments are marked
 
 ### Fields and Header lines
 
-Next are the 14 heading lines from a SSM file (data release 22):
+Next are the 13 heading lines from a SSM file (data release 22):
 ```
 ##fileformat=VCFv4.1
 ##INFO=<ID=CONSEQUENCE,Number=.,Type=String,Description="Mutation consequence predictions annotated by SnpEff (subfields: gene_symbol|gene_affected|gene_strand|transcript_name|transcript_affected|protein_affected|consequence_type|cds_mutation|aa_mutation)">
@@ -38,7 +38,6 @@ Next are the 14 heading lines from a SSM file (data release 22):
 ##reference=GRCh37
 ##source=ICGC22-12
 #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
-1       100000022       MU39532371      C       T       .       .       CONSEQUENCE=||||||intergenic_region||,RP11-413P11.1|ENSG00000224445|1|RP11-413P11.1-001|ENST00000438829||upstream_gene_variant||;OCCURRENCE=SKCA-BR|1|70|0.01429;affected_donors=1;mutation=C>T;project_count=1;tested_donors=10638
 ```
 This is what we can see in those lines:
  - *fileformat*: A line specifying the VCF version (4.1).
@@ -55,17 +54,19 @@ This is what we can see in those lines:
 
  - *source*: The data source (ICGC Data release 22)
 
- - **The column headers**: The data is split in these columns:
-   - **CHROM**: The chromosome the mutation is in.
-   - **POS**: The position in the chromosome of the start of the mutation. This is in the reference assembly specified in the initial comments.
-   - **ID**: The current mutation's ICGC identifier.
-   - **REF**: The sequence found in the reference.
-   - **ALT**: The sequence found in the mutated sample, so that the mutation definition is REF>ALT.
-   - **QUAL**: The quality of the read. As a general rule, a quality <10 is unreliable.
-   - **FILTER**.
-   - **INFO**: Additional annotation on the mutation consequences, and occurrence along patients and projects. It is further commented on [The INFO Field](#the-info-field)
+ - **The column headers**: See section [The column headers](#the-column-headers).
 
- - **a sample mutation**: We can see the data for the mutation **MU39532371**, which is in the chromosome number *1*, at the position *100000022*, and is defined as *C>T*, with no quality or filtering information available. We can also see in the INFO that is a mutation ocurring in an intergenic region, and affects the *ENSG00000224445* gene and it's *ENST00000438829* transcript provoking an *upstream_gene_variant*. Besides, it was found in a sample from the Great Britain's skin cancer ICGC project (*SKCA-BR*) with *1* patient affected out of the *70* in the project and of the *10638* accross all projects.
+### The column headers
+
+The data is split in these fields:
+  - **CHROM**: The chromosome the mutation is in.
+  - **POS**: The position in the chromosome of the start of the mutation. This is in the reference assembly specified in the initial comments.
+  - **ID**: The current mutation's ICGC identifier.
+  - **REF**: The sequence found in the reference.
+  - **ALT**: The sequence found in the mutated sample, so that the mutation definition is REF>ALT.
+  - **QUAL**: The quality of the read. As a general rule, a quality <10 is unreliable.
+  - **FILTER**.
+  - **INFO**: Additional annotation on the mutation consequences, and occurrence along patients and projects. It is further commented on [The INFO Field](#the-info-field)
 
 ### The INFO field
 
@@ -98,3 +99,14 @@ In the file, **the parts are separated with a semicolon (;), and each part may h
   - **project_count**: Number of projects with the current mutation.
 
   - **tested_donors**: Total number of donors with SSM data available.
+
+### Interpreting a sample mutation
+Now we come to try to read an example mutation from the data.
+
+*The mutation*:
+```
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+1       100000022       MU39532371      C       T       .       .       CONSEQUENCE=||||||intergenic_region||,RP11-413P11.1|ENSG00000224445|1|RP11-413P11.1-001|ENST00000438829||upstream_gene_variant||;OCCURRENCE=SKCA-BR|1|70|0.01429;affected_donors=1;mutation=C>T;project_count=1;tested_donors=10638
+```
+*The interpretation*:
+We can see the data for the mutation **MU39532371**, which is in the chromosome number *1*, at the position *100000022*, and is defined as *C>T*, with no quality or filtering information available. We can also see in the INFO that this mutation has two consequences: one as a mutation ocurring in an intergenic region, and one as a mutation that affects the *ENSG00000224445* gene and it's *ENST00000438829* transcript provoking an *upstream_gene_variant*. Besides, it was found in a sample from the Great Britain's skin cancer ICGC project (*SKCA-BR*) with *1* patient affected out of the *70* in the project and of the *10638* accross all projects.
