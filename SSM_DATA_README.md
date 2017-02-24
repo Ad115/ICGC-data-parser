@@ -1,17 +1,17 @@
 About the ICGC's simple somatic mutations file
 ==============================================
 
-This is about the infamous `simple_somatic_mutations.aggregated.vcf` file presented in each ICGC Data Release in which the information of all simple somatic mutations found accross all patients in all cancer projects is found.
+This is about the infamous `simple_somatic_mutations.aggregated.vcf` file presented in each ICGC Data Release which contain an aggregated of the information of all simple somatic mutations found accross all patients in all cancer projects is found.
 
-The top 500 of this file (ICGC daa release 22) can be found at the [sample-data](https://github.com/Ad115/ICGC-data-parser/tree/develop/sample-data) folder of this repo named as `ssm_head500.vcf`
+The top 500 lines of this file (ICGC data release 22) can be found at the [sample-data](https://github.com/Ad115/ICGC-data-parser/tree/develop/sample-data) folder of this repo named as `ssm_head500.vcf`
 
 Download
 --------
-This file can be downloaded using:
+This file can be downloaded from [the ICGC site data releases site](https://dcc.icgc.org/releases) or using:
 ```
 wget https://dcc.icgc.org/api/v1/download?fn=/current/Summary/simple_somatic_mutation.aggregated.vcf.gz
 ```
-or, to resume an interrupted download use the `-c` switch on the previous command.
+To resume an interrupted download use the `-c` switch on the previous command.
 
 Then, the file can be extracted with the `gunzip` command.
 
