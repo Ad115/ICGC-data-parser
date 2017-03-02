@@ -100,7 +100,7 @@ $" = ", "; # Default list separator
 		}
 
 		# Get gene position
-		my $position = get_position($gene_id);
+		my $position = get_position($gene_id) if $gene_id;
 
 		# Query for the sequence
 		my $sequence = '';
