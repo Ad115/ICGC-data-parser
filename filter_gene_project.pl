@@ -96,9 +96,9 @@ use Data::Dumper; # To preety print hashes easily
 
 	# Initialize a connection to the db.
 	$connection = ensembldb_connect();
-	
+
 	my %gene_name = (); # To store an association of gene's stable_id -> display_label
-	# Get gene's stable id and common name	
+	# Get gene's stable id and common name
 	my $gene_id = undef;
 	if ($gene)
 	{
@@ -113,8 +113,8 @@ use Data::Dumper; # To preety print hashes easily
 			$gene = '';
 		}
 		else # User provided the display label
-		{ 
-			$gene_id = get_gene_id($gene); 
+		{
+			$gene_id = get_gene_id($gene);
 			$gene_name{$gene_id} = $gene;
 		}
 	}
@@ -133,79 +133,76 @@ use Data::Dumper; # To preety print hashes easily
 	print join( "\t", @output_line_fields)."\n";
 
 ## MAIN QUERY
-	
+
 	while(my $line = get_vcf_line($inputfile)) # Get mutation by mutation
 	{
-		# Check for specified gene
-		if ($line =~ $gene_re)
+		# Check for specified gene and project
+		if ($line =~ $gene_re and $line =~ $project_re)
 		{
-			# Check for specified project
-			if (!$project or ($project and $line =~ $project_re))
-			{				
-				# Split line in fields
+			# Split line in fields
+			my @line = split( /\t/, $line );
+
+            # Get affected genes
+            my $affected_genes = join( ',', @{ get_genes($line) } );
+
+			# If project was specified
+			if ($project)
+			{
+				# Get occurrence data
+				$line =~ /OCCURRENCE=(.*?);/;
+				my @occurrences = split( /,/ , $1);
+
+				foreach my $occurrence (@occurrences)
+				{
+					if ($occurrence =~ $project_re)
+					{
+						my @occurrence = split( /\|/, $occurrence);
+						my %mutation = (
+							'MUTATION_ID' => $line[$fields{'ID'}],
+							'POSITION' => "Chrom$line[$fields{'CHROM'}]($line[$fields{'POS'}])",
+							'MUTATION' => "$line[$fields{'REF'}]>$line[$fields{'ALT'}]",
+							'AFFECTED_GENES' => $affected_genes,
+							'PROJ_AFFECTED_DONORS' => "$occurrence[1]",
+							'PROJ_TESTED_DONORS' => "$occurrence[2]",
+							'PROJ_MUTATION_FREQUENCY' => "$occurrence[3]"
+							);
+
+						print_fields(\%mutation, ['MUTATION_ID', 'POSITION', 'MUTATION', 'AFFECTED_GENES', 'PROJ_AFFECTED_DONORS', 'PROJ_TESTED_DONORS', 'PROJ_MUTATION_FREQUENCY']);
+					}
+				}
+			}
+            # If project was not specified
+			else
+			{
+				# Get occurrence data
+				$line =~ /OCCURRENCE=(.*?);(.*)/;
+				my $total_occurrence = $2;
+
+				my @occurrences = split /,/,  $1;
+				my @projects = ();
+				foreach my $occurrence (@occurrences)
+				{
+					$occurrence =~ /^([A-Z-]*)\|/;
+					push @projects, $1;
+				}
+
 				my @line = split( /\t/, $line );
-				
-                # Get affected genes
-                my $affected_genes = join( ',', @{ get_genes($line) } );
+				my @total_occurrence = split( /;/, $total_occurrence );
 
-				# If project was specified
-				if ($project)
-				{
-					# Get occurrence data
-					$line =~ /OCCURRENCE=(.*?);/;
-					my @occurrences = split( /,/ , $1);
+				my %mutation = (
+							'MUTATION_ID' => $line[$fields{'ID'}],
+							'POSITION' => "Chrom$line[$fields{'CHROM'}]($line[$fields{'POS'}])",
+							'MUTATION' => "$line[$fields{'REF'}]>$line[$fields{'ALT'}]",
+							'AFFECTED_GENES' => $affected_genes
+							);
+				$total_occurrence =~ /affected_donors=([0-9]*)/;
+				$mutation{'TOTAL_AFFECTED_DONORS'} = $1;
+				$total_occurrence =~ /tested_donors=([0-9]*)/;
+				$mutation{'TOTAL_TESTED_DONORS'} = $1;
+				$mutation{'TOTAL_MUTATION_FREQUENCY'} = $mutation{'TOTAL_AFFECTED_DONORS'} / $mutation{'TOTAL_TESTED_DONORS'};
+				$mutation{'PROJECT(S)'} = join ",", @projects;
 
-					foreach my $occurrence (@occurrences)
-					{
-						if ($occurrence =~ $project_re)
-						{
-							my @occurrence = split( /\|/, $occurrence);
-							my %mutation = (
-								'MUTATION_ID' => $line[$fields{'ID'}],
-								'POSITION' => "Chrom$line[$fields{'CHROM'}]($line[$fields{'POS'}])",
-								'MUTATION' => "$line[$fields{'REF'}]>$line[$fields{'ALT'}]",
-								'AFFECTED_GENES' => $affected_genes,
-								'PROJ_AFFECTED_DONORS' => "$occurrence[1]",
-								'PROJ_TESTED_DONORS' => "$occurrence[2]",
-								'PROJ_MUTATION_FREQUENCY' => "$occurrence[3]"
-								);
-
-							print_fields(\%mutation, ['MUTATION_ID', 'POSITION', 'MUTATION', 'AFFECTED_GENES', 'PROJ_AFFECTED_DONORS', 'PROJ_TESTED_DONORS', 'PROJ_MUTATION_FREQUENCY']);
-						}
-					}
-				}
-				else
-				{
-					# Get occurrence data
-					$line =~ /OCCURRENCE=(.*?);(.*)/;
-					my $total_occurrence = $2;
-
-					my @occurrences = split /,/,  $1;
-					my @projects = ();
-					foreach my $occurrence (@occurrences)
-					{
-						$occurrence =~ /^([A-Z-]*)\|/;
-						push @projects, $1;
-					}
-
-					my @line = split( /\t/, $line );
-					my @total_occurrence = split( /;/, $total_occurrence );
-
-					my %mutation = (
-								'MUTATION_ID' => $line[$fields{'ID'}],
-								'POSITION' => "Chrom$line[$fields{'CHROM'}]($line[$fields{'POS'}])",
-								'MUTATION' => "$line[$fields{'REF'}]>$line[$fields{'ALT'}]",
-								'AFFECTED_GENES' => $affected_genes
-								);
-					$total_occurrence =~ /affected_donors=([0-9]*)/;
-					$mutation{'TOTAL_AFFECTED_DONORS'} = $1;
-					$total_occurrence =~ /tested_donors=([0-9]*)/;
-					$mutation{'TOTAL_TESTED_DONORS'} = $1;
-					$mutation{'TOTAL_MUTATION_FREQUENCY'} = $mutation{'TOTAL_AFFECTED_DONORS'} / $mutation{'TOTAL_TESTED_DONORS'};
-					$mutation{'PROJECT(S)'} = join ",", @projects;
-
-					print_fields(\%mutation, ['MUTATION_ID', 'POSITION', 'MUTATION', 'AFFECTED_GENES', 'TOTAL_AFFECTED_DONORS', 'TOTAL_TESTED_DONORS', 'TOTAL_MUTATION_FREQUENCY', 'PROJECT(S)']);
-				}
+				print_fields(\%mutation, ['MUTATION_ID', 'POSITION', 'MUTATION', 'AFFECTED_GENES', 'TOTAL_AFFECTED_DONORS', 'TOTAL_TESTED_DONORS', 'TOTAL_MUTATION_FREQUENCY', 'PROJECT(S)']);
 			}
 		}
 	}
@@ -414,7 +411,7 @@ sub get_genes
 		$display_label = get_display_label($gene);
 		$gene = "$gene($display_label)";
 	}
-	
+
 	return \@genes
 }#-----------------------------------------------------------
 
@@ -422,22 +419,22 @@ sub get_display_label()
 # Get the display label for the genes in the gene array
 {
 	my $gene_id = shift;
-	
+
 	unless ($gene_name{$gene_id})
 	{
-		eval 
-		{ 
-			$gene_name{$gene_id} = $connection 
+		eval
+		{
+			$gene_name{$gene_id} = $connection
 								-> get_adaptor( 'Human', 'Core', 'Gene' )
 								-> fetch_by_stable_id($gene_id)
-								-> external_name(); 
-			
+								-> external_name();
+
 		}; if ($@)
 		{
 			warn $@;
 			$gene_name{$gene_id} = 'NOLABEL';
 		}
 	}
-	
+
 	return $gene_name{$gene_id};
 }#-----------------------------------------------------------
