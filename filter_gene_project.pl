@@ -1,5 +1,8 @@
 #! /usr/bin/perl
 
+use strict;
+use warnings;
+
 my $doc_str = <<END;
 
 Usage: filter_gene_project.pl [--gene=<gene name>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--help]
@@ -44,166 +47,69 @@ END
 use Getopt::Long; # To parse command-line arguments
 use Bio::EnsEMBL::Registry; # From the Ensembl API, allows to conect to the db.
 use Data::Dumper; # To preety print hashes easily
-	local $Data::Dumper::Terse = 1;
-	local $Data::Dumper::Indent = 1;
+	local $Data::Dumper::Purity = 1;
+	local $Data::Dumper::Sortkeys = 1;
 
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 
 ## INITIALIZATION
 
-	# Declare variables to hold command-line arguments
-	my $inputfile_name = ''; my $out_name = '';
-	my $gene = ''; my $project = '';
-	my $help;
-	GetOptions(
-		'i|in|vcf=s' => \$inputfile_name,
-		'o|out=s' => \$out_name,
-		'g|gene=s' => \$gene,
-		'p|project=s' => \$project,
-		'h|help' => \$help
+	# Hash to store option values
+	my %opts = ();
+	# Parse command line options into the options(o) hash
+	GetOptions(\%opts,
+		'in|i||vcf=s',
+		'out|o=s',
+		'gene|g=s',
+		'project|p=s',
+		'help|h'
 		);
 
 
-	my $inputfile = STDIN;# Open input file
-	if($inputfile_name)  { open_input($inputfile, $inputfile_name); }
+	my $input = *STDIN;# Open input file
+	if( $opts{in} )  { open_input($input, $opts{in}); }
 
 
-	my $out = STDOUT; # Open output file
-	if ($out_name)  { open_output($out, $out_name); }
+	my $output = *STDOUT; # Open output file
+	if ( $opts{out} )  { open_output($output, $opts{out}); }
 
 	# Check if user asked for help
-	if($help) { print_and_exit($doc_str); }
+	if( $opts{help} ) { print_and_exit($doc_str); }
 
 
 ## LOCAL DATA INITIALIZATION
 
-	#Get project
-	$project = '' if (lc $project eq 'all');
-	my $project_re = undef;
-	$project_re = qr/$project/ if ($project);
-
 	# Get fields
-	my %fields = get_fields_from($inputfile,
-								'ID', # Mutation ID
-								'CHROM', # The column that specifies chromosome number
-								'POS', # Position in chromosome
-								'REF', # Sequence or base in the reference, this is the one we care to compare
-								'ALT', # Alternate sequence. This is found instead of the reference
-                                'INFO' # Other information of the gene
-								);
+	my %fields = get_fields_from($input);
 
 ## WEB DATA INITIALIZATION
 
 	# Initialize a connection to the db.
-	$connection = ensembldb_connect();
+	our $connection = ensembldb_connect();
 
-	my %gene_name = (); # To store an association of gene's stable_id -> display_label
-	# Get gene's stable id and common name
-	my $gene_id = undef;
-	if ($gene)
-	{
-		if ($gene =~ /ENSG[0-9]{11}/) # User provided stable ID
-		{
-			$gene_id = $gene;
-			# Get common name
-			$gene = get_display_label($gene_id);
-		}
-		elsif (lc $gene eq 'all') # User wants to search in all genes
-		{
-			$gene = '';
-		}
-		else # User provided the display label
-		{
-			$gene_id = get_gene_id($gene);
-			$gene_name{$gene_id} = $gene;
-		}
-	}
+	our %gene_name = (); # To store an association of gene's stable_id -> display_label
 
-	my $gene_str = ($gene) ? "$gene_name{$gene_id}($gene_id)" : "All genes";
-	my $gene_re = ($gene_id) ? qr/$gene_id/ : qr/.*/;
+	# Get gene's data
+	my ($gene, $gene_id, $gene_str, $gene_re) = get_gene_query_data($opts{gene});
+	# Get project's data
+	my ($project_str, $project_re) = get_project_query_data($opts{project});
 
-	my $project_str = ($project) ? $project : "All projects";
-	my $project_re = ($project) ? qr/$project/ : qr/.*/;
+	# Assemble output fields
+	my @output_line_fields = ('MUTATION_ID', 'POSITION', 'MUTATION', 'CONSEQUENCES', 'PROJ_AFFECTED_DONORS', 'TOTAL_AFFECTED_DONORS');
 
-	print "# Project: $project_str\tGene: $gene_str\n";
-
-
-	my @output_line_fields = ('MUTATION_ID', 'POSITION', 'MUTATION', 'AFFECTED_GENES', 'PROJ_AFFECTED_DONORS', 'PROJ_TESTED_DONORS', 'PROJ_MUTATION_FREQUENCY');
-	unless($project) { @output_line_fields = ('MUTATION_ID', 'POSITION', 'MUTATION', 'AFFECTED_GENES', 'TOTAL_AFFECTED_DONORS', 'TOTAL_TESTED_DONORS', 'TOTAL_MUTATION_FREQUENCY', 'PROJECT(S)'); }
-	print join( "\t", @output_line_fields)."\n";
+	# Print heading lines
+	print $output "# Project: $project_str\tGene: $gene_str\n";
+	print $output join( "\t", @output_line_fields)."\n";
 
 ## MAIN QUERY
 
-	while(my $line = get_vcf_line($inputfile)) # Get mutation by mutation
+	while(my $line = get_vcf_line($input)) # Get mutation by mutation
 	{
 		# Check for specified gene and project
 		if ($line =~ $gene_re and $line =~ $project_re)
 		{
-			# Split line in fields
-			my @line = split( /\t/, $line );
-
-            # Get affected genes
-            my $affected_genes = join( ',', @{ get_genes($line) } );
-
-			# If project was specified
-			if ($project)
-			{
-				# Get occurrence data
-				$line =~ /OCCURRENCE=(.*?);/;
-				my @occurrences = split( /,/ , $1);
-
-				foreach my $occurrence (@occurrences)
-				{
-					if ($occurrence =~ $project_re)
-					{
-						my @occurrence = split( /\|/, $occurrence);
-						my %mutation = (
-							'MUTATION_ID' => $line[$fields{'ID'}],
-							'POSITION' => "Chrom$line[$fields{'CHROM'}]($line[$fields{'POS'}])",
-							'MUTATION' => "$line[$fields{'REF'}]>$line[$fields{'ALT'}]",
-							'AFFECTED_GENES' => $affected_genes,
-							'PROJ_AFFECTED_DONORS' => "$occurrence[1]",
-							'PROJ_TESTED_DONORS' => "$occurrence[2]",
-							'PROJ_MUTATION_FREQUENCY' => "$occurrence[3]"
-							);
-
-						print_fields(\%mutation, ['MUTATION_ID', 'POSITION', 'MUTATION', 'AFFECTED_GENES', 'PROJ_AFFECTED_DONORS', 'PROJ_TESTED_DONORS', 'PROJ_MUTATION_FREQUENCY']);
-					}
-				}
-			}
-            # If project was not specified
-			else
-			{
-				# Get occurrence data
-				$line =~ /OCCURRENCE=(.*?);(.*)/;
-				my $total_occurrence = $2;
-
-				my @occurrences = split /,/,  $1;
-				my @projects = ();
-				foreach my $occurrence (@occurrences)
-				{
-					$occurrence =~ /^([A-Z-]*)\|/;
-					push @projects, $1;
-				}
-
-				my @line = split( /\t/, $line );
-				my @total_occurrence = split( /;/, $total_occurrence );
-
-				my %mutation = (
-							'MUTATION_ID' => $line[$fields{'ID'}],
-							'POSITION' => "Chrom$line[$fields{'CHROM'}]($line[$fields{'POS'}])",
-							'MUTATION' => "$line[$fields{'REF'}]>$line[$fields{'ALT'}]",
-							'AFFECTED_GENES' => $affected_genes
-							);
-				$total_occurrence =~ /affected_donors=([0-9]*)/;
-				$mutation{'TOTAL_AFFECTED_DONORS'} = $1;
-				$total_occurrence =~ /tested_donors=([0-9]*)/;
-				$mutation{'TOTAL_TESTED_DONORS'} = $1;
-				$mutation{'TOTAL_MUTATION_FREQUENCY'} = $mutation{'TOTAL_AFFECTED_DONORS'} / $mutation{'TOTAL_TESTED_DONORS'};
-				$mutation{'PROJECT(S)'} = join ",", @projects;
-
-				print_fields(\%mutation, ['MUTATION_ID', 'POSITION', 'MUTATION', 'AFFECTED_GENES', 'TOTAL_AFFECTED_DONORS', 'TOTAL_TESTED_DONORS', 'TOTAL_MUTATION_FREQUENCY', 'PROJECT(S)']);
-			}
+			my %mutation = parse_mutation($line, \%fields);
+			print_fields($output, \%mutation, \@output_line_fields);
 		}
 	}
 
@@ -225,7 +131,7 @@ sub ensembldb_connect
   my $registry = 'Bio::EnsEMBL::Registry';
 
   # Connect to the Ensembl database
-  print STDERR "Waiting connection to database...\n";
+  print STDERR "Waiting connection to database... ";
   $registry->load_registry_from_db(
       -host => 'ensembldb.ensembl.org', # Alternatively 'useastdb.ensembl.org'
       -user => 'anonymous'
@@ -243,10 +149,10 @@ sub get_vcf_line
 	# Skip comments
 	my $line;
 	do	{ $line = <$vcffile>; }
-	while($line =~ /^##.*/);
+	while($line and $line =~ /^##.*/);
 
-	# Check wether you are in the headers line
-	if ($line =~ /^#(.*)/) { $line = $1; }
+	# Check whether you are in the headers line
+	if ($line and $line =~ /^#(.*)/) { $line = $1; }
 
 	return $line;
 }#-----------------------------------------------------------
@@ -291,7 +197,7 @@ sub open_input
 	my $message = shift;
 
 	# Open input file
-	print $message;
+	print $message if $message;
 	open ($file_handler, "<", $file_name)
 		or die "Can't open $file_name for input : $!";
 }#-----------------------------------------------------------
@@ -331,18 +237,14 @@ sub get_fields_from
 # returns a dictionary with the positions of the fields
 {
 	my $inputfile = shift; # The input file
-	my @fields = ();	# The fields to search
-	while (my $field = shift) { push @fields, $field; }
-
-	# Get the fields
-	my @fields = get_vcf_fields($inputfile);
+	my @fields = @_;	# The fields to search
+		# If fields weren't specified, get all available ones
+		@fields = get_vcf_fields($inputfile) unless (@_);
 
 	# Get the column position of the searched fields
-	my %fields = ();
-	foreach my $field (@fields)
-	{
-		$fields{$field} = get_col_number($field, \@fields);
-	}
+	my %fields = map {
+					$_ => get_col_number($_, \@fields)
+				} @fields;
 
 	return %fields;
 }#-----------------------------------------------------------
@@ -359,7 +261,7 @@ sub get_col_number
 		return $i if ($col_name eq $fields[$i]);
 	}
 
-	die "Column '$colname' not found!\n!";
+	die "Column '$col_name' not found!\n!";
 }#-----------------------------------------------------------
 
 sub print_fields
@@ -367,17 +269,16 @@ sub print_fields
 # Print orderly the values corresponding to the given keys of the hash
 # Prints in TSV format
 {
+	my $output = shift;
 	my %hash = %{shift()};
 	my @keys = @{shift()};
 
 	# Print the given fields
 	foreach my $key (@keys)
 	{
-		print "$hash{$key}\t";
+		print $output "$hash{$key}\t";
 	}
 	print "\n";
-
-	return;
 }#-----------------------------------------------------------
 
 sub print_hash
@@ -393,12 +294,12 @@ sub uniq
 # Remove repeated entries from array
 {
 	my @array = @{shift()};
-	my %seen;
 
+	my %seen;
 	return grep !($seen{$_}++), @array;
 }#-----------------------------------------------------------
 
-sub get_genes
+sub get_affected_genes
 # Get the affected genes for the mutation
 {
 	my $line = shift;
@@ -408,14 +309,14 @@ sub get_genes
 	foreach my $gene (@genes)
 	{
 		#Get common name if not provided
-		$display_label = get_display_label($gene);
+		my $display_label = get_display_label($gene);
 		$gene = "$gene($display_label)";
 	}
 
 	return \@genes
 }#-----------------------------------------------------------
 
-sub get_display_label()
+sub get_display_label
 # Get the display label for the genes in the gene array
 {
 	my $gene_id = shift;
@@ -437,4 +338,196 @@ sub get_display_label()
 	}
 
 	return $gene_name{$gene_id};
+}#-----------------------------------------------------------
+
+sub get_consequence_data
+# Get the consequence data as a hash array from the mutation line
+{
+    my $line = shift;
+
+    # Get the CONSEQUENCE field
+    $line =~ /CONSEQUENCE=(.*?);/;
+
+    # Split multiple consequences
+    my @consequences
+		= map {
+                my @consequence=split /\|/, $_;
+                {   'gene_symbol'	=>	$consequence[0],
+					'gene_affected' =>  $consequence[1],
+					'gene_strand' =>  $consequence[2],
+					'transcript_name' =>  $consequence[3],
+					'transcript_affected' =>  $consequence[4],
+					'protein_affected' =>  $consequence[5],
+                    'consequence_type'  => $consequence[6],
+					'cds_mutation' =>  $consequence[7],
+					'aa_mutation' =>  $consequence[8]
+                };
+			} split( /,/ , $1);
+
+	return \@consequences;
+}#-----------------------------------------------------------
+
+sub get_occurrence_data
+# Get the occurrence data as a hash array from the mutation line
+{
+	my $line = shift;
+
+	# Get the OCCURRENCE field
+	$line =~ /OCCURRENCE=(.*?);/;
+
+	# Split multiple occurrences
+    my @occurrences
+		= map {
+                my @occurrence = split /\|/, $_;
+                {   'project_code'	=>	$occurrence[0],
+					'affected_donors' =>  $occurrence[1],
+					'tested_donors' =>  $occurrence[2],
+					'frequency' =>  $occurrence[3]
+                };
+			} split( /,/ , $1);
+
+    # Get global occurrence
+	$line =~ /affected_donors=(.*?);.*project_count=(.*?);.*tested_donors=(.*?)$/;
+	my %global_occurrence = (
+		'project_code'	=>	'global',
+		'affected_donors'	=>	$1,
+		'project_count'	=>	$2,
+		'tested_donors'	=>	$3
+		);
+
+	return (\%global_occurrence, \@occurrences);
+}#-----------------------------------------------------------
+
+sub dumper
+# Returns the preety printed content of the given structure
+{
+	my $structure = shift;
+	my $name = shift;
+
+	return Data::Dumper->Dump([$structure], [$name]);
+}#-----------------------------------------------------------
+
+sub tweet
+# Prints the content of the given structure
+{
+	my $structure = shift;
+	my $name = shift;
+
+	print dumper($structure, $name);
+}#-----------------------------------------------------------
+
+sub get_gene_query_data
+# Get the relevant data for the given gene (given display label or stable ID)
+{
+	my $gene = shift; # may be display label or stable id
+
+	my $gene_id = undef;
+	if ($gene)
+	{
+		if ($gene =~ /ENSG[0-9.]*/) # User provided stable ID
+		{
+			$gene_id = $gene;
+			# Get common name
+			$gene = get_display_label($gene_id);
+		}
+		elsif (lc $gene eq 'all') # User wants to search in all genes
+		{
+			$gene = '';
+		}
+		else # User provided the display label
+		{
+			$gene_id = get_gene_id($gene);
+			$gene_name{$gene_id} = $gene;
+		}
+	}
+
+	my $gene_str = ($gene) ? "$gene_name{$gene_id}($gene_id)" : "All";
+	my $gene_re = ($gene_id) ? qr/$gene_id/ : qr/.*/;
+
+	return ($gene, $gene_id, $gene_str, $gene_re);
+}#-----------------------------------------------------------
+
+sub get_project_query_data
+# Get the relevant data for the given project
+{
+	my $project = shift;
+
+	# Stringify project
+	my $project_str = ($project) ? $opts{project} : "All";
+	# Compile a REGEX with the project name
+	my $project_re = ($opts{project}) ? qr/$opts{project}/ : qr/.*/;
+
+	return ($project_str, $project_re);
+}#-----------------------------------------------------------
+
+sub split_in_fields
+# Get a hash with the line decomposed in fields
+{
+	my %fields = %{ shift() };
+	my @line = split( /\t/, shift() );
+
+	return map { $_ => $line[$fields{$_}] } keys %fields;
+}#-----------------------------------------------------------
+
+sub get_consequence_string
+# Get a string with the consequence data for the mutation
+{
+	my $line = shift;
+
+	my @consequences = map {
+		my $string = $_->{consequence_type};
+		my $gene = $_->{gene_affected};
+		$string .= ($gene) ? "\@$gene(".get_display_label($gene).")" : '';
+		$string;
+	} @{get_consequence_data($line)};
+
+	return join( ',', uniq(\@consequences) );
+}#-----------------------------------------------------------
+
+sub get_occurrence_strings
+# Get a string with the consequence data for the mutation
+{
+	my $line = shift;
+
+	# Get occurrence data
+	my ($global, $occurrences) = get_occurrence_data($line);
+
+	# Occurrences in each project
+	my @occurrences = map {
+		"$_->{project_code}($_->{affected_donors}/$_->{tested_donors})"
+	} @{ $occurrences };
+
+	# Global occurrence of the mutation
+	my $global_occurrence = "$global->{affected_donors}/$global->{tested_donors}($global->{project_count} projects)";
+
+	return ( join( ',', @occurrences ),
+			 $global_occurrence
+		);
+}#-----------------------------------------------------------
+
+sub parse_mutation
+# Get a hash with the mutation data to print
+{
+	my $line = shift;
+	my $fields = shift;
+
+	# Split line in fields
+	my %line = split_in_fields($fields, $line);
+
+	#Get consequence data
+	my $consequences = get_consequence_string($line);
+
+	# Get occurrence data
+	my ($occurrences, $global_occurrence) = get_occurrence_strings($line);
+
+	my %mutation = (
+			'MUTATION_ID'	=>	$line{ID},
+			'POSITION'	=>	"Chrom$line{CHROM}($line{POS})",
+			'MUTATION'	=>	"$line{REF}>$line{ALT}",
+			'CONSEQUENCES'	=>	$consequences,
+			'PROJ_AFFECTED_DONORS'	=>	$occurrences,
+			'TOTAL_AFFECTED_DONORS'	=>	$global_occurrence
+			);
+
+	return %mutation;
 }#-----------------------------------------------------------
