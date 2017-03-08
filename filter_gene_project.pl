@@ -95,7 +95,7 @@ use Data::Dumper; # To preety print hashes easily
 	my ($project_str, $project_re) = get_project_query_data($opts{project});
 
 	# Assemble output fields
-	my @output_line_fields = ('MUTATION_ID', 'POSITION', 'MUTATION', 'CONSEQUENCES', 'PROJ_AFFECTED_DONORS', 'TOTAL_AFFECTED_DONORS');
+	my @output_line_fields = ('MUTATION_ID', 'POSITION', 'MUTATION', 'PROJ_AFFECTED_DONORS', 'TOTAL_AFFECTED_DONORS', 'CONSEQUENCES');
 
 	# Print heading lines
 	print $output "# Project: $project_str\tGene: $gene_str\n";
@@ -524,9 +524,9 @@ sub parse_mutation
 			'MUTATION_ID'	=>	$line{ID},
 			'POSITION'	=>	"Chrom$line{CHROM}($line{POS})",
 			'MUTATION'	=>	"$line{REF}>$line{ALT}",
-			'CONSEQUENCES'	=>	$consequences,
-			'PROJ_AFFECTED_DONORS'	=>	$occurrences,
-			'TOTAL_AFFECTED_DONORS'	=>	$global_occurrence
+			'TOTAL_AFFECTED_DONORS'	=>	$global_occurrence,
+            'PROJ_AFFECTED_DONORS'	=>	$occurrences,
+            'CONSEQUENCES'	=>	$consequences
 			);
 
 	return %mutation;
