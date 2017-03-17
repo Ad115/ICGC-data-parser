@@ -45,7 +45,7 @@ The script retrieves the next fields:
  - POSITION
  - MUTATION
  - TOTAL_AFFECTED_DONORS
- - PROJ_AFFECTED_DONORS    
+ - PROJ_AFFECTED_DONORS
  - CONSEQUENCES
 
 #### Usage:
@@ -56,23 +56,25 @@ filter_gene_project.pl [--gene=<gene name>] [--project=<ICGC project name>] [--i
 The user provides the gene to search for, the project the input file (ICGC's SSM file) and the desired output file.
 
 #### Example output
-For the command `filter_gene_project.pl -g TP53 -p BRCA-EU -i $ICGC_DATA` the output is:
+For the command `filter_gene_project.pl -g TP53 -p BRCA-EU -i $ICGC_DATA` the first 7 lines of output are:
 ```
 # Project: BRCA-EU      Gene: TP53(ENSG00000141510)
-MUTATION_ID     POSITION        MUTATION        CONSEQUENCES    PROJ_AFFECTED_DONORS    TOTAL_AFFECTED_DONORS
-MU65520841      Chrom17(7560698)        T>A     3_prime_UTR_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53),downstream_gene_variant@ENSG00000129244(ATP1B2)    BRCA-EU(1/560)  1/10638(1 projects)
-MU64389958      Chrom17(7560786)        C>G     3_prime_UTR_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53),downstream_gene_variant@ENSG00000129244(ATP1B2)    BRCA-EU(1/560)  1/10638(1 projects)
-MU2068497       Chrom17(7562142)        G>A     intergenic_region,downstream_gene_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53)      BRCA-UK(1/117),BRCA-EU(1/560)   2/10638(2 projects)
-MU65890900      Chrom17(7564637)        C>T     intergenic_region,downstream_gene_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53)      BRCA-EU(1/560)  1/10638(1 projects)
-MU66856006      Chrom17(7564667)        T>C     intergenic_region,downstream_gene_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53)      BRCA-EU(1/560)  1/10638(1 projects)
+MUTATION_ID     POSITION        MUTATION        PROJ_AFFECTED_DONORS    TOTAL_AFFECTED_DONORS   CONSEQUENCES
+MU65520841      Chrom17(7560698)        T>A     BRCA-EU(1/560)  1/10638(1 projects)     3_prime_UTR_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53),downstream_gene_variant@ENSG00000129244(ATP1B2)
+MU64389958      Chrom17(7560786)        C>G     BRCA-EU(1/560)  1/10638(1 projects)     3_prime_UTR_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53),downstream_gene_variant@ENSG00000129244(ATP1B2)
+MU2068497       Chrom17(7562142)        G>A     BRCA-UK(1/117),BRCA-EU(1/560)   2/10638(2 projects)     intergenic_region,downstream_gene_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53)
+MU65890900      Chrom17(7564637)        C>T     BRCA-EU(1/560)  1/10638(1 projects)     intergenic_region,downstream_gene_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53)
+MU66856006      Chrom17(7564667)        T>C     BRCA-EU(1/560)  1/10638(1 projects)     intergenic_region,downstream_gene_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53)
+MU65622575      Chrom17(7565120)        A>G     BRCA-EU(1/560)  1/10638(1 projects)     downstream_gene_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53),3_prime_UTR_variant@ENSG00000141510(TP53)
 ```
 
 This script is also important as the first step of other workflows, to learn more about it, read ***TODO:*** [The filtering script](https://github.com/Ad115/ICGC-data-parser/blob/develop/FILTER_GENE_PROJECT_README.md)
 
-### **Step 3** Counting of the recurrence data.
+### **Step 2** Counting of the recurrence data.
+
 ***TODO***
 
-### **Step 4** Display (plotting) and analysis of the results.
+### **Step 3** Display (plotting) and analysis of the results.
 ***TODO:*** `distribution-plots.nb`
 
 ### Complete workflow up to counting.
