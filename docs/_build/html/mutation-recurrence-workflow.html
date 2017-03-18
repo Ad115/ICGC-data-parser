@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>The mutation recurrence workflow &mdash; ICGC Data Parser 0.1 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="author" title="About these documents"
+              href="about.html"/>
+    <link rel="top" title="ICGC Data Parser 0.1 documentation" href="index.html"/>
+        <link rel="prev" title="Installation" href="installation.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="index.html" class="fa fa-home"> ICGC Data Parser</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About the ICGC-data-parser</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="about.html#download-and-installation">Download and installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="about.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="about.html#to-do"><em>TO DO</em></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="icgc-ssm-file.html">About the ICGC&#8217;s simple somatic mutations file</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="icgc-ssm-file.html#download">Download</a></li>
+<li class="toctree-l2"><a class="reference internal" href="icgc-ssm-file.html#structure">Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="icgc-ssm-file.html#interpreting-a-sample-mutation">Interpreting a sample mutation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-mysql">Installing mySQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-expat">Installing Expat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-bioperl">Installing BioPerl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-ensembl-perl-api">Installing Ensembl Perl API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">The mutation recurrence workflow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#description">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-structure-logic">Basic structure logic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#results">Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#appendix-i-implementation-s"><em>Appendix I</em>: Implementation(s)</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">ICGC Data Parser</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>The mutation recurrence workflow</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/mutation-recurrence-workflow.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="the-mutation-recurrence-workflow">
+<h1>The mutation recurrence workflow<a class="headerlink" href="#the-mutation-recurrence-workflow" title="Permalink to this headline">¶</a></h1>
+<p>Documentation for the mutation recurrence workflow. Including description, basic structure logic, description of the implementations and results.</p>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>In general, the mutation recurrence workflow automates the process of extracting reccurrence of mutations across patients, it answers the question: <em>How many mutations appear in multiple patients?</em> or, specifying further, <em>how many mutations are repeated in ``n`` different patients in a given cancer project and a given gene?</em></p>
+</div>
+<div class="section" id="basic-structure-logic">
+<h2>Basic structure logic<a class="headerlink" href="#basic-structure-logic" title="Permalink to this headline">¶</a></h2>
+<p>This workflow explodes the fact that the <a class="reference external" href="https://github.com/Ad115/ICGC-data-parser/blob/develop/SSM_DATA_README.md">ICGC data</a> already provides, for each mutation, the number of affected patients per project and accross all projects. So, the steps involved are the following:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><strong>Fetching of the recurrence data (no. of affected donors) for a cancer project and/or gene of interest</strong>  for each mutation from the raw mutation data (gene &#8220;all genes&#8221; and/or project &#8220;all projects&#8221; are allowed). This narrows the scope to only those mutations that are present in the given gene and the given project and from those only get the data that may be useful.</li>
+<li><strong>Counting of the recurrence data</strong>. Specifically, counting how many mutations recurr in <code class="docutils literal"><span class="pre">n</span></code> patients (the workflow question) for each <code class="docutils literal"><span class="pre">n</span></code> in <code class="docutils literal"><span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">...</span></code>. In this process the mutation identities are lost, and we are only left of the distribution of mutation recurrence across patients.</li>
+<li><strong>Display (plotting) and analysis of the results</strong>. This step involves plotting the resulting distribution (table) and doing analysis and interpretation of the results.</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="results">
+<h2>Results<a class="headerlink" href="#results" title="Permalink to this headline">¶</a></h2>
+<p>The following specifies the outputs seen at each step. This output serves as input to the next step.</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><strong>Fetching of the recurrence data (no. of affected donors) for a cancer project and/or gene of interest</strong></li>
+<li><strong>Counting of the recurrence data</strong>. Specifically, counting how many mutations recurr in <cite>n</cite> patients (the workflow question) for each <code class="docutils literal"><span class="pre">n</span></code> in <code class="docutils literal"><span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">...</span></code>. In this process the mutation identities are lost, and we are only left of the distribution of mutation recurrence across patients.</li>
+<li><strong>Display (plotting) and analysis of the results</strong>. This step involves plotting the resulting distribution (table) and doing analysis and interpretation of the results.</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="appendix-i-implementation-s">
+<h2><em>Appendix I</em>: Implementation(s)<a class="headerlink" href="#appendix-i-implementation-s" title="Permalink to this headline">¶</a></h2>
+<p><em>WARNING:</em> Subject to change in the near future.</p>
+<div class="section" id="step-1-fetching-of-the-recurrence-data-no-of-affected-donors-for-a-cancer-project-and-or-gene-of-interest">
+<h3><strong>Step 1</strong>. Fetching of the recurrence data (no. of affected donors) for a cancer project and/or gene of interest<a class="headerlink" href="#step-1-fetching-of-the-recurrence-data-no-of-affected-donors-for-a-cancer-project-and-or-gene-of-interest" title="Permalink to this headline">¶</a></h3>
+<p>This is implemented in the script <strong>filter_gene_project.pl</strong> which fetches important data from the raw data.</p>
+<dl class="docutils">
+<dt>The script retrieves the next fields:</dt>
+<dd><ul class="first last simple">
+<li>MUTATION_ID</li>
+<li>POSITION</li>
+<li>MUTATION</li>
+<li>TOTAL_AFFECTED_DONORS</li>
+<li>PROJ_AFFECTED_DONORS</li>
+<li>CONSEQUENCES</li>
+</ul>
+</dd>
+</dl>
+<div class="section" id="usage">
+<h4>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h4>
+<p>The user provides the gene to search for, the project the input file (ICGC&#8217;s SSM file) and the desired output file.</p>
+</div>
+<div class="section" id="example-output">
+<h4>Example output<a class="headerlink" href="#example-output" title="Permalink to this headline">¶</a></h4>
+<p>For the command <code class="docutils literal"><span class="pre">filter_gene_project.pl</span> <span class="pre">-g</span> <span class="pre">TP53</span> <span class="pre">-p</span> <span class="pre">BRCA-EU</span> <span class="pre">-i</span> <span class="pre">$ICGC_DATA</span></code> the first 7 lines of output are:</p>
+<p>This script is also important as the first step of other workflows, to learn more about it, read <strong>*TODO:*</strong> <a class="reference external" href="https://github.com/Ad115/ICGC-data-parser/blob/develop/FILTER_GENE_PROJECT_README.md">The filtering script</a></p>
+</div>
+</div>
+<div class="section" id="step-2-counting-of-the-recurrence-data">
+<h3><strong>Step 2</strong> Counting of the recurrence data.<a class="headerlink" href="#step-2-counting-of-the-recurrence-data" title="Permalink to this headline">¶</a></h3>
+<p><strong>*TODO*</strong></p>
+</div>
+<div class="section" id="step-3-display-plotting-and-analysis-of-the-results">
+<h3><strong>Step 3</strong> Display (plotting) and analysis of the results.<a class="headerlink" href="#step-3-display-plotting-and-analysis-of-the-results" title="Permalink to this headline">¶</a></h3>
+<p><strong>*TODO:*</strong> <cite>distribution-plots.nb</cite></p>
+</div>
+<div class="section" id="complete-workflow-up-to-counting">
+<h3>Complete workflow up to counting.<a class="headerlink" href="#complete-workflow-up-to-counting" title="Permalink to this headline">¶</a></h3>
+<p>The complete workflow up to the plotting is implemented in serial form in Perl/Bash language by the script <code class="docutils literal"><span class="pre">get_genes_info.pl</span></code>
+<strong>*TODO*</strong></p>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="installation.html" class="btn btn-neutral" title="Installation"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Andrés García García.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

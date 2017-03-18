@@ -1,0 +1,261 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>On the frequency of simple somatic mutations in cancer &mdash; ICGC Data Parser 0.1 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="author" title="About these documents"
+              href="about.html"/>
+    <link rel="top" title="ICGC Data Parser 0.1 documentation" href="index.html"/>
+        <link rel="prev" title="The mutation recurrence workflow" href="mutation-recurrence-workflow.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="index.html" class="fa fa-home"> ICGC Data Parser</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About the ICGC-data-parser</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="about.html#download-and-installation">Download and installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="about.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="about.html#to-do"><em>TO DO</em></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-mysql">Installing mySQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-expat">Installing Expat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-bioperl">Installing BioPerl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-ensembl-perl-api">Installing Ensembl Perl API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="icgc-ssm-file.html">About the ICGC&#8217;s simple somatic mutations file</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="icgc-ssm-file.html#download">Download</a></li>
+<li class="toctree-l2"><a class="reference internal" href="icgc-ssm-file.html#structure">Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="icgc-ssm-file.html#interpreting-a-sample-mutation">Interpreting a sample mutation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mutation-recurrence-workflow.html">The mutation recurrence workflow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#description">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#basic-structure-logic">Basic structure logic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#results">Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#appendix-i-implementation-s"><em>Appendix I</em>: Implementation(s)</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">On the frequency of simple somatic mutations in cancer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#approach">Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#methods">Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#results">Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusions">Conclusions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">ICGC Data Parser</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>On the frequency of simple somatic mutations in cancer</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/distributions-paper.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="on-the-frequency-of-simple-somatic-mutations-in-cancer">
+<h1>On the frequency of simple somatic mutations in cancer<a class="headerlink" href="#on-the-frequency-of-simple-somatic-mutations-in-cancer" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="abstract">
+<h2>Abstract<a class="headerlink" href="#abstract" title="Permalink to this headline">¶</a></h2>
+<p><strong>Genetic instability is a landmark of cancer, but simple patterns may be hidden behind it&#8217;s complex evolution laws. This paper presents the results of analysing the distribution of mutations accross genes of the ICGC simple somatic mutations data.</strong></p>
+</div>
+<div class="section" id="background">
+<h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<p>Cancer is a set of diseases characterized by genetic instability, frequently found as simple-somatic mutations genome wide. The study of this mutations may lead to new insights related to cancer origins, onset and propagation.
+The International Cancer Genome Consortium (ICGC) is an international scientific group, founded in 2008, whose goal is to obtain a comprehensive description of genomic, transcriptomic and epigenomic changes accross different tumor types of clinical and societal importance across the globe. For this goal, it has coordinated the analysis of thousands of samples of more than 10,000 patients at genetic, epigenomic and transcriptomic level. Although some of it&#8217;s data has restricted access, other is publicly available, such as simple somatic mutation data, copy-number mutation data, patients treatment data, etc.
+The ICGC releases it&#8217;s public data as Data Releases at an approximate rate of 2 per semester. The data is organized in Cancer Projects, which separate data from different cancer types and different countries. At the date, the most recent version is Data Release 23 (Dec 2016).
+Although the ICGC Data Releases are complete and useful data for many analysis purposes, it may be obtuse for simple information retrieval as is mostly raw data from the samples. The ICGC data parser is a suite of programs whose purpose is to facilitate the retrieval of simple, purposeful data from the ICGC Data Release archives, particularly from the simple somatic mutation (ssm) data.
+One of the questions that surges when looking at the ssm data is how many mutations are present in an average gene, and more generally, Are the mutations randomly distributed? and What is the distribution of mutations like accross genes?</p>
+</div>
+<div class="section" id="approach">
+<h2>Approach<a class="headerlink" href="#approach" title="Permalink to this headline">¶</a></h2>
+<p>We analyze the simple somatic mutations(ssm) data from the ICGC Data Releases to find the distribution of mutations accross genes. To keep things simple, we analyse only ssm data from the BRCA-EU project, which analyzes ductal breast cancer samples from the European Union.</p>
+</div>
+<div class="section" id="methods">
+<h2>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h2>
+<p>We made a Perl script as part of the <a class="reference external" href="https://github.com/Ad115/ICGC-data-parser">ICGC-data-parser</a> suite to find, in the BRCA-EU project, how many mutations were present in each gene. This is documented as the Mutation Distribution Workflow.</p>
+</div>
+<div class="section" id="results">
+<h2>Results<a class="headerlink" href="#results" title="Permalink to this headline">¶</a></h2>
+<p>The resulting distribution is in <a class="reference internal" href="#distribution"><span>Figure 1</span></a>.</p>
+<div class="figure" id="id2">
+<img alt="_images/distribution.png" id="distribution" src="_images/distribution.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 1:</strong> <em>Gene mutation frequency distribution</em></span><a class="headerlink" href="#distribution" title="Permalink to this image">¶</a></p>
+</div>
+<p>We can see that most genes fall in the range of 10-50 mutations in a very sharp peaked distribution leaned towards zero.
+To find a probability distribution to interpret the data, several distributions where tested with the aid of the Mathematica software. With the best fit showing a mixture of the Negative Binomial distribution (74%, <span class="math">\(r=4\)</span>, <span class="math">\(p=0.185\)</span>) and the Geometric Distribution (25%, <span class="math">\(p=0.0053\)</span>), fitted with a p value of <span class="math">\(7.72 \times 10 ^{-16}\)</span>. This is shown in <a class="reference internal" href="#best-fit"><span>Figure 2</span></a></p>
+<div class="figure" id="id3">
+<img alt="Best fit distribution plot" id="best-fit" src="_images/best-fit.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 2:</strong> <em>Probability density function of the best fit-distribution along with the normalized data.</em></span><a class="headerlink" href="#best-fit" title="Permalink to this image">¶</a></p>
+</div>
+<p>Besides that, we plotted the positions of the most representative genes in breast cancer according to <a class="reference internal" href="#yu2016" id="id1">[Yu2016]</a>. This is shown in <a class="reference internal" href="#main-genes"><span>Figure 3</span></a>.</p>
+<div class="figure" id="id4">
+<img alt="Main genes placement in the distribution" id="main-genes" src="_images/main-genes.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 3:</strong> <em>Positions in the distribution of the most representative genes in breast cancer</em></span><a class="headerlink" href="#main-genes" title="Permalink to this image">¶</a></p>
+</div>
+<p>The plot shows the genes are widely distributed along the tail of the distribution, and so, they themselves may suffice to characterize the distribution.</p>
+</div>
+<div class="section" id="conclusions">
+<h2>Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline">¶</a></h2>
+<p>The data shown gives a snapshot of the mutations that may be found in a tumour, and show that the mutation probabilities follow simple laws as shown by the appeareance of the Negative Binomial and the Geometric distribution.</p>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils citation" frame="void" id="yu2016" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[Yu2016]</a></td><td>Chong Yu, Jin Wang. <a class="reference external" href="http://dx.doi.org/10.1371/journal.pone.0157422">A Physical Mechanism and Global Quantification of Breast Cancer</a>. PLOS ONE 11, e0157422 (2016).</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="mutation-recurrence-workflow.html" class="btn btn-neutral" title="The mutation recurrence workflow"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Andrés García García.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

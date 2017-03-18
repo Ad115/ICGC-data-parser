@@ -21,13 +21,17 @@ To resume an interrupted download use the ``-c`` switch on the previous command.
 
 Then, the file can be extracted with the ``gunzip`` command.
 
+---------
 Structure
 ---------
+
 The ``simple_somatic_mutations.aggregated.vcf`` file, from now on referred as the SSM file, is a VCF file as specified in `HTS format specifications <https://samtools.github.io/hts-specs/>`_, and in particular, the SSM files are created using the `SnpEff annotation tool <http://snpeff.sourceforge.net/>`_.
 
 In general, the format is similar to a TSV file in which the comments are marked with ``##`` and the headers line with ``#`` and there is one line per simple-somatic-mutation found.
 
-### Fields and Header lines
+
+Fields and Header lines
+-----------------------
 
 Next are the 13 heading lines from a SSM file (data release 22)::
 
@@ -65,7 +69,7 @@ This is what we can see in those lines:
 .. _the-column-headers:
 
 The column headers
-~~~~~~~~~~~~~~~~~~
+------------------
 
 The data is split in these fields:
   - **CHROM**: The chromosome the mutation is in.
@@ -80,7 +84,7 @@ The data is split in these fields:
 .. _the-info-field:
   
 The INFO field
-~~~~~~~~~~~~~~
+--------------
 
 This field annotates predicted consequences, and seen occurrences of the current mutation. The consequences are as seen by the SnpEff package.
 
@@ -88,18 +92,21 @@ There may be multiple consecuences and occurrences of the same mutation, and tho
 
 In the file, *the parts are separated with a semicolon (* ``;`` *), and each part may have itself subfields, which are separated with pipes (* ``|`` *)*. 
 *Alternative parts* (e.g. different consequences for the mutation or occurrences in different cancer projects) *are separated by a comma (* ``,`` *)*.
-  - **CONSEQUENCE**: Mutation consequence predictions annotated by SnpEff. Which has itself the next subfields:
-    1. *gene_symbol,*
-    2. *gene_affected,*
-    3. *gene_strand,*
-    4. *transcript_name,*
-    5. *transcript_affected,*
-    6. *protein_affected,*
-    7. *consequence_type,*
-    8. *cds_mutation,*
-    9. *aa_mutation*
+
+  - **CONSEQUENCE:** Mutation consequence predictions annotated by SnpEff. Which has itself the next subfields:
+ 
+   1. *gene_symbol,*
+   2. *gene_affected,*
+   3. *gene_strand,*
+   4. *transcript_name,*
+   5. *transcript_affected,*
+   6. *protein_affected,*
+   7. *consequence_type,*
+   8. *cds_mutation,*
+   9. *aa_mutation*
 
   - **OCCURRENCE**: Mutation occurrence counts broken down by project. Which has itself the next subfields:
+ 
     1. *project_code,*
     2. *affected_donors,*
     3. *tested_donors,*
@@ -113,18 +120,21 @@ In the file, *the parts are separated with a semicolon (* ``;`` *), and each par
 
   - **tested_donors**: Total number of donors with SSM data available.
 
+------------------------------
 Interpreting a sample mutation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
 
 Now we come to try to read an example mutation from the data.
 
-The mutation:
-.............
-.. code-block::
+The mutation
+------------
+
+.. code-block:: none
+
 	#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
 	1       100000022       MU39532371      C       T       .       .       CONSEQUENCE=||||||intergenic_region||,RP11-413P11.1|ENSG00000224445|1|RP11-413P11.1-001|ENST00000438829||upstream_gene_variant||;OCCURRENCE=SKCA-BR|1|70|0.01429;affected_donors=1;mutation=C>T;project_count=1;tested_donors=10638
 
-The interpretation:
-...................
+The interpretation
+------------------
 
 We can see the data for the mutation **MU39532371**, which is in the chromosome number *1*, at the position *100000022*, and is defined as *C>T*, with no quality or filtering information available. We can also see in the INFO that this mutation has two consequences: one as a mutation ocurring in an intergenic region, and one as a mutation that affects the *ENSG00000224445* gene and it's *ENST00000438829* transcript provoking an *upstream_gene_variant*. Besides, it was found in a sample from the Great Britain's skin cancer ICGC project (*SKCA-BR*) with *1* patient affected out of the *70* in the project and of the *10638* accross all projects.

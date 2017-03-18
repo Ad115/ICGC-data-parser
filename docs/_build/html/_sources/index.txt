@@ -10,6 +10,10 @@ Contents:
    :maxdepth: 2
    :glob:
    
-   *
+   about
+   installation
+   icgc-ssm-file
+   mutation-recurrence-workflow
+   distributions-paper
    
 

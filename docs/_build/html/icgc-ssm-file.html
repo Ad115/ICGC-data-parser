@@ -33,6 +33,7 @@
         <link rel="author" title="About these documents"
               href="about.html"/>
     <link rel="top" title="ICGC Data Parser 0.1 documentation" href="index.html"/>
+        <link rel="next" title="REQUIREMENTS INSTALLATION README" href="installation.html"/>
         <link rel="prev" title="About the ICGC-data-parser" href="about.html"/> 
 
   
@@ -73,6 +74,15 @@
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">About the ICGC&#8217;s simple somatic mutations file</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#download">Download</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#structure">Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#interpreting-a-sample-mutation">Interpreting a sample mutation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">REQUIREMENTS INSTALLATION README</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-mysql">Installing mySQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-expat">Installing Expat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-bioperl">Installing BioPerl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-ensembl-perl-api">Installing Ensembl Perl API</a></li>
 </ul>
 </li>
 </ul>
@@ -122,11 +132,13 @@
 </div>
 <p>To resume an interrupted download use the <code class="docutils literal"><span class="pre">-c</span></code> switch on the previous command.</p>
 <p>Then, the file can be extracted with the <code class="docutils literal"><span class="pre">gunzip</span></code> command.</p>
+</div>
 <div class="section" id="structure">
-<h3>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h3>
+<h2>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal"><span class="pre">simple_somatic_mutations.aggregated.vcf</span></code> file, from now on referred as the SSM file, is a VCF file as specified in <a class="reference external" href="https://samtools.github.io/hts-specs/">HTS format specifications</a>, and in particular, the SSM files are created using the <a class="reference external" href="http://snpeff.sourceforge.net/">SnpEff annotation tool</a>.</p>
 <p>In general, the format is similar to a TSV file in which the comments are marked with <code class="docutils literal"><span class="pre">##</span></code> and the headers line with <code class="docutils literal"><span class="pre">#</span></code> and there is one line per simple-somatic-mutation found.</p>
-<p>### Fields and Header lines</p>
+<div class="section" id="fields-and-header-lines">
+<h3>Fields and Header lines<a class="headerlink" href="#fields-and-header-lines" title="Permalink to this headline">¶</a></h3>
 <p>Next are the 13 heading lines from a SSM file (data release 22):</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">##fileformat=VCFv4.1</span>
 <span class="c1">##INFO=&lt;ID=CONSEQUENCE,Number=.,Type=String,Description=&quot;Mutation consequence predictions annotated by SnpEff (subfields: gene_symbol|gene_affected|gene_strand|transcript_name|transcript_affected|protein_affected|consequence_type|cds_mutation|aa_mutation)&quot;&gt;</span>
@@ -157,8 +169,9 @@
 </ul>
 </dd>
 </dl>
+</div>
 <div class="section" id="the-column-headers">
-<span id="id1"></span><h4>The column headers<a class="headerlink" href="#the-column-headers" title="Permalink to this headline">¶</a></h4>
+<span id="id1"></span><h3>The column headers<a class="headerlink" href="#the-column-headers" title="Permalink to this headline">¶</a></h3>
 <dl class="docutils">
 <dt>The data is split in these fields:</dt>
 <dd><ul class="first last simple">
@@ -175,28 +188,36 @@
 </dl>
 </div>
 <div class="section" id="the-info-field">
-<span id="id2"></span><h4>The INFO field<a class="headerlink" href="#the-info-field" title="Permalink to this headline">¶</a></h4>
+<span id="id2"></span><h3>The INFO field<a class="headerlink" href="#the-info-field" title="Permalink to this headline">¶</a></h3>
 <p>This field annotates predicted consequences, and seen occurrences of the current mutation. The consequences are as seen by the SnpEff package.</p>
 <p>There may be multiple consecuences and occurrences of the same mutation, and those need to be clearly specified. Thus the complex form of this field.</p>
 <p>In the file, <em>the parts are separated with a semicolon (</em> <code class="docutils literal"><span class="pre">;</span></code> <em>), and each part may have itself subfields, which are separated with pipes (</em> <code class="docutils literal"><span class="pre">|</span></code> <em>)</em>.
 <em>Alternative parts</em> (e.g. different consequences for the mutation or occurrences in different cancer projects) <em>are separated by a comma (</em> <code class="docutils literal"><span class="pre">,</span></code> <em>)</em>.</p>
 <blockquote>
 <div><ul class="simple">
-<li><strong>CONSEQUENCE</strong>: Mutation consequence predictions annotated by SnpEff. Which has itself the next subfields:
-1. <em>gene_symbol,</em>
-2. <em>gene_affected,</em>
-3. <em>gene_strand,</em>
-4. <em>transcript_name,</em>
-5. <em>transcript_affected,</em>
-6. <em>protein_affected,</em>
-7. <em>consequence_type,</em>
-8. <em>cds_mutation,</em>
-9. <em>aa_mutation</em></li>
-<li><strong>OCCURRENCE</strong>: Mutation occurrence counts broken down by project. Which has itself the next subfields:
-1. <em>project_code,</em>
-2. <em>affected_donors,</em>
-3. <em>tested_donors,</em>
-4. <em>frequency</em></li>
+<li><strong>CONSEQUENCE:</strong> Mutation consequence predictions annotated by SnpEff. Which has itself the next subfields:</li>
+</ul>
+<blockquote>
+<div><ol class="arabic simple">
+<li><em>gene_symbol,</em></li>
+<li><em>gene_affected,</em></li>
+<li><em>gene_strand,</em></li>
+<li><em>transcript_name,</em></li>
+<li><em>transcript_affected,</em></li>
+<li><em>protein_affected,</em></li>
+<li><em>consequence_type,</em></li>
+<li><em>cds_mutation,</em></li>
+<li><em>aa_mutation</em></li>
+</ol>
+</div></blockquote>
+<ul class="simple">
+<li><strong>OCCURRENCE</strong>: Mutation occurrence counts broken down by project. Which has itself the next subfields:<ol class="arabic">
+<li><em>project_code,</em></li>
+<li><em>affected_donors,</em></li>
+<li><em>tested_donors,</em></li>
+<li><em>frequency</em></li>
+</ol>
+</li>
 <li><strong>affected_donors</strong>: Total number of donors with the current mutation.</li>
 <li><strong>mutation</strong>: Somatic mutation definition, in the form BEFORE&gt;AFTER.</li>
 <li><strong>project_count</strong>: Number of projects with the current mutation.</li>
@@ -204,17 +225,20 @@
 </ul>
 </div></blockquote>
 </div>
+</div>
 <div class="section" id="interpreting-a-sample-mutation">
-<h4>Interpreting a sample mutation<a class="headerlink" href="#interpreting-a-sample-mutation" title="Permalink to this headline">¶</a></h4>
+<h2>Interpreting a sample mutation<a class="headerlink" href="#interpreting-a-sample-mutation" title="Permalink to this headline">¶</a></h2>
 <p>Now we come to try to read an example mutation from the data.</p>
 <div class="section" id="the-mutation">
-<h5>The mutation:<a class="headerlink" href="#the-mutation" title="Permalink to this headline">¶</a></h5>
+<h3>The mutation<a class="headerlink" href="#the-mutation" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-none"><div class="highlight"><pre><span></span>#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+1       100000022       MU39532371      C       T       .       .       CONSEQUENCE=||||||intergenic_region||,RP11-413P11.1|ENSG00000224445|1|RP11-413P11.1-001|ENST00000438829||upstream_gene_variant||;OCCURRENCE=SKCA-BR|1|70|0.01429;affected_donors=1;mutation=C&gt;T;project_count=1;tested_donors=10638
+</pre></div>
+</div>
 </div>
 <div class="section" id="the-interpretation">
-<h5>The interpretation:<a class="headerlink" href="#the-interpretation" title="Permalink to this headline">¶</a></h5>
+<h3>The interpretation<a class="headerlink" href="#the-interpretation" title="Permalink to this headline">¶</a></h3>
 <p>We can see the data for the mutation <strong>MU39532371</strong>, which is in the chromosome number <em>1</em>, at the position <em>100000022</em>, and is defined as <em>C&gt;T</em>, with no quality or filtering information available. We can also see in the INFO that this mutation has two consequences: one as a mutation ocurring in an intergenic region, and one as a mutation that affects the <em>ENSG00000224445</em> gene and it&#8217;s <em>ENST00000438829</em> transcript provoking an <em>upstream_gene_variant</em>. Besides, it was found in a sample from the Great Britain&#8217;s skin cancer ICGC project (<em>SKCA-BR</em>) with <em>1</em> patient affected out of the <em>70</em> in the project and of the <em>10638</em> accross all projects.</p>
-</div>
-</div>
 </div>
 </div>
 </div>
@@ -224,6 +248,8 @@
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="installation.html" class="btn btn-neutral float-right" title="REQUIREMENTS INSTALLATION README">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="about.html" class="btn btn-neutral" title="About the ICGC-data-parser"><span class="fa fa-arrow-circle-left"></span> Previous</a>
