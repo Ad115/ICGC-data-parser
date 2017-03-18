@@ -33,7 +33,7 @@
         <link rel="author" title="About these documents"
               href="#"/>
     <link rel="top" title="ICGC Data Parser 0.1 documentation" href="index.html"/>
-        <link rel="next" title="About the ICGC’s simple somatic mutations file" href="icgc-ssm-file.html"/>
+        <link rel="next" title="How to install the Ensembl Perl API" href="installation.html"/>
         <link rel="prev" title="Welcome to ICGC Data Parser’s documentation!" href="index.html"/> 
 
   
@@ -72,9 +72,34 @@
 <li class="toctree-l2"><a class="reference internal" href="#to-do"><em>TO DO</em></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">How to install the Ensembl Perl API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-mysql">Installing mySQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-expat">Installing Expat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-bioperl">Installing BioPerl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-ensembl-perl-api">Installing Ensembl Perl API</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="icgc-ssm-file.html">About the ICGC&#8217;s simple somatic mutations file</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="icgc-ssm-file.html#download">Download</a></li>
 <li class="toctree-l2"><a class="reference internal" href="icgc-ssm-file.html#structure">Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="icgc-ssm-file.html#interpreting-a-sample-mutation">Interpreting a sample mutation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mutation-recurrence-workflow.html">The mutation recurrence workflow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#description">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#basic-structure-logic">Basic structure logic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#results">Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#appendix-i-implementation-s"><em>Appendix I</em>: Implementation(s)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="distribution-paper.html">On the frequency of simple somatic mutations in cancer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#abstract">Abstract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#approach">Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#methods">Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#results">Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#conclusions">Conclusions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#references">References</a></li>
 </ul>
 </li>
 </ul>
@@ -134,7 +159,7 @@
 </div>
 <div class="section" id="requisites-installation">
 <h3>Requisites installation<a class="headerlink" href="#requisites-installation" title="Permalink to this headline">¶</a></h3>
-<p>The main scripts are written in Perl and use the Ensembl Perl API for which detailed instructions of installation are in <span class="xref std std-ref">How to install the Ensembl Perl API</span>.</p>
+<p>The main scripts are written in Perl and use the Ensembl Perl API for which detailed instructions of installation are in <a class="reference internal" href="installation.html"><em>How to install the Ensembl Perl API</em></a>.</p>
 <p>Plotting and analysis of results are implemented in Wolfram Mathematica notebooks. <em>TODO:</em> Change it to a free platform or add alternate scripts in a free platform.</p>
 <p>The scripts in the <em>SunGridEngine-scripts</em> folder, as it&#8217;s name indicates, are designed for running in a Sun Grid Engine cluster and thus will break if tried to run on a typical personal computer. Despite this, they are mostly a convenience and their functionality is still in other alternative scriptsfor each pipeline. See the <a class="reference internal" href="#usage"><span>Usage</span></a> section for more details.</p>
 </div>
@@ -144,9 +169,9 @@
 <p>The scripts are divided in workflows or pipelines. The pipelines currently implemented are the following:</p>
 <blockquote>
 <div><ul class="simple">
-<li><strong>Mutation recurrence count</strong>: Automates the process of extracting reccurrence of mutations across patients, it answers the question: <em>How many mutations appear in multiple patients?</em> or, specifying further, <em>how many mutations are repeated in `n` different patients in a given cancer project and a given gene?</em> <em>TODO:</em> This workflow is further documented in <span class="xref std std-ref">The mutation recurrence workflow</span>.</li>
+<li><strong>Mutation recurrence count</strong>: Automates the process of extracting reccurrence of mutations across patients, it answers the question: <em>How many mutations appear in multiple patients?</em> or, specifying further, <em>how many mutations are repeated in `n` different patients in a given cancer project and a given gene?</em> This workflow is further documented in <a class="reference internal" href="mutation-recurrence-workflow.html"><em>The mutation recurrence workflow</em></a>.</li>
 <li><strong>Locating mutations in the genome</strong>: Automates the process of searching where does each mutation fall relative to a gene. In particular, it answers the questions: <em>How many (and which) mutations fall in INTRONIC, EXONIC or INTERGENIC regions?</em> and <em>if a mutation falls in an exon, which base of the codon does it affects?</em> <em>TODO:</em> This pipeline is further documented in <span class="xref std std-ref">The mutation locating workflow</span>.</li>
-<li><strong>Distribution of the mutations in the genes</strong>: Automation of the extraction of the distribution of mutations in the genes. It answers the question of <em>how many genes contain `x` number of mutations in a given gene or project?</em> <em>TODO:</em> This is further documented in <span class="xref std std-ref">The mutations distribution workflow</span>.</li>
+<li><strong>Distribution of the mutations in the genes</strong>: Automation of the extraction of the distribution of mutations in the genes. It answers the question of <em>how many genes contain `x` number of mutations in a given gene or project?</em> <em>TODO:</em> This is further documented in <a class="reference internal" href="distribution-paper.html"><em>The mutations distribution workflow</em></a>.</li>
 <li><strong>Simple Ensembl Perl API convenience scripts</strong>: These are small convenience scripts constructed with the intention to test the Ensembl Perl API but serve as integral programs on their own. These are found in the <a class="reference external" href="https://github.com/Ad115/ICGC-data-parser/tree/develop/ensembl_API">ensembl_API folder</a> . <em>TODO:</em> These are further documented in <span class="xref std std-ref">The Ensembl Perl API scripts</span>.</li>
 </ul>
 </div></blockquote>
@@ -167,7 +192,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="icgc-ssm-file.html" class="btn btn-neutral float-right" title="About the ICGC’s simple somatic mutations file">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="How to install the Ensembl Perl API">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral" title="Welcome to ICGC Data Parser’s documentation!"><span class="fa fa-arrow-circle-left"></span> Previous</a>

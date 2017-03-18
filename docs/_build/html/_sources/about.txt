@@ -35,7 +35,7 @@ To know more about this file, please read :doc:`About the ICGC's simple somatic 
 Requisites installation
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The main scripts are written in Perl and use the Ensembl Perl API for which detailed instructions of installation are in :ref:`How to install the Ensembl Perl API <installation>`.
+The main scripts are written in Perl and use the Ensembl Perl API for which detailed instructions of installation are in :doc:`How to install the Ensembl Perl API <installation>`.
 
 Plotting and analysis of results are implemented in Wolfram Mathematica notebooks. *TODO:* Change it to a free platform or add alternate scripts in a free platform.
 
@@ -49,11 +49,11 @@ Usage
 
 The scripts are divided in workflows or pipelines. The pipelines currently implemented are the following:
 
- -  **Mutation recurrence count**: Automates the process of extracting reccurrence of mutations across patients, it answers the question: *How many mutations appear in multiple patients?* or, specifying further, *how many mutations are repeated in `n` different patients in a given cancer project and a given gene?* *TODO:* This workflow is further documented in :ref:`The mutation recurrence workflow <mutation-recurrence-workflow>`.
+ -  **Mutation recurrence count**: Automates the process of extracting reccurrence of mutations across patients, it answers the question: *How many mutations appear in multiple patients?* or, specifying further, *how many mutations are repeated in `n` different patients in a given cancer project and a given gene?* This workflow is further documented in :doc:`The mutation recurrence workflow <mutation-recurrence-workflow>`.
 
  -  **Locating mutations in the genome**: Automates the process of searching where does each mutation fall relative to a gene. In particular, it answers the questions: *How many (and which) mutations fall in INTRONIC, EXONIC or INTERGENIC regions?* and *if a mutation falls in an exon, which base of the codon does it affects?* *TODO:* This pipeline is further documented in :ref:`The mutation locating workflow <mutation-locating-workflow>`.
 
- - **Distribution of the mutations in the genes**: Automation of the extraction of the distribution of mutations in the genes. It answers the question of *how many genes contain `x` number of mutations in a given gene or project?* *TODO:* This is further documented in :ref:`The mutations distribution workflow <mutation-distribution-workflow>`.
+ - **Distribution of the mutations in the genes**: Automation of the extraction of the distribution of mutations in the genes. It answers the question of *how many genes contain `x` number of mutations in a given gene or project?* *TODO:* This is further documented in :doc:`The mutations distribution workflow <distribution-paper>`.
 
  -  **Simple Ensembl Perl API convenience scripts**: These are small convenience scripts constructed with the intention to test the Ensembl Perl API but serve as integral programs on their own. These are found in the `ensembl_API folder <https://github.com/Ad115/ICGC-data-parser/tree/develop/ensembl_API>`_ . *TODO:* These are further documented in :ref:`The Ensembl Perl API scripts <ensembl-scripts>`.
 

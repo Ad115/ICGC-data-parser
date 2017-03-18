@@ -1,7 +1,7 @@
 
-============
-Installation
-============
+===================================
+How to install the Ensembl Perl API
+===================================
 
  Most of the scripts used are written in Perl using the Ensembl Perl API to access easily to the data in their databases. So, those libraries must be installed, and, in turn, they depend on BioPerl, Expat and mySQL! n(O.O)n
 
@@ -51,7 +51,8 @@ Installing BioPerl
 
  - Once there type:
  
- .. code-block::
+ .. code-block:: none
+ 
 	cpan>  install Module::Build
 	cpan>  o conf prefer_installer MB
 	cpan>  o conf commit
@@ -72,14 +73,16 @@ Installing Ensembl Perl API
 
  - First, choose a folder in which to install the library. In the following, I'll assume that folder is ~/ensembl-api. In that folder you will install and decompress the files:
  
-.. code-block::
+.. code-block:: bash
+
 	cd ~/ensembl-api
 	wget ftp://ftp.ensembl.org/pub/ensembl-api.tar.gz
 	sudo tar -zxvf ensembl-api.tar.gz
 
  - Now, you need to tell Perl where to find those files, so you must type the following:
 
-.. code-block::
+.. code-block:: bash
+
 	PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl/modules
 	PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl-compara/modules
 	PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl-variation/modules
