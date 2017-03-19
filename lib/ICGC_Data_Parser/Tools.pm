@@ -1,4 +1,4 @@
-package General;
+package ICGC_Data_Parser::Tools;
 	use strict;
 	use warnings;
 	use Exporter qw'import';

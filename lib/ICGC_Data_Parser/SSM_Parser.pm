@@ -1,4 +1,4 @@
-package SSM_Parser;
+package ICGC_Data_Parser::SSM_Parser;
 	use strict;
 	use warnings;
 	use Exporter qw'import';
@@ -11,7 +11,7 @@ package SSM_Parser;
 #============================================================
 
 use lib '.';
-	use General qw 'tweet';
+	use ICGC_Data_Parser::Tools qw 'tweet';
 
 #============================================================
 

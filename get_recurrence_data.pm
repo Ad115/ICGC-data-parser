@@ -44,9 +44,9 @@ Author: Andrés García García @ Oct 2016.
 END
 main(@ARGV) unless caller();
 
-use lib '.';
-    use SSM_Parser qw(:parse);
-    use General qw(:general_io);
+use lib './lib';
+    use ICGC_Data_Parser::SSM_Parser qw(:parse);
+    use ICGC_Data_Parser::Tools qw(:general_io);
 use Getopt::Long qw(:config bundling); # To parse command-line arguments
 
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
