@@ -35,6 +35,10 @@ Prints mutation recurrence data for each mutation, global and by project.
 	-o, --out
 		Name of the output file.
 		If not present output to standard output.
+		
+	-f, --offline
+		Don't connect to the Ensembl db
+		Requires the gene as stable ID or gene 'all'.
 
 	-h, --help
 		Show this text and exit.
@@ -42,13 +46,14 @@ Prints mutation recurrence data for each mutation, global and by project.
 Author: Andrés García García @ Oct 2016.
 
 END
-main(@ARGV) unless caller();
 
 use lib './lib';
     use ICGC_Data_Parser::SSM_Parser qw(:parse);
     use ICGC_Data_Parser::Tools qw(:general_io);
+
 use Getopt::Long qw(:config bundling); # To parse command-line arguments
 
+main(@ARGV) unless caller();
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 sub main
 {
@@ -59,6 +64,7 @@ sub main
         'out|o=s',
         'gene|g=s',
         'project|p=s',
+		'offline|f',
         'help|h'
         );
 
@@ -81,9 +87,10 @@ sub main
 ## WEB DATA INITIALIZATION
 
 	# Get gene's data
-	my ($gene_str, $gene_re) = @{ get_simple_gene_query_data($opt{gene}) };
+	my ($gene_str, $gene_re) = @{ get_gene_data($opt{gene}, $opt{offline}) };
+	
 	# Get project's data
-	my ($project_str, $project_re) = @{ get_project_query_data($opt{project}) };
+	my ($project_str, $project_re) = @{ get_project_data($opt{project}) };
 	# Initialize counter
 	my %count = ();
 	my %output = ();
@@ -133,16 +140,9 @@ sub main
 
 sub full_path
 # Recieves a file name, returns the absolute path
-# TODO: Needed better implementation.
 {
 	my $path = shift;
 
-	if ( $path =~ '^/')
-	{
-		return $path;
-	}
-	else
-	{
-		return "$ENV{PWD}/$path";
-	}
+	use File::Spec;
+	return File::Spec->rel2abs( $path ) ;
 }

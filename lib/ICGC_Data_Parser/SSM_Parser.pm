@@ -1,17 +1,19 @@
+
 package ICGC_Data_Parser::SSM_Parser;
 	use strict;
 	use warnings;
 	use Exporter qw'import';
 
-	our @EXPORT_OK = qw'get_vcf_line get_vcf_fields parse_fields parse_mutation get_simple_gene_query_data get_project_query_data';
+	our @EXPORT_OK = qw'get_vcf_line get_vcf_fields parse_fields parse_mutation get_gene_data get_project_data';
 	our %EXPORT_TAGS = (
-		'parse' => [qw'get_vcf_line get_vcf_fields parse_fields parse_mutation get_simple_gene_query_data get_project_query_data']
+		'parse' => [qw'get_vcf_line parse_fields parse_mutation get_gene_data get_project_data']
 	);
 
 #============================================================
 
 use lib '.';
 	use ICGC_Data_Parser::Tools qw 'tweet';
+	use ICGC_Data_Parser::Ensembl qw(get_gene_query_data);
 
 #============================================================
 
@@ -75,37 +77,74 @@ use lib '.';
 		die "Column '$col_name' not found!\n!";
 	}#-----------------------------------------------------------
 
-	sub get_simple_gene_query_data
-	# Get the relevant data for the given gene (given stable id)
+	sub get_gene_or_project_str
+	# Get a printable form of the given gene/project
 	{
-		my ($gene_id) = @_; # display label and stable id
-
-		if ( $gene_id && lc $gene_id eq 'all') { 
-			# User wants to search in all genes
-			$gene_id = '';
+		my ($gene_project, $gene_project_id) = @_; # display label and stable id
+		
+		if ( $gene_project && lc $gene_project eq 'all') { 
+			# User specified all genes/projects
+			$gene_project = '';
+		}
+		
+		my $gene_project_str;
+		if ( $gene_project && $gene_project_id ){
+			$gene_project_str = "$gene_project($gene_project_id)";
+		} elsif($gene_project_id){
+			$gene_project_str = $gene_project_id;
+		} else {
+			$gene_project_str = ($gene_project) ? $gene_project : 'All';
 		}
 
-		my $gene_str = ($gene_id) ? "$gene_id" : "All";
-		my $gene_re = ($gene_id) ? qr/$gene_id/ : qr/.*/;
+		return $gene_project_str;
+	}#-----------------------------------------------------------
+	
+	sub get_gene_or_project_re
+	# Get a printable form of the given gene/project
+	{
+		my $gene_project = shift; # display label and stable id
+		
+		my $gene_project_re = ($gene_project) ? qr/$gene_project/ : qr/.*/;
 
+		return $gene_project_re;
+	}#-----------------------------------------------------------
+
+	sub get_gene_or_project_data
+	# Get the relevant data for the given project
+	{
+		my ($gene_project, $gene_project_id) = @_; # get gene/project
+
+		my $gene_project_str = get_gene_or_project_str(@_);
+		my $gene_project_re = ($gene_project_id) ? get_gene_or_project_re($gene_project_id) : get_gene_or_project_re($gene_project);
+
+		return [$gene_project_str, $gene_project_re];
+	}#-----------------------------------------------------------
+	
+	sub get_gene_data
+	{
+		my ($gene, $offline) = @_;
+		
+		my ($gene_name, $gene_id);
+		
+		# Check if user asked not to connect to Ensembl db
+		if( $offline ){
+			$gene_id = $gene;
+			$gene_name = '';
+		} else{
+			($gene_name, $gene_id) = @{ get_gene_query_data($gene) };
+		}
+
+		my ($gene_str, $gene_re) = @{ get_gene_or_project_data($gene_name, $gene_id) };
+		
 		return [$gene_str, $gene_re];
 	}#-----------------------------------------------------------
 
-	sub get_project_query_data
-	# Get the relevant data for the given project
+	sub get_project_data
 	{
 		my $project = shift;
-
-		if ( $project && lc $project eq 'all') { 
-			# User wants to search in all genes
-			$project = '';
-		}
-		# Stringify project
-		my $project_str = ($project) ? $project : "All";
-		# Compile a REGEX with the project name
-		my $project_re = ($project) ? qr/$project/ : qr/.*/;
-
-		return [$project_str, $project_re];
+		
+		# Get project's data
+		return get_gene_or_project_data($project);
 	}#-----------------------------------------------------------
 
 	sub split_in_fields
