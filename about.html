@@ -1,0 +1,256 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>About the ICGC-data-parser &mdash; ICGC Data Parser 0.1 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="author" title="About these documents"
+              href="#"/>
+    <link rel="top" title="ICGC Data Parser 0.1 documentation" href="index.html"/>
+        <link rel="next" title="How to install the Ensembl Perl API" href="installation.html"/>
+        <link rel="prev" title="Welcome to ICGC Data Parser’s documentation!" href="index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="index.html" class="fa fa-home"> ICGC Data Parser</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">About the ICGC-data-parser</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#download-and-installation">Download and installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#to-do"><em>TO DO</em></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">How to install the Ensembl Perl API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-mysql">Installing mySQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-expat">Installing Expat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-bioperl">Installing BioPerl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-ensembl-perl-api">Installing Ensembl Perl API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="icgc-ssm-file.html">About the ICGC&#8217;s simple somatic mutations file</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="icgc-ssm-file.html#download">Download</a></li>
+<li class="toctree-l2"><a class="reference internal" href="icgc-ssm-file.html#structure">Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="icgc-ssm-file.html#interpreting-a-sample-mutation">Interpreting a sample mutation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mutation-recurrence-workflow.html">The mutation recurrence workflow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#description">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#basic-structure-logic">Basic structure logic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#results">Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#appendix-i-implementation-s"><em>Appendix I</em>: Implementation(s)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="distribution-paper.html">On the frequency of simple somatic mutations in cancer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#abstract">Abstract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#approach">Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#methods">Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#results">Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#conclusions">Conclusions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distribution-paper.html#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">ICGC Data Parser</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>About the ICGC-data-parser</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/about.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="about-the-icgc-data-parser">
+<h1>About the ICGC-data-parser<a class="headerlink" href="#about-the-icgc-data-parser" title="Permalink to this headline">¶</a></h1>
+<p>Scripts to automate parsing of data from the International Cancer Genome Consortium data releases, in particular, the simple somatic mutation aggregates.</p>
+<div class="section" id="download-and-installation">
+<h2>Download and installation<a class="headerlink" href="#download-and-installation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="scripts">
+<h3>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline">¶</a></h3>
+<p>To download the files in this repo, you can use the green Download button on the <a class="reference external" href="https://github.com/Ad115/ICGC-data-parser">GitHub repository</a> or enter the following in a Unix terminal</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>git clone https://github.com/Ad115/ICGC-data-parser.git
+</pre></div>
+</div>
+</div>
+<div class="section" id="data-download">
+<h3>Data download<a class="headerlink" href="#data-download" title="Permalink to this headline">¶</a></h3>
+<p>The base data for the scripts is the ICGC&#8217;s aggregated of the simple somatic mutation data. Which can be downloded using</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>wget https://dcc.icgc.org/api/v1/download?fn<span class="o">=</span>/current/Summary/simple_somatic_mutation.aggregated.vcf.gz
+</pre></div>
+</div>
+<p>To know more about this file, please read <a class="reference internal" href="icgc-ssm-file.html"><em>About the ICGC&#8217;s simple somatic mutations file</em></a></p>
+</div>
+<div class="section" id="requisites-installation">
+<h3>Requisites installation<a class="headerlink" href="#requisites-installation" title="Permalink to this headline">¶</a></h3>
+<p>The main scripts are written in Perl and use the Ensembl Perl API for which detailed instructions of installation are in <a class="reference internal" href="installation.html"><em>How to install the Ensembl Perl API</em></a>.</p>
+<p>Plotting and analysis of results are implemented in Wolfram Mathematica notebooks. <em>TODO:</em> Change it to a free platform or add alternate scripts in a free platform.</p>
+<p>The scripts in the <em>SunGridEngine-scripts</em> folder, as it&#8217;s name indicates, are designed for running in a Sun Grid Engine cluster and thus will break if tried to run on a typical personal computer. Despite this, they are mostly a convenience and their functionality is still in other alternative scriptsfor each pipeline. See the <a class="reference internal" href="#usage"><span>Usage</span></a> section for more details.</p>
+</div>
+</div>
+<div class="section" id="usage">
+<span id="id1"></span><h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>The scripts are divided in workflows or pipelines. The pipelines currently implemented are the following:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Mutation recurrence count</strong>: Automates the process of extracting reccurrence of mutations across patients, it answers the question: <em>How many mutations appear in multiple patients?</em> or, specifying further, <em>how many mutations are repeated in `n` different patients in a given cancer project and a given gene?</em> This workflow is further documented in <a class="reference internal" href="mutation-recurrence-workflow.html"><em>The mutation recurrence workflow</em></a>.</li>
+<li><strong>Locating mutations in the genome</strong>: Automates the process of searching where does each mutation fall relative to a gene. In particular, it answers the questions: <em>How many (and which) mutations fall in INTRONIC, EXONIC or INTERGENIC regions?</em> and <em>if a mutation falls in an exon, which base of the codon does it affects?</em> <em>TODO:</em> This pipeline is further documented in <span class="xref std std-ref">The mutation locating workflow</span>.</li>
+<li><strong>Distribution of the mutations in the genes</strong>: Automation of the extraction of the distribution of mutations in the genes. It answers the question of <em>how many genes contain `x` number of mutations in a given gene or project?</em> <em>TODO:</em> This is further documented in <a class="reference internal" href="distribution-paper.html"><em>The mutations distribution workflow</em></a>.</li>
+<li><strong>Simple Ensembl Perl API convenience scripts</strong>: These are small convenience scripts constructed with the intention to test the Ensembl Perl API but serve as integral programs on their own. These are found in the <a class="reference external" href="https://github.com/Ad115/ICGC-data-parser/tree/develop/ensembl_API">ensembl_API folder</a> . <em>TODO:</em> These are further documented in <span class="xref std std-ref">The Ensembl Perl API scripts</span>.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="to-do">
+<h2><em>TO DO</em><a class="headerlink" href="#to-do" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>[ ] Cleanup every workflow and document it.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="installation.html" class="btn btn-neutral float-right" title="How to install the Ensembl Perl API">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to ICGC Data Parser’s documentation!"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Andrés García García.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

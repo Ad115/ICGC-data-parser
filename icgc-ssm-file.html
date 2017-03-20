@@ -1,0 +1,330 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>About the ICGC’s simple somatic mutations file &mdash; ICGC Data Parser 0.1 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="author" title="About these documents"
+              href="about.html"/>
+    <link rel="top" title="ICGC Data Parser 0.1 documentation" href="index.html"/>
+        <link rel="next" title="The mutation recurrence workflow" href="mutation-recurrence-workflow.html"/>
+        <link rel="prev" title="Installation" href="installation.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="index.html" class="fa fa-home"> ICGC Data Parser</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About the ICGC-data-parser</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="about.html#download-and-installation">Download and installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="about.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="about.html#to-do"><em>TO DO</em></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-mysql">Installing mySQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-expat">Installing Expat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-bioperl">Installing BioPerl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-ensembl-perl-api">Installing Ensembl Perl API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">About the ICGC&#8217;s simple somatic mutations file</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#download">Download</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#structure">Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#interpreting-a-sample-mutation">Interpreting a sample mutation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mutation-recurrence-workflow.html">The mutation recurrence workflow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#description">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#basic-structure-logic">Basic structure logic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#results">Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation-recurrence-workflow.html#appendix-i-implementation-s"><em>Appendix I</em>: Implementation(s)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="distributions-paper.html">On the frequency of simple somatic mutations in cancer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="distributions-paper.html#abstract">Abstract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributions-paper.html#background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributions-paper.html#approach">Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributions-paper.html#methods">Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributions-paper.html#results">Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributions-paper.html#conclusions">Conclusions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributions-paper.html#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">ICGC Data Parser</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>About the ICGC&#8217;s simple somatic mutations file</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/icgc-ssm-file.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="about-the-icgc-s-simple-somatic-mutations-file">
+<h1>About the ICGC&#8217;s simple somatic mutations file<a class="headerlink" href="#about-the-icgc-s-simple-somatic-mutations-file" title="Permalink to this headline">¶</a></h1>
+<p>This is about the infamous <code class="docutils literal"><span class="pre">simple_somatic_mutations.aggregated.vcf</span></code> file presented in each ICGC Data Release which contain an aggregated of the information of all simple somatic mutations found accross all patients in all cancer projects is found.</p>
+<p>The top 500 lines of this file (ICGC data release 22) can be found at the <a class="reference external" href="https://github.com/Ad115/ICGC-data-parser/tree/develop/sample-data/ssm_head500.vcf">ssm_head500.vcf</a> file in the <code class="docutils literal"><span class="pre">sample-data</span></code> folder of this repo.</p>
+<div class="section" id="download">
+<h2>Download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h2>
+<p>This file can be downloaded from <a class="reference external" href="https://dcc.icgc.org/releases">the ICGC site data releases site</a> or using:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>wget https://dcc.icgc.org/api/v1/download?fn<span class="o">=</span>/current/Summary/simple_somatic_mutation.aggregated.vcf.gz
+</pre></div>
+</div>
+<p>To resume an interrupted download use the <code class="docutils literal"><span class="pre">-c</span></code> switch on the previous command.</p>
+<p>Then, the file can be extracted with the <code class="docutils literal"><span class="pre">gunzip</span></code> command.</p>
+</div>
+<div class="section" id="structure">
+<h2>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">simple_somatic_mutations.aggregated.vcf</span></code> file, from now on referred as the SSM file, is a VCF file as specified in <a class="reference external" href="https://samtools.github.io/hts-specs/">HTS format specifications</a>, and in particular, the SSM files are created using the <a class="reference external" href="http://snpeff.sourceforge.net/">SnpEff annotation tool</a>.</p>
+<p>In general, the format is similar to a TSV file in which the comments are marked with <code class="docutils literal"><span class="pre">##</span></code> and the headers line with <code class="docutils literal"><span class="pre">#</span></code> and there is one line per simple-somatic-mutation found.</p>
+<div class="section" id="fields-and-header-lines">
+<h3>Fields and Header lines<a class="headerlink" href="#fields-and-header-lines" title="Permalink to this headline">¶</a></h3>
+<p>Next are the 13 heading lines from a SSM file (data release 22):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">##fileformat=VCFv4.1</span>
+<span class="c1">##INFO=&lt;ID=CONSEQUENCE,Number=.,Type=String,Description=&quot;Mutation consequence predictions annotated by SnpEff (subfields: gene_symbol|gene_affected|gene_strand|transcript_name|transcript_affected|protein_affected|consequence_type|cds_mutation|aa_mutation)&quot;&gt;</span>
+<span class="c1">##INFO=&lt;ID=OCCURRENCE,Number=.,Type=String,Description=&quot;Mutation occurrence counts broken down by project (subfields: project_code|affected_donors|tested_donors|frequency)&quot;&gt;</span>
+<span class="c1">##INFO=&lt;ID=affected_donors,Number=1,Type=Integer,Description=&quot;Number of donors with the current mutation&quot;&gt;</span>
+<span class="c1">##INFO=&lt;ID=mutation,Number=1,Type=String,Description=&quot;Somatic mutation definition&quot;&gt;</span>
+<span class="c1">##INFO=&lt;ID=project_count,Number=1,Type=Integer,Description=&quot;Number of projects with the current mutation&quot;&gt;</span>
+<span class="c1">##INFO=&lt;ID=tested_donors,Number=1,Type=Integer,Description=&quot;Total number of donors with SSM data available&quot;&gt;</span>
+<span class="c1">##comment=ICGC open access Simple Somatic Mutations (SSM) data dump in VCF format</span>
+<span class="c1">##fileDate=2016-08-16T16:32:17.882-04:00</span>
+<span class="c1">##geneModel=ENSEMBL75</span>
+<span class="c1">##reference=GRCh37</span>
+<span class="c1">##source=ICGC22-12</span>
+<span class="c1">#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>This is what we can see in those lines:</dt>
+<dd><ul class="first last simple">
+<li><em>fileformat</em>: A line specifying the VCF version (4.1).</li>
+<li><em>INFO</em>: Six lines breaking down each part of the INFO field.</li>
+<li><em>comment</em>:A general description of the file (<em>ICGC open access Simple Somatic Mutations (SSM) data dump in VCF format</em>).</li>
+<li><em>fileDate</em>: The creation date of the file (August 2016).</li>
+<li><em>geneModel</em>: A specification of the gene model (ENSEMBL75). This is the nameset used for the annotations in the INFO field. In particular the identifiers and names in the CONSEQUENCE subfield. <strong>WATCH OUT!</strong> Some genes, transcripts and identifiers annotated may have changed for the current release and so may not be found in a direct query. At the moment of writing, the most recent build is Ensembl 87.</li>
+<li><em>reference</em>: The genome assembly version used for the positions in the reference genome (GRCh37). <strong>WATCH OUT THIS!</strong> The positions may have dramatic changes from one assembly to another. At the moment, the most recent version of the human genome reference is the GRCh38 assembly.</li>
+<li><em>source</em>: The data source (ICGC Data release 22)</li>
+<li><strong>The column headers</strong>: See section <a class="reference internal" href="#the-column-headers"><span>The column headers</span></a>.</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="the-column-headers">
+<span id="id1"></span><h3>The column headers<a class="headerlink" href="#the-column-headers" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>The data is split in these fields:</dt>
+<dd><ul class="first last simple">
+<li><strong>CHROM</strong>: The chromosome the mutation is in.</li>
+<li><strong>POS</strong>: The position in the chromosome of the start of the mutation. This is in the reference assembly specified in the initial comments.</li>
+<li><strong>ID</strong>: The current mutation&#8217;s ICGC identifier.</li>
+<li><strong>REF</strong>: The sequence found in the reference.</li>
+<li><strong>ALT</strong>: The sequence found in the mutated sample, so that the mutation definition is REF&gt;ALT.</li>
+<li><strong>QUAL</strong>: The quality of the read. As a general rule, a quality &lt;10 is unreliable.</li>
+<li><strong>FILTER</strong>.</li>
+<li><strong>INFO</strong>: Additional annotation on the mutation consequences, and occurrence along patients and projects. It is further commented on <a class="reference internal" href="#the-info-field"><span>The INFO Field</span></a></li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="the-info-field">
+<span id="id2"></span><h3>The INFO field<a class="headerlink" href="#the-info-field" title="Permalink to this headline">¶</a></h3>
+<p>This field annotates predicted consequences, and seen occurrences of the current mutation. The consequences are as seen by the SnpEff package.</p>
+<p>There may be multiple consecuences and occurrences of the same mutation, and those need to be clearly specified. Thus the complex form of this field.</p>
+<p>In the file, <em>the parts are separated with a semicolon (</em> <code class="docutils literal"><span class="pre">;</span></code> <em>), and each part may have itself subfields, which are separated with pipes (</em> <code class="docutils literal"><span class="pre">|</span></code> <em>)</em>.
+<em>Alternative parts</em> (e.g. different consequences for the mutation or occurrences in different cancer projects) <em>are separated by a comma (</em> <code class="docutils literal"><span class="pre">,</span></code> <em>)</em>.</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>CONSEQUENCE:</strong> Mutation consequence predictions annotated by SnpEff. Which has itself the next subfields:</li>
+</ul>
+<blockquote>
+<div><ol class="arabic simple">
+<li><em>gene_symbol,</em></li>
+<li><em>gene_affected,</em></li>
+<li><em>gene_strand,</em></li>
+<li><em>transcript_name,</em></li>
+<li><em>transcript_affected,</em></li>
+<li><em>protein_affected,</em></li>
+<li><em>consequence_type,</em></li>
+<li><em>cds_mutation,</em></li>
+<li><em>aa_mutation</em></li>
+</ol>
+</div></blockquote>
+<ul class="simple">
+<li><strong>OCCURRENCE</strong>: Mutation occurrence counts broken down by project. Which has itself the next subfields:<ol class="arabic">
+<li><em>project_code,</em></li>
+<li><em>affected_donors,</em></li>
+<li><em>tested_donors,</em></li>
+<li><em>frequency</em></li>
+</ol>
+</li>
+<li><strong>affected_donors</strong>: Total number of donors with the current mutation.</li>
+<li><strong>mutation</strong>: Somatic mutation definition, in the form BEFORE&gt;AFTER.</li>
+<li><strong>project_count</strong>: Number of projects with the current mutation.</li>
+<li><strong>tested_donors</strong>: Total number of donors with SSM data available.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="interpreting-a-sample-mutation">
+<h2>Interpreting a sample mutation<a class="headerlink" href="#interpreting-a-sample-mutation" title="Permalink to this headline">¶</a></h2>
+<p>Now we come to try to read an example mutation from the data.</p>
+<div class="section" id="the-mutation">
+<h3>The mutation<a class="headerlink" href="#the-mutation" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-none"><div class="highlight"><pre><span></span>#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+1       100000022       MU39532371      C       T       .       .       CONSEQUENCE=||||||intergenic_region||,RP11-413P11.1|ENSG00000224445|1|RP11-413P11.1-001|ENST00000438829||upstream_gene_variant||;OCCURRENCE=SKCA-BR|1|70|0.01429;affected_donors=1;mutation=C&gt;T;project_count=1;tested_donors=10638
+</pre></div>
+</div>
+</div>
+<div class="section" id="the-interpretation">
+<h3>The interpretation<a class="headerlink" href="#the-interpretation" title="Permalink to this headline">¶</a></h3>
+<p>We can see the data for the mutation <strong>MU39532371</strong>, which is in the chromosome number <em>1</em>, at the position <em>100000022</em>, and is defined as <em>C&gt;T</em>, with no quality or filtering information available. We can also see in the INFO that this mutation has two consequences: one as a mutation ocurring in an intergenic region, and one as a mutation that affects the <em>ENSG00000224445</em> gene and it&#8217;s <em>ENST00000438829</em> transcript provoking an <em>upstream_gene_variant</em>. Besides, it was found in a sample from the Great Britain&#8217;s skin cancer ICGC project (<em>SKCA-BR</em>) with <em>1</em> patient affected out of the <em>70</em> in the project and of the <em>10638</em> accross all projects.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mutation-recurrence-workflow.html" class="btn btn-neutral float-right" title="The mutation recurrence workflow">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="installation.html" class="btn btn-neutral" title="Installation"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Andrés García García.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
