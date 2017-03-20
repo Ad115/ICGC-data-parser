@@ -3,9 +3,10 @@ package ICGC_Data_Parser::Tools;
 	use warnings;
 	use Exporter qw'import';
 
-	our @EXPORT_OK = qw'print_and_exit open_input open_output print_fields tweeter tweet';
+	our @EXPORT_OK = qw'print_and_exit open_input open_output print_fields tweeter tweet full_path';
 	our %EXPORT_TAGS = (
-		'general_io'	=>	[qw'print_and_exit open_input open_output print_fields tweet']
+		'general_io'	=>	[qw'print_and_exit open_input open_output print_fields'],
+		'debug'	=>	[qw'tweeter tweet']
 	);
 
 #============================================================
@@ -99,7 +100,14 @@ use Data::Dumper; # To preety print hashes easily
     	}
     	print "\n";
     }#-----------------------------------------------------------
+	sub full_path
+	# Recieves a file name, returns the absolute path
+	{
+		my $path = shift;
 
+		use File::Spec;
+		return File::Spec->rel2abs( $path ) ;
+	}#-----------------------------------------------------------
 
 
     #============================================================

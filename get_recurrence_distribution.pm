@@ -49,7 +49,7 @@ END
 
 use lib './lib';
     use ICGC_Data_Parser::SSM_Parser qw(:parse);
-    use ICGC_Data_Parser::Tools qw(:general_io);
+    use ICGC_Data_Parser::Tools qw(:general_io full_path);
 
 use Getopt::Long qw(:config bundling); # To parse command-line arguments
 
@@ -137,12 +137,3 @@ sub main
 #	===========
 #	Subroutines
 #	===========
-
-sub full_path
-# Recieves a file name, returns the absolute path
-{
-	my $path = shift;
-
-	use File::Spec;
-	return File::Spec->rel2abs( $path ) ;
-}
