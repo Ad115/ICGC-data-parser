@@ -84,37 +84,47 @@ sub main
 	my ($gene_str, $gene_re) = @{ get_simple_gene_query_data($opt{gene}) };
 	# Get project's data
 	my ($project_str, $project_re) = @{ get_project_query_data($opt{project}) };
+	# Initialize counter
+	my %count = ();
+	my %output = ();
 
 	# Assemble output fields
-	my @output_line_fields = qw(MUTATION_ID PROJ_AFFECTED_DONORS PROJ_TESTED_DONORS TOTAL_AFFECTED_DONORS TOTAL_TESTED_DONORS);
+	my @output_line_fields = qw(MUTATION_RECCURRENCE AFFECTED_DONORS TESTED_DONORS);	
 
 	# Print heading lines
 	print  $output "# Project: $project_str\tGene: $gene_str\n";
 	print  $output join( "\t", @output_line_fields)."\n";
-
+	
 ## MAIN QUERY
 
 	while(my $line = get_vcf_line($input)) # Get mutation by mutation
 	{
 		# Check for specified gene and project
-		if ($line =~ $gene_re and $line =~ $project_re)
-		{
+		if ($line =~ $gene_re and $line =~ $project_re){
             # Parse the mutation data
 			my %mutation = %{ parse_mutation($line, \%fields, $gene_re, $project_re) };
 
-            # Assemble output
-            my %output = (
-                'MUTATION_ID'   =>  $mutation{ID},
-                'PROJ_AFFECTED_DONORS'  =>  (lc $project_str eq 'all') ? '' : $mutation{INFO}->{OCCURRENCE}->[0]->{affected_donors},
-                'PROJ_TESTED_DONORS'    =>  (lc $project_str eq 'all') ? '' : $mutation{INFO}->{OCCURRENCE}->[0]->{tested_donors},
-                'TOTAL_AFFECTED_DONORS' =>  $mutation{INFO}->{affected_donors},
-                'TOTAL_TESTED_DONORS'   =>  $mutation{INFO}->{tested_donors}
-            );
-
-            # Output
-			print_fields($output, \%output, \@output_line_fields);
+			# Associate AFFECTED_DONORS : MUTATIONS
+			if (lc $project_str eq 'all'){
+				# When all projects are parsed
+				$count{ $mutation{INFO}->{affected_donors} }++;
+				$output{TESTED_DONORS} = $mutation{INFO}->{tested_donors};
+			} else{
+				# When a project is specified
+				$count{ $mutation{INFO}->{OCCURRENCE}->[0]->{affected_donors} }++;
+				$output{TESTED_DONORS} = $mutation{INFO}->{OCCURRENCE}->[0]->{tested_donors};
+			}
 		}
 	}
+	
+	# Output
+	foreach my $key (keys %count){
+		$output{AFFECTED_DONORS} = $key;
+		$output{MUTATION_RECCURRENCE} = $count{$key};
+		
+		print_fields($output, \%output, \@output_line_fields);
+	}
+	
 }#===============>> END OF MAIN ROUTINE <<=====================
 
 #	===========

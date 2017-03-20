@@ -80,7 +80,8 @@ use lib '.';
 	{
 		my ($gene_id) = @_; # display label and stable id
 
-		if ( lc $gene_id eq 'all') { # User wants to search in all genes
+		if ( $gene_id && lc $gene_id eq 'all') { 
+			# User wants to search in all genes
 			$gene_id = '';
 		}
 
@@ -95,7 +96,8 @@ use lib '.';
 	{
 		my $project = shift;
 
-		if ( lc $project eq 'all') { # User wants to search in all genes
+		if ( $project && lc $project eq 'all') { 
+			# User wants to search in all genes
 			$project = '';
 		}
 		# Stringify project
@@ -196,11 +198,9 @@ use lib '.';
 		# Split line in fields
 		my %line = %{ split_in_fields($fields, $line) };
 
-		my @mutation = %line;
-
-		push( @mutation, %{parse_INFO(@_)} );
-		my %mutation = @mutation;
-		undef $mutation{INFO};
+		my %mutation = %line;
+		
+		$mutation{INFO} = parse_INFO(@_);
 
 		return \%mutation;
 	}#-----------------------------------------------------------
