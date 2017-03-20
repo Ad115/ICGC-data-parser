@@ -129,16 +129,9 @@ sub main
 
 sub full_path
 # Recieves a file name, returns the absolute path
-# TODO: Needed better implementation.
 {
 	my $path = shift;
 
-	if ( $path =~ '^/')
-	{
-		return $path;
-	}
-	else
-	{
-		return "$ENV{PWD}/$path";
-	}
+	use File::Spec;
+	return File::Spec->rel2abs( $path ) ;
 }
