@@ -92,39 +92,19 @@ sub main
 	# Get gene's data
 	my ($gene_str, $gene_re) = @{ get_gene_data($opt{gene}, $opt{offline}) };
 
-	# Initialize counter
-	my %count = ();
-	my %output = ();
-
 ## MAIN QUERY
 
-	while(my $line = get_vcf_line($input)) # Get mutation by mutation
-	{
-		# Check for specified gene and project
-		if ($line =~ $gene_re and $line =~ $project_re){
-            # Parse the mutation data
-			my %mutation = %{ parse_mutation($line, \%fields, $gene_re, $project_re) };
-
-			# Associate AFFECTED_DONORS : MUTATIONS
-			if (lc $project_str eq 'all'){
-				# When all projects are parsed
-				$count{ $mutation{INFO}->{affected_donors} }++;
-				$output{TESTED_DONORS} = $mutation{INFO}->{tested_donors};
-			} else{
-				# When a project is specified
-				$count{ $mutation{INFO}->{OCCURRENCE}->[0]->{affected_donors} }++;
-				$output{TESTED_DONORS} = $mutation{INFO}->{OCCURRENCE}->[0]->{tested_donors};
-			}
-		}
-	}
+	my ($tested_donors, $count) = @{ count_recurrence($input, \%fields, $gene_re, $project_re) };
+	my %count = %{ $count };
 
 ## OUTPUT
 
 	# Assemble output fields
 	my @output_line_fields = qw(MUTATIONS AFFECTED_DONORS_PER_MUTATION);
+	my %output = ();
 
 	# Print heading lines
-	print  $output "# Project: $project_str\tGene: $gene_str\tTested donors: $output{TESTED_DONORS}\n";
+	print  $output "# Project: $project_str\tGene: $gene_str\tTested donors: $count{TESTED_DONORS}\n";
 	print  $output join( "\t", @output_line_fields)."\n";
 
 	foreach my $key (sort {$a <=> $b} keys %count){
@@ -140,3 +120,32 @@ sub main
 #	===========
 #	Subroutines
 #	===========
+
+sub count_recurrence
+{
+	# Get arguments
+	my ($input, $fields, $gene_re, $project_re) = @_;
+
+	my %count = ();
+	my $tested_donors;
+	while(my $line = get_vcf_line($input)) # Get mutation by mutation
+	{
+		# Check for specified gene and project
+		if ($line =~ $gene_re and $line =~ $project_re){
+            # Parse the mutation data
+			my %mutation = %{ parse_mutation($line, $fields, $gene_re, $project_re) };
+
+			# Associate AFFECTED_DONORS : MUTATIONS
+			if (lc $project_str eq 'all'){
+				# When all projects are parsed
+				$count{ $mutation{INFO}->{affected_donors} }++;
+				$tested_donors = $mutation{INFO}->{tested_donors};
+			} else{
+				# When a project is specified
+				$count{ $mutation{INFO}->{OCCURRENCE}->[0]->{affected_donors} }++;
+				$tested_donors = $mutation{INFO}->{OCCURRENCE}->[0]->{tested_donors};
+			}
+		}
+	}
+	return [$tested_donors, \%count];
+}#-----------------------------------------------------------
