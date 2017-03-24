@@ -6,7 +6,7 @@ package ICGC_Data_Parser::Tools;
 
 	our @EXPORT_OK = qw'print_and_exit open_input open_output print_fields tweeter tweet full_path';
 	our %EXPORT_TAGS = (
-		'general_io'	=>	[qw'print_and_exit open_input open_output print_fields'],
+		'general_io'	=>	[qw'print_and_exit open_input open_output print_fields full_path'],
 		'debug'	=>	[qw'tweeter tweet']
 	);
 

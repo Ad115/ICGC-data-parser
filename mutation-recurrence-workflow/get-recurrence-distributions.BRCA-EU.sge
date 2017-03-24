@@ -16,7 +16,7 @@
 . /etc/profile.d/modules.sh
 
 # Name the job array
-#$ -N mutation-recurrence_main-genes_BRCA-EU
+#$ -N job.mutation-recurrence.main-genes.BRCA-EU
 
 # Use as many jobs as needed
 #$ -t 1-18
@@ -24,15 +24,15 @@
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 
     GENES=(MDM2 AKT1 CHEK2 RB1 E2F1 ATM ATR CHEK1 HRAS KRAS NRAS BRCA1 TP53 CDKN1A RAF1 CDK2 ERBB2 all)
-    GENE=${GENES[$SGE_TASK_ID]}
+    GENE=${GENES[$SGE_TASK_ID - 1]}
     PROJECT=BRCA-EU
 
-    OUT_FILE=$RESULTS_PATH/mutation-recurrence/${GENE}.${PROJECT}.recurrence_distribution.tsv
+    OUT_FILE="./results/${GENE}.${PROJECT}.recurrence_distribution.tsv"
 
     # Analysis...
     if [ ! -f $OUT_FILE ]; then
-            echo "Now doing mutation recurrence analysis: gene $GENE, project $PROJECT @ $(date +%F.%R)"
-            $PROGRAMS_PATH/get_recurrence_distribution.pm -g $GENE -p $PROJECT -i $ICGC_DATA -o $OUT_FILE
+    	echo "Now doing mutation recurrence analysis: gene $GENE, project $PROJECT @ $(date +%F.%R)"
+	./get-recurrence-distribution.pm -g $GENE -p $PROJECT -o $OUT_FILE -i $ICGC_DATA
     fi
 
     echo "Done: gene $GENE, project $PROJECT @ $(date +%F.%R)"

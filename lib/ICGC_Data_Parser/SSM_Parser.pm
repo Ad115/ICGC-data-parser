@@ -101,9 +101,10 @@ use lib '.';
 	sub get_gene_or_project_re
 	# Get a printable form of the given gene/project
 	{
-		my $gene_project = shift; # display label and stable id
+		my $gene_project = shift;
 
-		my $gene_project_re = ($gene_project) ? qr/$gene_project/ : qr/.*/;
+		my $gene_project_re = ( $gene_project and !(lc $gene_project eq 'all') ) 
+					? qr/$gene_project/ : qr/.*/;
 
 		return $gene_project_re;
 	}#-----------------------------------------------------------

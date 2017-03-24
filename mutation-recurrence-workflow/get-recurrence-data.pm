@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 
-package modulino;
+package GetRecurrenceData;
 use Exporter qw'import';
 	our @EXPORT = qw'main';
 
@@ -47,7 +47,7 @@ Author: Andrés García García @ Oct 2016.
 
 END
 
-use lib './lib';
+use lib '../lib';
     use ICGC_Data_Parser::SSM_Parser qw(:parse);
     use ICGC_Data_Parser::Tools qw(:general_io full_path);
 

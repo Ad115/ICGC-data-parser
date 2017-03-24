@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 
-package modulino;
+package GetRecurrenceDistribution;
 use Exporter qw'import';
 	our @EXPORT = qw'main';
 
@@ -47,9 +47,9 @@ Author: Andrés García García @ Oct 2016.
 
 END
 
-use lib './lib';
+use lib '../lib';
     use ICGC_Data_Parser::SSM_Parser qw(:parse);
-    use ICGC_Data_Parser::Tools qw(:general_io full_path);
+    use ICGC_Data_Parser::Tools qw(:general_io);
 
 use Getopt::Long qw(:config bundling); # To parse command-line arguments
 
@@ -127,9 +127,10 @@ sub main
 	print  $output "# Project: $project_str\tGene: $gene_str\tTested donors: $output{TESTED_DONORS}\n";
 	print  $output join( "\t", @output_line_fields)."\n";
 
-	foreach my $key (keys %count){
-		$output{AFFECTED_DONORS} = $key;
-		$output{MUTATION_RECCURRENCE} = $count{$key};
+	foreach my $key (sort {$a <=> $b} keys %count){
+		# Assemble output
+		$output{AFFECTED_DONORS_PER_MUTATION} = $key;
+		$output{MUTATIONS} = $count{$key};
 
 		print_fields($output, \%output, \@output_line_fields);
 	}

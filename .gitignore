@@ -1,3 +1,8 @@
 .directory
 ./docs/_build
-./results
+./docs/_build/*
+./mutation-recurrence-workflow/results
+./mutation-recurrence-workflow/results/*
+./mutation-recurrence-workflow/job*
+
+
