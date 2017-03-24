@@ -1,6 +1,8 @@
 ICGC-data-parser
 =================
 
+[![Documentation Status](https://readthedocs.org/projects/icgc-data-parser/badge/?version=develop)](http://icgc-data-parser.readthedocs.io/en/develop/?badge=develop)
+
 Scripts to automate parsing of data from the International Cancer Genome Consortium data releases, in particular, the simple somatic mutation aggregates.
 
 Download and installation
