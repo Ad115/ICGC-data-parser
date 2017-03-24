@@ -8,11 +8,11 @@ use Exporter qw'import';
 
 our $doc_str = <<END;
 
-Usage: filter_gene_project.pl [--gene=<gene name>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--help]
+Usage: $0 [--gene=<gene name>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--offline] [--help]
 
-============================
- Filter by gene and project
-============================
+==============================
+ Get mutation recurrence data
+==============================
 
 Searches through input file for mutations related to the given gene and the given project.
 Prints mutation recurrence data for each mutation, global and by project.
@@ -35,9 +35,9 @@ Prints mutation recurrence data for each mutation, global and by project.
 	-o, --out
 		Name of the output file.
 		If not present output to standard output.
-		
+
 	-f, --offline
-		Don't connect to the Ensembl db
+		Work offline. i.e. don't connect to the Ensembl database.
 		Requires the gene as stable ID or gene 'all'.
 
 	-h, --help
@@ -50,7 +50,7 @@ END
 use lib './lib';
     use ICGC_Data_Parser::SSM_Parser qw(:parse);
     use ICGC_Data_Parser::Tools qw(:general_io full_path);
-	
+
 use Getopt::Long qw(:config bundling); # To parse command-line arguments
 
 main(@ARGV) unless caller();

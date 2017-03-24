@@ -12,7 +12,6 @@ package ICGC_Data_Parser::SSM_Parser;
 #============================================================
 
 use lib '.';
-	use ICGC_Data_Parser::Tools qw 'tweet';
 	use ICGC_Data_Parser::Ensembl qw(get_gene_query_data);
 
 #============================================================
@@ -81,12 +80,12 @@ use lib '.';
 	# Get a printable form of the given gene/project
 	{
 		my ($gene_project, $gene_project_id) = @_; # display label and stable id
-		
-		if ( $gene_project && lc $gene_project eq 'all') { 
+
+		if ( $gene_project && lc $gene_project eq 'all') {
 			# User specified all genes/projects
 			$gene_project = '';
 		}
-		
+
 		my $gene_project_str;
 		if ( $gene_project && $gene_project_id ){
 			$gene_project_str = "$gene_project($gene_project_id)";
@@ -98,12 +97,12 @@ use lib '.';
 
 		return $gene_project_str;
 	}#-----------------------------------------------------------
-	
+
 	sub get_gene_or_project_re
 	# Get a printable form of the given gene/project
 	{
 		my $gene_project = shift; # display label and stable id
-		
+
 		my $gene_project_re = ($gene_project) ? qr/$gene_project/ : qr/.*/;
 
 		return $gene_project_re;
@@ -119,15 +118,20 @@ use lib '.';
 
 		return [$gene_project_str, $gene_project_re];
 	}#-----------------------------------------------------------
-	
+
 	sub get_gene_data
 	{
 		my ($gene, $offline) = @_;
-		
+
 		my ($gene_name, $gene_id);
-		
+
 		# Check if user asked not to connect to Ensembl db
 		if( $offline ){
+			if ( $gene !~ /ENSG[0-9.]*/ ){
+				die("Option '--offline' requires gene 'all' or gene's Ensembl stable id"
+					."i.e., as an example, instead of gene TP53, gene must be ENSG00000141510\n"
+				);
+			}
 			$gene_id = $gene;
 			$gene_name = '';
 		} else{
@@ -135,14 +139,14 @@ use lib '.';
 		}
 
 		my ($gene_str, $gene_re) = @{ get_gene_or_project_data($gene_name, $gene_id) };
-		
+
 		return [$gene_str, $gene_re];
 	}#-----------------------------------------------------------
 
 	sub get_project_data
 	{
 		my $project = shift;
-		
+
 		# Get project's data
 		return get_gene_or_project_data($project);
 	}#-----------------------------------------------------------
@@ -238,7 +242,7 @@ use lib '.';
 		my %line = %{ split_in_fields($fields, $line) };
 
 		my %mutation = %line;
-		
+
 		$mutation{INFO} = parse_INFO(@_);
 
 		return \%mutation;

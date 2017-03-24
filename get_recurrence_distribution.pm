@@ -8,18 +8,18 @@ use Exporter qw'import';
 
 our $doc_str = <<END;
 
-Usage: filter_gene_project.pl [--gene=<gene name>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--help]
+Usage: $0 [--gene=<gene name>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--offline] [--help]
 
-============================
- Filter by gene and project
-============================
+=======================================
+ Get mutation reccurrence distribution
+=======================================
 
 Searches through input file for mutations related to the given gene and the given project.
-Prints mutation recurrence data for each mutation, global and by project.
+Gets the mutation recurrence distribution for the data (i.e. how many mutations are repeated in ``n`` different patients in a given cancer project and a given gene?)
 
 	-g, --gene
 		Gene name, in display form or as stable ID.
-		If present, shows only mutations that affect the gene.
+		If present, analyzes only mutations that affect the gene.
 		Empty gene or gene 'all' stands for mutations in any gene.
 
 	-p, --project
@@ -35,9 +35,9 @@ Prints mutation recurrence data for each mutation, global and by project.
 	-o, --out
 		Name of the output file.
 		If not present output to standard output.
-		
+
 	-f, --offline
-		Don't connect to the Ensembl db
+		Work offline. i.e. don't connect to the Ensembl database.
 		Requires the gene as stable ID or gene 'all'.
 
 	-h, --help
@@ -74,34 +74,28 @@ sub main
 
 
     my $output = *STDOUT; # Open output file
-    if ( $opt{out} )  { open_output( $output, full_path($opt{out}) ); }
+    if( $opt{out} )  { open_output( $output, full_path($opt{out}) ); }
 
     # Check if user asked for help
-    if( $opt{help} ) { print "doc string: $doc_str\n"; print_and_exit($doc_str); }
+    if( $opt{help} ) { print $doc_str; print_and_exit($doc_str); }
 
 ## LOCAL DATA INITIALIZATION
 
 	# Get fields
 	my %fields = parse_fields($input);
 
+	# Get project's data
+	my ($project_str, $project_re) = @{ get_project_data($opt{project}) };
+
 ## WEB DATA INITIALIZATION
 
 	# Get gene's data
 	my ($gene_str, $gene_re) = @{ get_gene_data($opt{gene}, $opt{offline}) };
-	
-	# Get project's data
-	my ($project_str, $project_re) = @{ get_project_data($opt{project}) };
+
 	# Initialize counter
 	my %count = ();
 	my %output = ();
 
-	# Assemble output fields
-	my @output_line_fields = qw(MUTATION_RECCURRENCE AFFECTED_DONORS TESTED_DONORS);	
-
-	# Print heading lines
-	print  $output "# Project: $project_str\tGene: $gene_str\n";
-	print  $output join( "\t", @output_line_fields)."\n";
-	
 ## MAIN QUERY
 
 	while(my $line = get_vcf_line($input)) # Get mutation by mutation
@@ -123,15 +117,23 @@ sub main
 			}
 		}
 	}
-	
-	# Output
+
+## OUTPUT
+
+	# Assemble output fields
+	my @output_line_fields = qw(MUTATIONS AFFECTED_DONORS_PER_MUTATION);
+
+	# Print heading lines
+	print  $output "# Project: $project_str\tGene: $gene_str\tTested donors: $output{TESTED_DONORS}\n";
+	print  $output join( "\t", @output_line_fields)."\n";
+
 	foreach my $key (keys %count){
 		$output{AFFECTED_DONORS} = $key;
 		$output{MUTATION_RECCURRENCE} = $count{$key};
-		
+
 		print_fields($output, \%output, \@output_line_fields);
 	}
-	
+
 }#===============>> END OF MAIN ROUTINE <<=====================
 
 #	===========
