@@ -105,17 +105,16 @@ sub main
 		# Check for specified gene and project
 		if ($line =~ $gene_re and $line =~ $project_re)
 		{
-            # Parse the mutation data
-			my %mutation = %{ parse_mutation($line, \%fields, $gene_re, $project_re) };
-
-            # Assemble output
-            my %output = (
-                'MUTATION_ID'   =>  $mutation{ID},
-                'PROJ_AFFECTED_DONORS'  =>  (lc $project_str eq 'all') ? '' : $mutation{INFO}->{OCCURRENCE}->[0]->{affected_donors},
-                'PROJ_TESTED_DONORS'    =>  (lc $project_str eq 'all') ? '' : $mutation{INFO}->{OCCURRENCE}->[0]->{tested_donors},
-                'TOTAL_AFFECTED_DONORS' =>  $mutation{INFO}->{affected_donors},
-                'TOTAL_TESTED_DONORS'   =>  $mutation{INFO}->{tested_donors}
-            );
+            # Get recurrence data
+			my %output = %{ get_recurrence_data({
+						line => $line,
+						fields => \%fields,
+						gene_re => $gene_re,
+						project_re => $project_re,
+						project_str => $project_str
+					}
+				)
+			};
 
             # Output
 			print_fields($output, \%output, \@output_line_fields);
@@ -126,3 +125,20 @@ sub main
 #	===========
 #	Subroutines
 #	===========
+sub get_recurrence_data
+{
+	# Get arguments
+	my ($args) = @_;
+
+	# Parse the mutation data
+	my %mutation = %{ parse_mutation($args) };
+
+	# Assemble output
+	return {
+		'MUTATION_ID'   =>  $mutation{ID},
+		'PROJ_AFFECTED_DONORS'  =>  (lc $args->{project_str} eq 'all') ? '' : $mutation{INFO}->{OCCURRENCE}->[0]->{affected_donors},
+		'PROJ_TESTED_DONORS'    =>  (lc $args->{project_str} eq 'all') ? '' : $mutation{INFO}->{OCCURRENCE}->[0]->{tested_donors},
+		'TOTAL_AFFECTED_DONORS' =>  $mutation{INFO}->{affected_donors},
+		'TOTAL_TESTED_DONORS'   =>  $mutation{INFO}->{tested_donors}
+	};
+}#-----------------------------------------------------------

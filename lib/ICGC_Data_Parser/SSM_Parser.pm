@@ -101,10 +101,9 @@ use lib '.';
 	sub get_gene_or_project_re
 	# Get a printable form of the given gene/project
 	{
-		my $gene_project = shift;
+		my $gene_project = shift; # display label and stable id
 
-		my $gene_project_re = ( $gene_project and !(lc $gene_project eq 'all') ) 
-					? qr/$gene_project/ : qr/.*/;
+		my $gene_project_re = ($gene_project) ? qr/$gene_project/ : qr/.*/;
 
 		return $gene_project_re;
 	}#-----------------------------------------------------------
@@ -219,17 +218,18 @@ use lib '.';
 	sub parse_INFO
 	# Get a hash with the data in the INFO field
 	{
-		my ($line, $fields, $gene_re, $project_re) = @_;
+		my %args = %{ shift() };
+		# $line, $gene_re, $project_re
 
-		$line =~ /affected_donors=(.*?);.*mutation=(.*?);.*project_count=(.*?);.*tested_donors=(.*?)$/;
+		$args{line} =~ /affected_donors=(.*?);.*mutation=(.*?);.*project_count=(.*?);.*tested_donors=(.*?)$/;
 		my %INFO = (
 			'affected_donors'	=>	$1,
 			'mutation'		=>	$2,
 			'project_count'	=>	$3,
 			'tested_donors'	=>	$4
 		);
-		$INFO{CONSEQUENCE} = get_consequence_data($line, $gene_re);
-		$INFO{OCCURRENCE} = get_occurrence_data($line, $project_re);
+		$INFO{CONSEQUENCE} = get_consequence_data($args{line}, $args{gene_re});
+		$INFO{OCCURRENCE} = get_occurrence_data($args{line}, $args{project_re});
 
 		return \%INFO;
 	}#-----------------------------------------------------------
@@ -237,14 +237,15 @@ use lib '.';
 	sub parse_mutation
 	# Get a hash with the mutation data to print
 	{
-		my ($line, $fields, $gene_re, $project_re) = @_;
+		my %args = %{ shift() };
+		# $line, %fields, $gene_re, $project_re
 
 		# Split line in fields
-		my %line = %{ split_in_fields($fields, $line) };
+		my %line = %{ split_in_fields($args{fields}, $args{line}) };
 
 		my %mutation = %line;
 
-		$mutation{INFO} = parse_INFO(@_);
+		$mutation{INFO} = parse_INFO(\%args);
 
 		return \%mutation;
 	}#-----------------------------------------------------------

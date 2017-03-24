@@ -94,7 +94,14 @@ sub main
 
 ## MAIN QUERY
 
-	my ($tested_donors, $count) = @{ count_recurrence($input, \%fields, $gene_re, $project_re) };
+	my ($tested_donors, $count) = @{ get_reccurrence_distribution({
+				input => $input,
+				fields => \%fields,
+				gene_re => $gene_re,
+				project_re => $project_re,
+				project_str => $project_str
+			}
+		) };
 	my %count = %{ $count };
 
 ## OUTPUT
@@ -121,22 +128,30 @@ sub main
 #	Subroutines
 #	===========
 
-sub count_recurrence
+sub get_reccurrence_distribution
 {
 	# Get arguments
-	my ($input, $fields, $gene_re, $project_re) = @_;
+	my %args = %{ shift() };
+	# $input, %fields, $gene_re, $project_re, $project_str
 
 	my %count = ();
 	my $tested_donors;
-	while(my $line = get_vcf_line($input)) # Get mutation by mutation
+	while(my $line = get_vcf_line($args{input})) # Get mutation by mutation
 	{
 		# Check for specified gene and project
-		if ($line =~ $gene_re and $line =~ $project_re){
+		if ($line =~ $args{gene_re} and $line =~ $args{project_re}){
             # Parse the mutation data
-			my %mutation = %{ parse_mutation($line, $fields, $gene_re, $project_re) };
+			my %mutation = %{ parse_mutation({
+					line => $line,
+					fields => $args{fields},
+					gene_re => $args{gene_re},
+					project_re => $args{project_re}
+					}
+				)
+			};
 
 			# Associate AFFECTED_DONORS : MUTATIONS
-			if (lc $project_str eq 'all'){
+			if (lc $args{project_str} eq 'all'){
 				# When all projects are parsed
 				$count{ $mutation{INFO}->{affected_donors} }++;
 				$tested_donors = $mutation{INFO}->{tested_donors};
