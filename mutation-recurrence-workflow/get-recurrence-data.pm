@@ -129,6 +129,7 @@ sub get_recurrence_data
 {
 	# Get arguments
 	my ($args) = @_;
+	# $line, %fields, $gene_re, $project_re, $project_str
 
 	# Parse the mutation data
 	my %mutation = %{ parse_mutation($args) };
