@@ -4,15 +4,19 @@ package ICGC_Data_Parser::SSM_Parser;
 	use warnings;
 	use Exporter qw'import';
 
-	our @EXPORT_OK = qw'get_vcf_line get_vcf_fields parse_fields parse_mutation get_gene_data get_project_data';
+	our @EXPORT_OK = qw'get_vcf_line parse_mutation get_gene_data get_project_data 
+						get_vcf_headers parse_vcf_headers get_query_re specified';
+						
 	our %EXPORT_TAGS = (
-		'parse' => [qw'get_vcf_line parse_fields parse_mutation get_gene_data get_project_data']
+		'parse' => [qw' get_vcf_line get_vcf_headers parse_mutation get_gene_data
+						get_project_data specified get_query_re'
+					]
 	);
 
 #============================================================
 
-use lib '.';
-	use ICGC_Data_Parser::Ensembl qw(get_gene_query_data);
+use ICGC_Data_Parser::Ensembl qw(get_gene_query_data get_gene_id);
+use ICGC_Data_Parser::Tools qw(:debug);
 
 #============================================================
 
@@ -44,22 +48,45 @@ use lib '.';
 
 		return split( /\t/, get_vcf_line($vcffile) );
 	}#-----------------------------------------------------------
+	
+	sub get_vcf_headers
+	# Get the VCF file headers line
+	{
+		my $input = shift; # The input file
+		
+		# Skip comments
+		my $line;
+		do	{ $line = <$input>; }
+		while($line and $line !~ /^#[^#].*/);
+
+		# Check whether you are in the headers line
+		if ($line and $line =~ /^#(.*)/) { 
+			return $1;
+		} else{
+			die "No headers found in file";
+		}
+	}#-----------------------------------------------------------
 
 	sub parse_fields
 	# returns a dictionary with the positions of the fields
 	{
-		my $inputfile = shift; # The input file
-		my @fields = @_;	# The fields to search
-			# If fields weren't specified, get all available ones
-			@fields = get_vcf_fields($inputfile) unless (@_);
+		my @fields = split( /\t/, shift() );
 
 		# Get the column position of the searched fields
 		my %fields = map {
 						$_ => get_col_number($_, \@fields)
 					} @fields;
 
-		return %fields;
+		return \%fields;
 	}#-----------------------------------------------------------
+	
+	sub parse_vcf_headers
+	# Returns a dictionary with the positions of the header columns of the VCF input
+	{
+		my $input = shift;
+		
+		return parse_fields( get_vcf_headers($input) );
+	}
 
 	sub get_col_number
 	# Get the numeric position of the column whose name is given
@@ -76,47 +103,78 @@ use lib '.';
 		die "Column '$col_name' not found!\n!";
 	}#-----------------------------------------------------------
 
-	sub get_gene_or_project_str
-	# Get a printable form of the given gene/project
+	sub specified
+	# Checks if the user asked for a specific project or gene
 	{
-		my ($gene_project, $gene_project_id) = @_; # display label and stable id
-
-		if ( $gene_project && lc $gene_project eq 'all') {
-			# User specified all genes/projects
-			$gene_project = '';
-		}
-
-		my $gene_project_str;
-		if ( $gene_project && $gene_project_id ){
-			$gene_project_str = "$gene_project($gene_project_id)";
-		} elsif($gene_project_id){
-			$gene_project_str = $gene_project_id;
-		} else {
-			$gene_project_str = ($gene_project) ? $gene_project : 'All';
-		}
-
-		return $gene_project_str;
+		my $query = shift;
+		return $query and !(lc $query eq 'all');
 	}#-----------------------------------------------------------
-
-	sub get_gene_or_project_re
-	# Get a printable form of the given gene/project
+	
+	sub regexp_compile
 	{
-		my $gene_project = shift; # display label and stable id
-
-		my $gene_project_re = ($gene_project) ? qr/$gene_project/ : qr/.*/;
-
-		return $gene_project_re;
+		my $to_compile = shift;
+		
+		return ($to_compile) ? qr/$to_compile/ : qr/.*/;
 	}#-----------------------------------------------------------
-
-	sub get_gene_or_project_data
-	# Get the relevant data for the given project
+	
+	sub gene_regexp_compile
 	{
-		my ($gene_project, $gene_project_id) = @_; # get gene/project
+		my $gene = shift;
+		
+		# Compile gene regexp
+		my $gene_re;
+		# Check if a gene was specified
+		if ( specified $gene ){
+			# If specified, compile the gene's stable ID
+			my $gene_id = get_gene_id( $gene );
+			$gene_re = qr/$gene_id/;
+		} else{
+			# If not, compile a match to everything
+			$gene_re = qr/.*/;
+		}
+		
+		return $gene_re;
+	}
 
-		my $gene_project_str = get_gene_or_project_str(@_);
-		my $gene_project_re = ($gene_project_id) ? get_gene_or_project_re($gene_project_id) : get_gene_or_project_re($gene_project);
-
-		return [$gene_project_str, $gene_project_re];
+	sub get_query_re
+	# Get a regexp of the gene and/or project specified
+	{
+		my $arg = shift;
+		
+		# Check if labeled strings where asked for
+		if ( ref $arg eq 'HASH')
+		{
+			my %args = %{ $arg }; 
+			
+			if ( exists $args{gene} )
+			{
+				# If user asked for the gene's rexexp
+				# Compile gene regexp
+				my $gene_re = gene_regexp_compile( $args{gene} );
+				
+				# Check if user asked for the project regexp too
+				if ( exists $args{project} ){
+					# Both where specified, return a hash with both
+					my $project_re = regexp_compile( $args{project} );
+					return {
+						gene => $gene_re,
+						project => $project_re
+					};
+					
+				} else{
+					# Only gene regexp was asked for, return it
+					return $gene_re;
+				}
+			
+			} else{
+				# Only wanted project regexp, return it
+				return regexp_compile($args{project});
+			}
+		} else{
+			# A simple expression was given to compile. Compile and return it
+			return regexp_compile($arg);
+		}
+			
 	}#-----------------------------------------------------------
 
 	sub get_gene_data
@@ -125,8 +183,9 @@ use lib '.';
 
 		my ($gene_name, $gene_id);
 
-		# Check if user asked not to connect to Ensembl db
+		# Get gene_id and label
 		if( $offline ){
+			# Check if user asked not to connect to Ensembl db
 			if ( $gene !~ /ENSG[0-9.]*/ ){
 				die("Option '--offline' requires gene 'all' or gene's Ensembl stable id"
 					."i.e., as an example, instead of gene TP53, gene must be ENSG00000141510\n"
@@ -138,34 +197,50 @@ use lib '.';
 			($gene_name, $gene_id) = @{ get_gene_query_data($gene) };
 		}
 
-		my ($gene_str, $gene_re) = @{ get_gene_or_project_data($gene_name, $gene_id) };
+		my $gene_str = ($gene_id) ? "$gene_name($gene_id)" : "All";
+		my $gene_re = ($gene_id) ? qr/$gene_id/ : qr/.*/;
 
-		return [$gene_str, $gene_re];
+		return {
+			raw	=>	$gene,
+			label	=>	$gene_name,
+			id	=>	$gene_id,
+			str	=>	$gene_str,
+			regexp	=>	$gene_re
+		};
 	}#-----------------------------------------------------------
 
 	sub get_project_data
 	{
 		my $project = shift;
-
+		
+		my $project_str = (specified $project) ? $project : "All";
+		my $project_re = (specified $project) ? qr/$project/ : qr/.*/;
 		# Get project's data
-		return get_gene_or_project_data($project);
+		return {
+			raw	=>	$project,
+			str	=>	$project_str,
+			regexp	=>	$project_re
+		};
 	}#-----------------------------------------------------------
 
-	sub split_in_fields
-	# Get a hash with the line decomposed in fields
+	sub parse_line_with_headers
+	# Get a hash with the line decomposed in the fields specified in the headers line
 	{
-		my %fields = %{ shift() };
 		my @line = split( /\t/, shift() );
-
-		my %line = map { $_ => $line[$fields{$_}] } keys %fields;
-
+		my @headers = split( /\t/, shift() );
+		
+		my %line = map { $_ => shift @line } @headers;
+		
 		return \%line;
 	}#-----------------------------------------------------------
 
 	sub get_consequence_data
 	# Get the consequence data as a hash array from the mutation line
 	{
-	    my ($line, $gene_re) = @_;
+	    my ($line, $gene) = @_;
+
+		# Get the gene regular expression
+		my $gene_re = get_query_re({gene => $gene});
 
 	    # Get the CONSEQUENCE field
 	    $line =~ /CONSEQUENCE=(.*?);/;
@@ -184,9 +259,9 @@ use lib '.';
 						'cds_mutation' =>  $consequence[7],
 						'aa_mutation' =>  $consequence[8]
 	                };
-				} grep {
-					 $_ =~ ($gene_re) ? $gene_re : qr/.*/ # Filter by gene
-				} split( /,/ , $1); # Split by commas
+				} grep 
+					{ $_ =~ $gene_re } # Filter by gene
+						split( /,/ , $1); # Split by commas
 
 		return \@consequences;
 	}#-----------------------------------------------------------
@@ -194,7 +269,10 @@ use lib '.';
 	sub get_occurrence_data
 	# Get the occurrence data as a hash array from the mutation line
 	{
-		my ($line, $project_re) = @_;
+		my ($line, $project) = @_;
+
+		# Get the project regular expression
+		my $project_re = get_query_re($project);
 
 		# Get the OCCURRENCE field
 		$line =~ /OCCURRENCE=(.*?);/;
@@ -208,9 +286,9 @@ use lib '.';
 						'tested_donors' =>  $occurrence[2],
 						'frequency' =>  $occurrence[3]
 	                };
-				} grep {
-					 $_ =~ ($project_re) ? $project_re : qr/.*/ # Filter by project
-				} split( /,/ , $1); # Split by commas
+				} grep 
+					{ $_ =~ $project_re } # Filter by project
+						split( /,/ , $1); # Split by commas
 
 		return \@occurrences;
 	}#-----------------------------------------------------------
@@ -219,7 +297,7 @@ use lib '.';
 	# Get a hash with the data in the INFO field
 	{
 		my %args = %{ shift() };
-		# $line, $gene_re, $project_re
+		# $line, $gene, $project
 
 		$args{line} =~ /affected_donors=(.*?);.*mutation=(.*?);.*project_count=(.*?);.*tested_donors=(.*?)$/;
 		my %INFO = (
@@ -228,8 +306,8 @@ use lib '.';
 			'project_count'	=>	$3,
 			'tested_donors'	=>	$4
 		);
-		$INFO{CONSEQUENCE} = get_consequence_data($args{line}, $args{gene_re});
-		$INFO{OCCURRENCE} = get_occurrence_data($args{line}, $args{project_re});
+		$INFO{CONSEQUENCE} = get_consequence_data($args{line}, $args{gene});
+		$INFO{OCCURRENCE} = get_occurrence_data($args{line}, $args{project});
 
 		return \%INFO;
 	}#-----------------------------------------------------------
@@ -238,10 +316,19 @@ use lib '.';
 	# Get a hash with the mutation data to print
 	{
 		my %args = %{ shift() };
-		# $line, %fields, $gene_re, $project_re
+		# $line, $headers, $gene, $project
 
-		# Split line in fields
-		my %line = %{ split_in_fields($args{fields}, $args{line}) };
+		# If the headers line was given, use it
+		# Else, use the default headers
+		unless ($args{headers})
+			{ $args{headers} = 'CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO'; }
+			
+		# Split line in fields		
+		my %line = %{ parse_line_with_headers(
+				$args{line}, 
+				$args{headers}
+			) 
+		};
 
 		my %mutation = %line;
 
