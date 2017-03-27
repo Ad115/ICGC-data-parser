@@ -1,5 +1,5 @@
 .directory
-./docs/_build/
+./docs/_*/
 mutation-recurrence-workflow/results/
 
 
