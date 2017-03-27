@@ -7,13 +7,12 @@ Welcome to ICGC Data Parser's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
-   :glob:
+   :maxdepth: 1
    
    about
    installation
    icgc-ssm-file
    mutation-recurrence-workflow
-   articles/articles
+   reports/reports
    
 

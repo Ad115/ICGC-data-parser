@@ -9,4 +9,4 @@ Contents:
 .. toctree::
    :glob:
    
-   distribution-paper
+   mutation-distribution-report
