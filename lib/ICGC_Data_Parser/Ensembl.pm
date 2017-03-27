@@ -4,7 +4,7 @@ package ICGC_Data_Parser::Ensembl;
 	use warnings;
 	use Exporter qw'import';
 
-	our @EXPORT_OK = qw(get_gene_query_data);
+	our @EXPORT_OK = qw(get_gene_query_data get_gene_id);
 
 #============================================================
 
@@ -39,31 +39,40 @@ our %gene_name = ( '' => '' ); # Association gene_stable_id : gene_display_label
     sub get_gene_id
     # Query the database for the stable id of the given gene
     {
-      my $gene_name = shift;
+    	my $gene = shift;
 	  
-	  # Check if the gene is already in the seen ones
-	  if ( my @match = grep { $gene_name{$_} eq $gene_name } keys %gene_name)
-	  {
-		  return shift @match;
-	  }
-	  else {
-		$connection = ensembldb_connect() unless ($connection);
-
-		# Declare a gene adaptor to get the gene
-		my $gene_adaptor = $connection->get_adaptor( 'Human', 'Core', 'Gene' );
-		# Declare a gene handler with the given gene
-		my $gene = $gene_adaptor->fetch_by_display_label($gene_name);
-		unless($gene) { die "ERROR: Gene '$gene_name' not found\n"; }
-
-		# Get the gene's EnsembleStableID
-		return $gene->stable_id();
-	  }
+		if( !$gene or lc $gene eq 'all'){
+			# Check if asked for all genes
+			return '';
+		} elsif( $gene =~ /(ENSG[0-9.]*)/){
+			# Else, check if already is or contains a gene stable id
+			return $1;
+		} elsif( my @match = grep { $gene_name{$_} eq $gene } keys %gene_name){
+			# Else, check if the gene is already in the seen ones
+			return shift @match;
+		} else{
+			# Else, connect to ensembl and get the stable ID from display label
+			$connection = ensembldb_connect() unless ($connection);
+	
+			# Declare a gene handler with the given gene
+			my $gene_ = 
+				$connection
+					-> get_adaptor( 'Human', 'Core', 'Gene' )
+						-> fetch_by_display_label(
+								$gene
+							);
+			unless($gene_) { die "ERROR: Gene '$gene' not found\n"; }
+	
+			# Get the gene's EnsembleStableID
+			return $gene_->stable_id();
+		}
     }#-------------------------------------------------------
 
     sub get_display_label
     # Get the display label for the genes in the gene array
     {
     	my $gene_id = shift;
+		
 		$connection = ensembldb_connect() unless ($connection);
 
     	unless ($gene_name{$gene_id})
