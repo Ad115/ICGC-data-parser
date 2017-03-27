@@ -46,7 +46,7 @@ The resulting distribution is in :ref:`Figure 1 <distribution>`.
 We can see that most genes fall in the range of 10-50 mutations in a very sharp peaked distribution leaned towards zero.
 To find a probability distribution to interpret the data, several distributions where tested with the aid of the Mathematica software. With the best fit showing a mixture of the Negative Binomial distribution (74%, :math:`r=4`, :math:`p=0.185`) and the Geometric Distribution (25%, :math:`p=0.0053`), fitted with a p value of :math:`7.72 \times 10 ^{-16}`. This is shown in :ref:`Figure 2<best-fit>`
 
-.. figure:: images/best-fit.png
+.. figure:: images/best-fit.*
    :name: best-fit
    :alt: Best fit distribution plot
    
@@ -54,7 +54,7 @@ To find a probability distribution to interpret the data, several distributions 
 
 Besides that, we plotted the positions of the most representative genes in breast cancer according to [Yu2016]_. This is shown in :ref:`Figure 3<main-genes>`.
 
-.. figure:: images/main-genes.png
+.. figure:: images/main-genes.*
    :name: main-genes
    :alt: Main genes placement in the distribution
    

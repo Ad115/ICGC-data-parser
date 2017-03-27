@@ -14,6 +14,6 @@ Contents:
    installation
    icgc-ssm-file
    mutation-recurrence-workflow
-   distribution-paper
+   articles/articles
    
 
