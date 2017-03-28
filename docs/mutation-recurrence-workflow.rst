@@ -53,6 +53,8 @@ Here is the mutation:
 
 This is mutation `MU39532371` affecting gene `RP11-413P11.1`, we see it is present in only the `SKCA-BR` cancer project, with 1 patient affected in the project and 1 patient affected globally. These (occurrence in gene, project and global ocurrence) is what we where looking for (the recurrence data). This data is now used or discarded according to whether it belongs to the specified gene and cancer project or not.
 
+ .. _counting-results:
+
 Counting of the recurrence data
 -------------------------------
 
@@ -62,7 +64,7 @@ In this step, given the recurrence data for each mutation, we get the mutation r
 
  .. code-block:: none
 	
-	# Project: All  Gene: All
+	# Project: All	Gene: All
 	MUTATION_ID     TOTAL_AFFECTED_DONORS   TOTAL_TESTED_DONORS
 	MU15316252      1       10638
 	MU40391998      1       10638
@@ -129,7 +131,13 @@ STEP 1: Fetching of the recurrence data for a cancer project and/or gene of inte
 
 This is implemented in the script ``GetRecurrenceData.pm`` from the ``mutation-recurrence-workflow`` of this repo.
 
-The script retrieves the next fields:
+The script recieves as INPUT:
+
+ - The ICGC SSM data to analize
+ - A gene to query
+ - A cancer project to query
+ 
+The script outputs the next fields:
 
  - MUTATION_ID
  - PROJ_AFFECTED_DONORS
@@ -140,43 +148,148 @@ The script retrieves the next fields:
 Usage
 ......
 
-.. code-block: none
+ .. code-block:: none
+	
+	GetRecurrenceData.pm [--gene=<gene>] [--project=<ICGC project>] [--in=<vcffile>] [--out=<outfile>] [--offline] [--help]
 
-	GetRecurrenceData.pm [--gene=<gene name>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--offline] [--help]
-
-The user provides the gene to search for, the project the input file (ICGC's SSM file) and the desired output file. Optionally, there are flags to work with no internet connection and to ask for help on the command line.
+The user provides the gene to search for, the project the input file (ICGC's SSM file) and the desired output file. Optionally, there are flags to work with no internet connection and to ask for help on the program usage from the command line.
 
 Example output
 ..............
 
-There already was some sample output in the Results:Counting the recurrence data section from this page (with the PROJ_AFFECTED_DONORS and PROJ_TESTED_DONORS fields chomped out for clarity. We now present another example of recurrence data.
+There already was some sample output in the :ref:`Results <counting-results>` section from this page (with the PROJ_AFFECTED_DONORS and PROJ_TESTED_DONORS fields chomped out for clarity. We now present another example of recurrence data.
 
-For the command ``GetRecurrenceData.pm -g TP53 -p BRCA-EU -i $ICGC_DATA`` (ICGC_DATA points to the SSM file from the ICGC Data Release 22), the first 7 lines of output are:
+For the command ``GetRecurrenceData.pm -g TP53 -p BRCA-EU -i $ICGC_DATA`` (ICGC_DATA points to the SSM file from the ICGC Data Release 22), the first 30 lines of output are:
 
-.. code-block: none
-
+ .. code-block:: none
+	
 	# Project: BRCA-EU      Gene: TP53(ENSG00000141510)
-	MUTATION_ID     POSITION        MUTATION        PROJ_AFFECTED_DONORS    TOTAL_AFFECTED_DONORS   CONSEQUENCES
-	MU65520841      Chrom17(7560698)        T>A     BRCA-EU(1/560)  1/10638(1 projects)     3_prime_UTR_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53),downstream_gene_variant@ENSG00000129244(ATP1B2)
-	MU64389958      Chrom17(7560786)        C>G     BRCA-EU(1/560)  1/10638(1 projects)     3_prime_UTR_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53),downstream_gene_variant@ENSG00000129244(ATP1B2)
-	MU2068497       Chrom17(7562142)        G>A     BRCA-UK(1/117),BRCA-EU(1/560)   2/10638(2 projects)     intergenic_region,downstream_gene_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53)
-	MU65890900      Chrom17(7564637)        C>T     BRCA-EU(1/560)  1/10638(1 projects)     intergenic_region,downstream_gene_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53)
-	MU66856006      Chrom17(7564667)        T>C     BRCA-EU(1/560)  1/10638(1 projects)     intergenic_region,downstream_gene_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53)
-	MU65622575      Chrom17(7565120)        A>G     BRCA-EU(1/560)  1/10638(1 projects)     downstream_gene_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53),3_prime_UTR_variant@ENSG00000141510(TP53)
+	MUTATION_ID     PROJ_AFFECTED_DONORS    PROJ_TESTED_DONORS      TOTAL_AFFECTED_DONORS   TOTAL_TESTED_DONORS
+	MU65520841      1       560     1       10638
+	MU64389958      1       560     1       10638
+	MU2068497       1       560     2       10638
+	MU65890900      1       560     1       10638
+	MU66856006      1       560     1       10638
+	MU65622575      1       560     1       10638
+	MU66403363      1       560     1       10638
+	MU66000182      1       560     2       10638
+	MU66969483      1       560     1       10638
+	MU64041773      1       560     1       10638
+	MU66000185      1       560     2       10638
+	MU65074412      1       560     1       10638
+	MU65990709      1       560     1       10638
+	MU65074414      1       560     1       10638
+	MU65074417      1       560     1       10638
+	MU66856008      1       560     1       10638
+	MU66698126      1       560     1       10638
+	MU63800653      1       560     1       10638
+	MU67236514      1       560     1       10638
+	MU66471865      1       560     1       10638
+	MU4588151       1       560     2       10638
+	MU23054 1       560     4       10638
+	MU27658 2       560     4       10638
+	MU10208 1       560     43      10638
+	MU122757        2       560     13      10638
+	MU63435825      1       560     1       10638
+	MU1842343       1       560     3       10638
 
 
-**Step 2** Counting of the recurrence data
-------------------------------------------
+STEPS 1 and 2: Fetching and counting of the recurrence data
+---------------------------------------------------------------
 
-***TODO***
+This is implemented in the scripts ``GetRecurrenceDistribution.pm`` and ``GetRecurrenceDistribution.inherited.pm`` (inherits from ``GetRecurrenceData.pm``). Both have the same API and outputs, so are interchangeable.
 
-**Step 3** Display (plotting) and analysis of the results
+To automate large jobs, the scripts ``get-recurrence-distributions.all-projects.sge`` and ``get-recurrence-distributions.BRCA.EU.sge`` are Sun Grid Engine wrappers of the previous scripts to paralellize obtaining the distributions of several genes, thus making the process much faster.
+
+The scripts retrieve the mutation recurrence distribution in the next fields:
+
+ - MUTATIONS
+ - AFFECTED_DONORS_PER_MUTATION
+
+Usage
+......
+
+ .. code-block:: none
+	
+	GetRecurrenceDistribution.pm [--gene=<gene>] [--project=<ICGC project>] [--in=<vcffile>] [--out=<outfile>] [--offline] [--help]
+
+Similar to the previous command, the user provides the gene to search for, the project the input file (ICGC's SSM file) and the desired output file. To ask for help from the command line, call it with the flag ``--help``.
+
+Example output
+..............
+
+There already was some sample output in the :ref:`Results <counting-results>` section from this page. We now present another example.
+
+For the command ``GetRecurrenceDistribution.pm -g TP53 -p BRCA-EU -i $ICGC_DATA`` (ICGC_DATA points to the SSM file from the ICGC Data Release 22), the complete output is:
+
+ .. code-block:: none
+	
+	# Project: All	Gene: TP53(ENSG00000141510)	Tested donors: 10648
+	MUTATIONS	AFFECTED_DONORS_PER_MUTATION
+	791	1	
+	152	2	
+	77	3	
+	55	4	
+	37	5	
+	14	6	
+	15	7	
+	8	8	
+	11	9	
+	6	10	
+	6	11	
+	2	12	
+	7	13	
+	4	14	
+	2	15	
+	2	16	
+	5	17	
+	1	18	
+	1	22	
+	1	23	
+	1	24	
+	1	25	
+	1	32	
+	1	36	
+	1	40	
+	1	43	
+	1	44	
+	1	52	
+	1	54	
+	1	71	
+	1	72	
+	1	81	
+	1	90	
+	1	93	
+	1	101	
+	1	140	
+
+
+
+STEP 3: Display (plotting) and analysis of the results
 ---------------------------------------------------------
 
-***TODO:*** `distribution-plots.nb`
+This is implemented in the script ``recurrence-distribution-plots.nb``.
 
-Complete workflow up to counting
---------------------------------
+The script has as input the mutation recurrence distributions in the format of the output of the ``GetRecurrenceDistribution`` scripts. And as output, the script plots the distributions, both all in the same graph, and in separate graphs.
 
-The complete workflow up to the plotting is implemented in serial form in Perl/Bash language by the script ``get_genes_info.pl``
-***TODO***
+Usage
+......
+
+You have to open the script in Mathematica and run the complete notebook (**TODO:** Automate this). You may have to edit the variable ``project`` to select those distributions you want to plot.
+
+Example output
+..............
+
+There already was some sample output in the :ref:`Results <counting-results>` section from this page. We now present another example.
+
+For 16 main oncogenes, the recurrence distributions are in the next graph:
+
+ .. figure:: images/recurrence-distributions-separated.*
+    :name: mutation-recurrence-distributions
+    
+Besides, the nature of the graphs (showing a line in a log-log plot) suggest the distributions follow a power law such that :math:`p \mapsto \Phi(p) = A p^{B}`, where A and B are parameters. The script may do the fits as well, and the results are in the next image:
+
+ .. figure:: images/recurrence-best-fits.*
+    :name: mutation-recurrence-best-fits
+    
+And as a result, the parameter :math:`A` is related to the number of mutations analized and the :math:`B`'s have an average value of 4.45. As indicated by the similar slopes.

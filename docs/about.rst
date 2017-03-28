@@ -53,7 +53,7 @@ The scripts are divided in workflows or pipelines. The pipelines currently imple
 
  -  **Locating mutations in the genome**: Automates the process of searching where does each mutation fall relative to a gene. In particular, it answers the questions: *How many (and which) mutations fall in INTRONIC, EXONIC or INTERGENIC regions?* and *if a mutation falls in an exon, which base of the codon does it affects?* *TODO:* This pipeline is further documented in :ref:`The mutation locating workflow <mutation-locating-workflow>`.
 
- - **Distribution of the mutations in the genes**: Automation of the extraction of the distribution of mutations in the genes. It answers the question of *how many genes contain `x` number of mutations in a given gene or project?* *TODO:* This is further documented in :doc:`The mutations distribution workflow <distribution-paper>`.
+ - **Distribution of the mutations in the genes**: Automation of the extraction of the distribution of mutations in the genes. It answers the question of *how many genes contain `x` number of mutations in a given gene or project?* *TODO:* This is further documented in :doc:`The mutations distribution workflow <reports/mutation-distribution-report>`.
 
  -  **Simple Ensembl Perl API convenience scripts**: These are small convenience scripts constructed with the intention to test the Ensembl Perl API but serve as integral programs on their own. These are found in the `ensembl_API folder <https://github.com/Ad115/ICGC-data-parser/tree/develop/ensembl_API>`_ . *TODO:* These are further documented in :ref:`The Ensembl Perl API scripts <ensembl-scripts>`.
 
