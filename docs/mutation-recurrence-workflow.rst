@@ -3,7 +3,7 @@
 The mutation recurrence workflow
 ================================
 
-Documentation for the mutation recurrence workflow. Including description, basic structure logic, description of the implementations and results.
+User documentation for the mutation recurrence workflow. Including description, basic structure logic, description of the implementations and results.
 
 -----------
 Description
@@ -11,17 +11,27 @@ Description
 
 In general, the mutation recurrence workflow automates the process of extracting reccurrence of mutations across patients, it answers the question: *How many mutations appear in multiple patients?* or, specifying further, *how many mutations are repeated in ``n`` different patients in a given cancer project and a given gene?*
 
+------------------------------------
+The mutation recurrence distribution
+------------------------------------
+
+We now explain more formally what we mean with the mutation recurrence distribution.
+
+The discrete distribution of mutation recurrence across patients, is a function :math:\Phi : \mathbb{N}  \rightarrow \mathbb{N} \cup \left \{ 0 \right \}`. We interpret it as saying that there are :math:`Phi(n)` mutations that affect (recurr in) :math:`n` patients, for each :math:`n`. 
+ 
+To understand this, begin by asking, for each mutation, ¿How many patients are affected by it? That defines a mapping :math:`m \mapsto p`, from each mutation to the number of patients it affects. Now, for each number of affected donors :math:`p`, we count the number :math:`n` of mutations that map to :math:`p` (i.e. that affect :math:`p` patients) so that :math:`\Phi` is this implied mapping :math:`p \mapsto n` form number of patients affected to the number of mutations that affect that number of patients.
+
 ---------------------
 Basic structure logic
 ---------------------
 
-This workflow explodes the fact that the `ICGC data <https://github.com/Ad115/ICGC-data-parser/blob/develop/SSM_DATA_README.md>`_ already provides, for each mutation, the number of affected patients per project and accross all projects. So, the steps involved are the following:
+This workflow explodes the fact that the `ICGC data <https://icgc-data-parser.readthedocs.io/en/master/icgc-ssm-file.html>`_ already provides, for each mutation, the number of affected patients per project and accross all projects. So, the steps involved are the following:
 
  1. **Fetching of the recurrence data (no. of affected donors) for a cancer project and/or gene of interest**  for each mutation from the raw mutation data (gene "all genes" and/or project "all projects" are allowed). This narrows the scope to only those mutations that are present in the given gene and the given project and from those only get the data that may be useful.
 
- 2. **Counting of the recurrence data**. Specifically, counting how many mutations recurr in ``n`` patients (the workflow question) for each ``n`` in ``1, 2, 3, ...``. In this process the mutation identities are lost, and we are only left of the distribution of mutation recurrence across patients.
+ 2. **Counting of the recurrence data**. Specifically, counting how many mutations recurr in ``n`` patients (the workflow question) for each ``n`` in ``1, 2, 3, ...``. In this process the mutation identities are lost, and we are only left with the mutation recurrence distribution.
 
- 3. **Display (plotting) and analysis of the results**. This step involves plotting the resulting distribution (table) and doing analysis and interpretation of the results.
+ 3. **Display (plotting) and analysis of the results**. This step involves plotting the resulting distribution and doing an analysis and interpretation of the results.
 
 -------
 Results
@@ -29,11 +39,74 @@ Results
 
 The following specifies the outputs seen at each step. This output serves as input to the next step.
 
- 1. **Fetching of the recurrence data (no. of affected donors) for a cancer project and/or gene of interest**
+Fetching of the recurrence data (no. of affected donors) for a cancer project and/or gene of interest
+-----------------------------------------------------------------------------------------------------
 
- 2. **Counting of the recurrence data**. Specifically, counting how many mutations recurr in `n` patients (the workflow question) for each ``n`` in ``1, 2, 3, ...``. In this process the mutation identities are lost, and we are only left of the distribution of mutation recurrence across patients.
+Next we analize a mutation from the ICGC SSM data to get the recurrence data.
 
- 3. **Display (plotting) and analysis of the results**. This step involves plotting the resulting distribution (table) and doing analysis and interpretation of the results.
+Here is the mutation:
+
+ .. code-block:: none
+
+	#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+	1       100000022       MU39532371      C       T       .       .       CONSEQUENCE=||||||intergenic_region||,RP11-413P11.1|ENSG00000224445|1|RP11-413P11.1-001|ENST00000438829||upstream_gene_variant||;OCCURRENCE=SKCA-BR|1|70|0.01429;affected_donors=1;mutation=C>T;project_count=1;tested_donors=10638
+
+This is mutation `MU39532371` affecting gene `RP11-413P11.1`, we see it is present in only the `SKCA-BR` cancer project, with 1 patient affected in the project and 1 patient affected globally. These (occurrence in gene, project and global ocurrence) is what we where looking for (the recurrence data). This data is now used or discarded according to whether it belongs to the specified gene and cancer project or not.
+
+Counting of the recurrence data
+-------------------------------
+
+In this step, given the recurrence data for each mutation, we get the mutation recurrence distribution by counting how many mutations affect a given number of patients. As an example, for the next recurrence data:
+
+	*Data obtained with the* ``GetRecurrenceData.pm`` *script in the mutation-recurrence-data folder of this repo, parsing the last 25 lines of the SSM file from release 22.*
+
+ .. code-block:: none
+	
+	# Project: All  Gene: All
+	MUTATION_ID     TOTAL_AFFECTED_DONORS   TOTAL_TESTED_DONORS
+	MU15316252      1       10638
+	MU40391998      1       10638
+	MU67425876      3       10638
+	MU40392000      1       10638
+	MU46052595      1       10638
+	MU15316304      1       10638
+	MU35274516      1       10638
+	MU15316381      1       10638
+	MU43871898      1       10638
+	MU43871975      1       10638
+	MU67989961      2       10638
+	MU42474604      1       10638
+	MU43228049      1       10638
+	MU49279319      1       10638
+	MU33512431      1       10638
+	MU47964056      1       10638
+	MU49565549      1       10638
+	MU59611256      2       10638
+	MU42580058      1       10638
+	MU63623967      1       10638
+	MU30503112      1       10638
+	MU44709162      1       10638
+	MU44709239      1       10638
+	MU44709280      1       10638
+	
+We find that there are 21 mutations that affect 1 donor, 2 that affect 2 and 1 that affects 3 donors, so the mutation recurrence distribution for this data is :math:`\Phi` such that :math:`\Phi(1)=21,\;\Phi(2)=2,\;\Phi(3)=1` and :math:`\Phi(n)=0` for all :math:`n > 3`.
+
+	*Next is the recurrence distribution of the previous data as found with the* ``GetRecurrenceDistribution.pm`` *script from the mutation-recurrence-data folder of this repo.*
+
+ .. code-block:: none
+	
+	# Project: All  Gene: All       Tested donors: 10638
+	MUTATIONS       AFFECTED_DONORS_PER_MUTATION
+	21      1
+	2       2
+	1       3
+
+
+Display (plotting) and analysis of the results
+----------------------------------------------
+
+**TODO** 
+This step involves plotting the resulting distribution (table) and doing analysis and interpretation of the results.
 
 -------------------------------
 *Appendix I*: Implementation(s)
