@@ -25,7 +25,7 @@ Command-line arguments:
 		It is a comma-separated list.
 		
 	-n, --n-cols
-		Numbers of the fields to print.
+		Numbers of the fields to print (0-based).
 		Is a comma-separated list.
 		
 	-r, -ordered
