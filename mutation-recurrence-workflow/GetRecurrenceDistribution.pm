@@ -78,7 +78,7 @@ sub main
     if( $opt{out} )  { open_output( $output, full_path($opt{out}) ); }
 
     # Check if user asked for help
-    if( $opt{help} ) { print $doc_str; print_and_exit($doc_str); }
+    if( $opt{help} ) { print_and_exit($doc_str); }
 
 ## MAIN QUERY
 
