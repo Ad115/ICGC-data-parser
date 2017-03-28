@@ -8,12 +8,11 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-   :glob:
    
    about
    installation
    icgc-ssm-file
    mutation-recurrence-workflow
-   distribution-paper
+   reports/reports
    
 

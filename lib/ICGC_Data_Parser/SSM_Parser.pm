@@ -57,13 +57,13 @@ use ICGC_Data_Parser::Tools qw(:debug);
 		# Skip comments
 		my $line;
 		do	{ $line = <$input>; }
-		while($line and $line !~ /^#[^#].*/);
+		while( $line and $line =~ /^##/ );
 
 		# Check whether you are in the headers line
 		if ($line and $line =~ /^#(.*)/) { 
 			return $1;
 		} else{
-			die "No headers found in file";
+			return '';
 		}
 	}#-----------------------------------------------------------
 
@@ -107,7 +107,7 @@ use ICGC_Data_Parser::Tools qw(:debug);
 	# Checks if the user asked for a specific project or gene
 	{
 		my $query = shift;
-		return $query and !(lc $query eq 'all');
+		return ( $query and !(lc $query eq 'all') );
 	}#-----------------------------------------------------------
 	
 	sub regexp_compile

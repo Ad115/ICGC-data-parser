@@ -108,7 +108,7 @@ sub main
 	my %output = ();
 
 	# Print heading lines
-	print  $output "# Project: $project_str\tGene: $gene_str\tTested donors: $count{TESTED_DONORS}\n";
+	print  $output "# Project: $project_str\tGene: $gene_str\tTested donors: $tested_donors\n";
 	print  $output join( "\t", @output_line_fields)."\n";
 
 	foreach my $key (sort {$a <=> $b} keys %distribution){
@@ -162,14 +162,14 @@ sub get_reccurrence_distribution
 			};
 
 			# Associate AFFECTED_DONORS : MUTATIONS
-			if (lc $args{project_str} eq 'all'){
-				# When all projects are parsed
-				$distribution{ $mutation{INFO}->{affected_donors} }++;
-				$distribution{ TESTED_DONORS } = $mutation{INFO}->{tested_donors};
-			} else{
+			if (specified $args{project}){
 				# When a project is specified
 				$distribution{ $mutation{INFO}->{OCCURRENCE}->[0]->{affected_donors} }++;
 				$distribution{ TESTED_DONORS } = $mutation{INFO}->{OCCURRENCE}->[0]->{tested_donors};
+			} else{
+				# When all projects are parsed
+				$distribution{ $mutation{INFO}->{affected_donors} }++;
+				$distribution{ TESTED_DONORS } = $mutation{INFO}->{tested_donors};
 			}
 		}
 	}
