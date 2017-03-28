@@ -108,7 +108,7 @@ sub main
 	my %output = ();
 
 	# Print heading lines
-	print  $output "# Project: $project_str\tGene: $gene_str\tTested donors: $count{TESTED_DONORS}\n";
+	print  $output "# Project: $project_str\tGene: $gene_str\tTested donors: $tested_donors\n";
 	print  $output join( "\t", @output_line_fields)."\n";
 
 	foreach my $key (sort {$a <=> $b} keys %distribution){
