@@ -2,7 +2,7 @@
 
 package GetRecurrenceDistribution;
 
-use base qw(GetRecurrenceData);
+use parent qw(GetRecurrenceData);
 #=====================================================================
 
 our $doc_str = <<END;
