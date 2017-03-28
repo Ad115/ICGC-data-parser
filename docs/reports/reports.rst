@@ -9,4 +9,4 @@ Contents:
 .. toctree::
    :glob:
    
-   mutation-distribution-report
+   The mutation distribution workflow <mutation-distribution-report>
