@@ -107,7 +107,7 @@ use ICGC_Data_Parser::Tools qw(:debug);
 	# Checks if the user asked for a specific project or gene
 	{
 		my $query = shift;
-		return $query and !(lc $query eq 'all');
+		return ( $query and !(lc $query eq 'all') );
 	}#-----------------------------------------------------------
 	
 	sub regexp_compile
