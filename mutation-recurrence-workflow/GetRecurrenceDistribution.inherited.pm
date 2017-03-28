@@ -165,14 +165,14 @@ sub get_reccurrence_distribution
 			};
 
 			# Associate AFFECTED_DONORS : MUTATIONS
-			if ( specified($args{project}) ){
-				# When all projects are parsed
-				$count{ $recurrence{PROJ_AFFECTED_DONORS} }++;
-				$count{ TESTED_DONORS } = $recurrence{PROJ_TESTED_DONORS};
-			} else{
+			if ( specified $args{project} ){
 				# When a project is specified
 				$count{ $recurrence{TOTAL_AFFECTED_DONORS} }++;
 				$count{ TESTED_DONORS } = $recurrence{TOTAL_TESTED_DONORS};
+			} else{
+				# When all projects are parsed
+				$count{ $recurrence{PROJ_AFFECTED_DONORS} }++;
+				$count{ TESTED_DONORS } = $recurrence{PROJ_TESTED_DONORS};
 			}
 		}
 	}
