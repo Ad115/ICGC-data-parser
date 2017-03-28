@@ -57,13 +57,13 @@ use ICGC_Data_Parser::Tools qw(:debug);
 		# Skip comments
 		my $line;
 		do	{ $line = <$input>; }
-		while($line and $line !~ /^#[^#].*/);
+		while( $line and $line =~ /^##/ );
 
 		# Check whether you are in the headers line
 		if ($line and $line =~ /^#(.*)/) { 
 			return $1;
 		} else{
-			die "No headers found in file";
+			return '';
 		}
 	}#-----------------------------------------------------------
 
