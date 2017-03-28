@@ -9,7 +9,7 @@ User documentation for the mutation recurrence workflow. Including description, 
 Description
 -----------
 
-In general, the mutation recurrence workflow automates the process of extracting reccurrence of mutations across patients, it answers the question: *How many mutations appear in multiple patients?* or, specifying further, *how many mutations are repeated in ``n`` different patients in a given cancer project and a given gene?*
+In general, the mutation recurrence workflow automates the process of extracting reccurrence of mutations across patients. It answers the question: *How many mutations appear in multiple patients?* or, specifying further, *How many mutations are repeated in* ``n`` *different patients in a given cancer project and a given gene?* This data is concentrated in the mutation recurrence distribution obtained by the scripts in this workflow.
 
 ------------------------------------
 The mutation recurrence distribution
@@ -17,9 +17,9 @@ The mutation recurrence distribution
 
 We now explain more formally what we mean with the mutation recurrence distribution.
 
-The discrete distribution of mutation recurrence across patients, is a function :math:\Phi : \mathbb{N}  \rightarrow \mathbb{N} \cup \left \{ 0 \right \}`. We interpret it as saying that there are :math:`Phi(n)` mutations that affect (recurr in) :math:`n` patients, for each :math:`n`. 
+The discrete distribution of mutation recurrence across patients, is a function :math:`\Phi : \mathbb{N}  \rightarrow \mathbb{N} \cup \left \{ 0 \right \}`. We interpret it as saying that there are :math:`\Phi(n)` mutations that affect (recurr in) :math:`n` patients, for each :math:`n`. 
  
-To understand this, begin by asking, for each mutation, ¿How many patients are affected by it? That defines a mapping :math:`m \mapsto p`, from each mutation to the number of patients it affects. Now, for each number of affected donors :math:`p`, we count the number :math:`n` of mutations that map to :math:`p` (i.e. that affect :math:`p` patients) so that :math:`\Phi` is this implied mapping :math:`p \mapsto n` form number of patients affected to the number of mutations that affect that number of patients.
+To understand this, begin by asking, for each mutation, ¿How many patients are affected by it? That defines a mapping :math:`m \mapsto p`, from each mutation to the number of patients it affects. Now, for each number of affected donors :math:`p`, we count the number :math:`n` of mutations that map to :math:`p` (i.e. that affect :math:`p` patients) so that :math:`\Phi` is this implied mapping :math:`p \mapsto n` from number of patients affected to the number of mutations that affect that number of patients.
 
 ---------------------
 Basic structure logic
@@ -37,7 +37,7 @@ This workflow explodes the fact that the `ICGC data <https://icgc-data-parser.re
 Results
 -------
 
-The following specifies the outputs seen at each step. This output serves as input to the next step.
+The following specifies the outputs seen at each step. Each step's input is the input for the next one.
 
 Fetching of the recurrence data (no. of affected donors) for a cancer project and/or gene of interest
 -----------------------------------------------------------------------------------------------------
@@ -105,41 +105,53 @@ We find that there are 21 mutations that affect 1 donor, 2 that affect 2 and 1 t
 Display (plotting) and analysis of the results
 ----------------------------------------------
 
-**TODO** 
-This step involves plotting the resulting distribution (table) and doing analysis and interpretation of the results.
+The recurrence distribution obtained is then visualized as a plot and one may even compare the data across distributions.
+
+Next is an example, obtained from the recurrence data of 17 main oncogenes across all projects.
+
+	*The graph was obtained using the* ``recurrence-distribution-plots.nb`` *script from the mutation-recurrence-workflow of this repo. The data upon which it is based was obtained using the* ``get-recurrence-distributions.all-projects.sge`` *Sun Grid Engine script from the same folder, and using the ICGC SSM file from the Data Release 22.*
+	
+.. figure:: images/recurrence-distributions.*
+   :name: mutation-recurrence-distribution
+
+   **Figure 1:** *The mutation recurrence distribution log-log plots of 16 oncogenes (along the distribution of all genes).*
+   
+We can see the distributions follow aproximately lines with a common slope in the log-log plot (even in comparison with the distribution of all genes). This suggests a common mechanism in the procesess leading to the recurrence. This is something that would be hard to deduce with the raw data alone, thus, this shows the usefulness of the data visualization.
 
 -------------------------------
-*Appendix I*: Implementation(s)
+*Appendix I:* Implementation(s)
 -------------------------------
 
-*WARNING:* Subject to change in the near future.
+*WARNING:* Subject to change.
 
-**Step 1**. Fetching of the recurrence data (no. of affected donors) for a cancer project and/or gene of interest
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+STEP 1: Fetching of the recurrence data for a cancer project and/or gene of interest
+------------------------------------------------------------------------------------
 
-This is implemented in the script **filter_gene_project.pl** which fetches important data from the raw data.
+This is implemented in the script ``GetRecurrenceData.pm`` from the ``mutation-recurrence-workflow`` of this repo.
 
 The script retrieves the next fields:
+
  - MUTATION_ID
- - POSITION
- - MUTATION
- - TOTAL_AFFECTED_DONORS
  - PROJ_AFFECTED_DONORS
- - CONSEQUENCES
+ - PROJ_TESTED_DONORS
+ - TOTAL_AFFECTED_DONORS
+ - TOTAL_TESTED_DONORS
 
 Usage
 ......
 
 .. code-block: none
 
-	filter_gene_project.pl [--gene=<gene name>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--help]
+	GetRecurrenceData.pm [--gene=<gene name>] [--project=<ICGC project name>] [--in=<vcffile>] [--out=<outfile>] [--offline] [--help]
 
-The user provides the gene to search for, the project the input file (ICGC's SSM file) and the desired output file.
+The user provides the gene to search for, the project the input file (ICGC's SSM file) and the desired output file. Optionally, there are flags to work with no internet connection and to ask for help on the command line.
 
 Example output
 ..............
 
-For the command ``filter_gene_project.pl -g TP53 -p BRCA-EU -i $ICGC_DATA`` the first 7 lines of output are:
+There already was some sample output in the Results:Counting the recurrence data section from this page (with the PROJ_AFFECTED_DONORS and PROJ_TESTED_DONORS fields chomped out for clarity. We now present another example of recurrence data.
+
+For the command ``GetRecurrenceData.pm -g TP53 -p BRCA-EU -i $ICGC_DATA`` (ICGC_DATA points to the SSM file from the ICGC Data Release 22), the first 7 lines of output are:
 
 .. code-block: none
 
@@ -153,20 +165,18 @@ For the command ``filter_gene_project.pl -g TP53 -p BRCA-EU -i $ICGC_DATA`` the 
 	MU65622575      Chrom17(7565120)        A>G     BRCA-EU(1/560)  1/10638(1 projects)     downstream_gene_variant@ENSG00000129244(ATP1B2),downstream_gene_variant@ENSG00000141510(TP53),3_prime_UTR_variant@ENSG00000141510(TP53)
 
 
-This script is also important as the first step of other workflows, to learn more about it, read ***TODO:*** `The filtering script <https://github.com/Ad115/ICGC-data-parser/blob/develop/FILTER_GENE_PROJECT_README.md>`_
-
-**Step 2** Counting of the recurrence data.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Step 2** Counting of the recurrence data
+------------------------------------------
 
 ***TODO***
 
-**Step 3** Display (plotting) and analysis of the results.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Step 3** Display (plotting) and analysis of the results
+---------------------------------------------------------
 
 ***TODO:*** `distribution-plots.nb`
 
-Complete workflow up to counting.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Complete workflow up to counting
+--------------------------------
 
 The complete workflow up to the plotting is implemented in serial form in Perl/Bash language by the script ``get_genes_info.pl``
 ***TODO***
