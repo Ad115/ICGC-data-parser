@@ -4,7 +4,7 @@ package ICGC_Data_Parser::Ensembl;
 	use warnings;
 	use Exporter qw'import';
 
-	our @EXPORT_OK = qw(get_gene_query_data get_gene_id);
+	our @EXPORT_OK = qw(get_gene_id_data);
 
 #============================================================
 
@@ -36,18 +36,12 @@ our %gene_name = ( '' => '' ); # Association gene_stable_id : gene_display_label
       return $registry;
     }#------------------------------------------------------
 
-    sub get_gene_id
-    # Query the database for the stable id of the given gene
+    sub get_gene_stable_id
+    # Query the database for the stable id of the given gene display label
     {
     	my $gene = shift;
 	  
-		if( !$gene or lc $gene eq 'all'){
-			# Check if asked for all genes
-			return '';
-		} elsif( $gene =~ /(ENSG[0-9.]*)/){
-			# Else, check if already is or contains a gene stable id
-			return $1;
-		} elsif( my @match = grep { $gene_name{$_} eq $gene } keys %gene_name){
+		if( my @match = grep { $gene_name{$_} eq $gene } keys %gene_name){
 			# Else, check if the gene is already in the seen ones
 			return shift @match;
 		} else{
@@ -68,7 +62,7 @@ our %gene_name = ( '' => '' ); # Association gene_stable_id : gene_display_label
 		}
     }#-------------------------------------------------------
 
-    sub get_display_label
+    sub get_gene_display_label
     # Get the display label for the gene id
     {
     	my $gene_id = shift;
@@ -90,32 +84,33 @@ our %gene_name = ( '' => '' ); # Association gene_stable_id : gene_display_label
         return $gene_name{$gene_id};
     }#-------------------------------------------------------
     
-	sub get_gene_query_data
+	sub get_gene_id_data
 	# Get the relevant data for the given gene
 	{
-		my $gene = shift; # get gene
+		my ($gene, $offline) = @_; # Get options
 
+		# To print in case of error with option 'offline'
+		my $offline_error = "Option '--offline' requires gene 'all' or gene's Ensembl stable id"
+					."i.e., as an example, instead of gene TP53, gene must be ENSG00000141510\n";
 		my ($gene_id, $gene_name);
-		if ($gene)
-		{
-			if ($gene =~ /ENSG[0-9.]*/) # User provided stable ID
-			{
-				$gene_id = $gene;
-				# Get common name
-				$gene_name = get_display_label($gene_id);
-			}
-			elsif (!$gene or lc $gene eq 'all') # User wants to search in all genes
-			{
-				$gene_id = '';
-			}
-			else # User provided the display label
-			{
-				$gene_name = $gene;
-				$gene_id = get_gene_id($gene);
-			}
+		
+		if (!$gene or lc $gene eq 'all'){
+			# Check if user asked for all genes
+			$gene_name = $gene_id = '';
+		} 
+		elsif ($gene =~ /(ENSG[0-9.]*)/){
+			# User provided stable ID or a name containing the stable ID
+			$gene_id = $1;
+			$gene_name = ($offline) ? '' : get_gene_display_label($gene);
+		} 
+		else {
+			# User provided the display label
+			die $offline_error if $offline; # Cannot get stable id while offline
+			$gene_name = $gene;
+			$gene_id = get_gene_stable_id($gene);
 		}
 
-		return [$gene_name, $gene_id];
+		return [$gene_id, $gene_name];
 	}#-----------------------------------------------------------
 
 #============================
