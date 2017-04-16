@@ -48,7 +48,6 @@ END
 
 use ICGC_Data_Parser::SSM_Parser qw(:parse);
 use ICGC_Data_Parser::Tools qw(:general_io);
-use ICGC_Data_Parser::Ensembl qw(get_gene_id);
 
 use Getopt::Long qw(:config bundling); # To parse command-line arguments
 
@@ -100,6 +99,7 @@ sub main
 				input => $input,
 				gene => $opt{gene},
 				project => $opt{project},
+				offline => $opt{offline}
 			}
 		)
 	};
@@ -144,7 +144,8 @@ sub get_reccurrence_distribution
 	my %regexp = %{ get_query_re( {
 				project	=>	$args{project},
 				gene	=>	$args{gene}
-			}
+			},
+			$args{offline}
 		)
 	};
 	
@@ -159,7 +160,8 @@ sub get_reccurrence_distribution
 						line => $line,
 						headers => $headers,
 						gene => $args{gene},
-						project => $args{project}
+						project => $args{project},
+						offline => $args{offline}
 					}
 				)
 			};

@@ -114,15 +114,15 @@ use ICGC_Data_Parser::Tools qw(:debug);
 	{
 		my $to_compile = shift;
 		
-		return ($to_compile) ? qr/$to_compile/ : qr/.*/;
+		return (specified $to_compile) ? qr/$to_compile/ : qr/.*/;
 	}#-----------------------------------------------------------
 	
 	sub gene_regexp_compile
 	{
-		my $gene = shift;
+		my ($gene, $offline) = @_;
 		
-		# Compile gene regexp
-		my $gene_id = get_gene_id_data( $gene )->[0];
+		# Get gene stable id
+		my $gene_id = get_gene_id_data( $gene, $offline )->[0];
 		
 		return regexp_compile($gene_id);
 	}
@@ -130,7 +130,7 @@ use ICGC_Data_Parser::Tools qw(:debug);
 	sub get_query_re
 	# Get a regexp of the gene and/or project specified
 	{
-		my $arg = shift;
+		my ($arg, $offline) = @_;
 		
 		# Check if labeled strings where asked for
 		if ( ref $arg eq 'HASH')
@@ -141,7 +141,7 @@ use ICGC_Data_Parser::Tools qw(:debug);
 			{
 				# If user asked for the gene's rexexp
 				# Compile gene regexp
-				my $gene_re = gene_regexp_compile( $args{gene} );
+				my $gene_re = gene_regexp_compile( $args{gene}, $offline );
 				
 				# Check if user asked for the project regexp too
 				if ( exists $args{project} ){
@@ -177,10 +177,10 @@ use ICGC_Data_Parser::Tools qw(:debug);
 		my ($gene_name, $gene_id);
 
 		# Get gene_id and label
-		($gene_id, $gene_name) = @{ get_gene_id_data($gene) };
+		($gene_id, $gene_name) = @{ get_gene_id_data($gene, $offline) };
 
 		my $gene_str = ($gene_id) ? "$gene_name($gene_id)" : "All";
-		my $gene_re = ($gene_id) ? qr/$gene_id/ : qr/.*/;
+		my $gene_re = get_query_re($gene_id, $offline);
 
 		return {
 			raw	=>	$gene,
@@ -196,7 +196,7 @@ use ICGC_Data_Parser::Tools qw(:debug);
 		my $project = shift;
 		
 		my $project_str = (specified $project) ? $project : "All";
-		my $project_re = (specified $project) ? qr/$project/ : qr/.*/;
+		my $project_re = get_query_re($project);
 		# Get project's data
 		return {
 			raw	=>	$project,
@@ -219,13 +219,13 @@ use ICGC_Data_Parser::Tools qw(:debug);
 	sub get_consequence_data
 	# Get the consequence data as a hash array from the mutation line
 	{
-	    my ($line, $gene) = @_;
+	    my %args = %{ shift() };
 
 		# Get the gene regular expression
-		my $gene_re = get_query_re({gene => $gene});
+		my $gene_re = get_query_re({gene => $args{gene}}, $args{offline});
 
 	    # Get the CONSEQUENCE field
-	    $line =~ /CONSEQUENCE=(.*?);/;
+	    $args{line} =~ /CONSEQUENCE=(.*?);/;
 
 	    # Split multiple consequences
 		my @consequences
@@ -251,13 +251,13 @@ use ICGC_Data_Parser::Tools qw(:debug);
 	sub get_occurrence_data
 	# Get the occurrence data as a hash array from the mutation line
 	{
-		my ($line, $project) = @_;
+		my %args = %{ shift() };
 
 		# Get the project regular expression
-		my $project_re = get_query_re($project);
+		my $project_re = get_query_re($args{project});
 
 		# Get the OCCURRENCE field
-		$line =~ /OCCURRENCE=(.*?);/;
+		$args{line} =~ /OCCURRENCE=(.*?);/;
 
 		# Split multiple occurrences
 	    my @occurrences
@@ -288,8 +288,8 @@ use ICGC_Data_Parser::Tools qw(:debug);
 			'project_count'	=>	$3,
 			'tested_donors'	=>	$4
 		);
-		$INFO{CONSEQUENCE} = get_consequence_data($args{line}, $args{gene});
-		$INFO{OCCURRENCE} = get_occurrence_data($args{line}, $args{project});
+		$INFO{CONSEQUENCE} = get_consequence_data(\%args);
+		$INFO{OCCURRENCE} = get_occurrence_data(\%args);
 
 		return \%INFO;
 	}#-----------------------------------------------------------

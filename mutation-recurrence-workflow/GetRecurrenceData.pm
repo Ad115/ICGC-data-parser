@@ -111,7 +111,8 @@ sub main
 						line => $line,
 						headers => $headers,
 						gene => $opt{gene},
-						project => $opt{project}
+						project => $opt{project},
+						offline => $opt{offline}
 					}
 				)
 			};

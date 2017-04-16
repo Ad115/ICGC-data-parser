@@ -87,6 +87,7 @@ sub main
 				input => $input,
 				gene => $opt{gene},
 				project => $opt{project},
+				offline => $opt{offline}
 			}
 		)
 	};
@@ -139,7 +140,8 @@ sub get_reccurrence_distribution
 	my %regexp = %{ get_query_re( {
 				project	=>	$args{project},
 				gene	=>	$args{gene}
-			}
+			},
+			$args{offline}
 		)
 	};
 	
@@ -156,7 +158,8 @@ sub get_reccurrence_distribution
 						line	=>	$line,
 						headers	=>	$headers,
 						gene	=>	$args{gene},
-						project	=>	$args{project}
+						project	=>	$args{project},
+						offline	=>	$args{offline}
 					}
 				)
 			};
