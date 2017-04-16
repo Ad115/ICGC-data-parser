@@ -55,21 +55,21 @@ our %gene_name = ( '' => '' ); # Association gene_stable_id : gene_display_label
 			$connection = ensembldb_connect() unless ($connection);
 	
 			# Declare a gene handler with the given gene
-			my $gene_ = 
+			my $gene_h = 
 				$connection
 					-> get_adaptor( 'Human', 'Core', 'Gene' )
 						-> fetch_by_display_label(
 								$gene
 							);
-			unless($gene_) { die "ERROR: Gene '$gene' not found\n"; }
+			unless($gene_h) { die "ERROR: Gene '$gene' not found\n"; }
 	
 			# Get the gene's EnsembleStableID
-			return $gene_->stable_id();
+			return $gene_h->stable_id();
 		}
     }#-------------------------------------------------------
 
     sub get_display_label
-    # Get the display label for the genes in the gene array
+    # Get the display label for the gene id
     {
     	my $gene_id = shift;
 		
@@ -98,7 +98,7 @@ our %gene_name = ( '' => '' ); # Association gene_stable_id : gene_display_label
 		my ($gene_id, $gene_name);
 		if ($gene)
 		{
-			if ($gene =~ /ENSG[0-9]{11}/) # User provided stable ID
+			if ($gene =~ /ENSG[0-9.]*/) # User provided stable ID
 			{
 				$gene_id = $gene;
 				# Get common name
