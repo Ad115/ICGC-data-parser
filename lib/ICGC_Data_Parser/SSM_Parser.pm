@@ -15,7 +15,7 @@ package ICGC_Data_Parser::SSM_Parser;
 
 #============================================================
 
-use ICGC_Data_Parser::Ensembl qw(get_gene_query_data get_gene_id);
+use ICGC_Data_Parser::Ensembl qw(get_gene_id_data);
 use ICGC_Data_Parser::Tools qw(:debug);
 
 #============================================================
@@ -122,18 +122,9 @@ use ICGC_Data_Parser::Tools qw(:debug);
 		my $gene = shift;
 		
 		# Compile gene regexp
-		my $gene_re;
-		# Check if a gene was specified
-		if ( specified $gene ){
-			# If specified, compile the gene's stable ID
-			my $gene_id = get_gene_id( $gene );
-			$gene_re = qr/$gene_id/;
-		} else{
-			# If not, compile a match to everything
-			$gene_re = qr/.*/;
-		}
+		my $gene_id = get_gene_id_data( $gene )->[0];
 		
-		return $gene_re;
+		return regexp_compile($gene_id);
 	}
 
 	sub get_query_re
@@ -166,9 +157,11 @@ use ICGC_Data_Parser::Tools qw(:debug);
 					return $gene_re;
 				}
 			
-			} else{
+			} elsif (exists $args{project}){
 				# Only wanted project regexp, return it
 				return regexp_compile($args{project});
+			} else {
+				die "Hash argument must have one of 'project' and 'gene' as keys";
 			}
 		} else{
 			# A simple expression was given to compile. Compile and return it
@@ -184,18 +177,7 @@ use ICGC_Data_Parser::Tools qw(:debug);
 		my ($gene_name, $gene_id);
 
 		# Get gene_id and label
-		if( $offline ){
-			# Check if user asked not to connect to Ensembl db
-			if ( $gene !~ /ENSG[0-9.]*/ ){
-				die("Option '--offline' requires gene 'all' or gene's Ensembl stable id"
-					."i.e., as an example, instead of gene TP53, gene must be ENSG00000141510\n"
-				);
-			}
-			$gene_id = $gene;
-			$gene_name = '';
-		} else{
-			($gene_name, $gene_id) = @{ get_gene_query_data($gene) };
-		}
+		($gene_id, $gene_name) = @{ get_gene_id_data($gene) };
 
 		my $gene_str = ($gene_id) ? "$gene_name($gene_id)" : "All";
 		my $gene_re = ($gene_id) ? qr/$gene_id/ : qr/.*/;
