@@ -120,7 +120,6 @@ sub print_recurrence_distribution
 		= @context{qw(OUTPUT DISTRIBUTION TESTED_DONORS)};
 	
 	my $project_str = $context{PROJECT}->{str};
-	
 	my $gene_str = $context{GENE}->{str};
 
 	## OUTPUT
