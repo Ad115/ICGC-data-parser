@@ -399,6 +399,12 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 			# Update context
 			$context->{LINE} = $line;
 			
+			###
+			### CALL THE LOOP ANY BLOCK
+			$actions{ANY}->($context) if $actions{ANY};
+			###
+			###
+			
 			# Check for specified gene and project
 			if ($line =~ $gene{regexp} and $line =~ $project{regexp})
 			{
