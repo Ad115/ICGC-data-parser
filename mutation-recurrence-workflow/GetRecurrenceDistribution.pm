@@ -60,9 +60,6 @@ sub main
 	parse_SSM_file(\@_,
 		# Dispatch table
 		{
-			# Register empty distribution in context
-			START	=>	sub { $_[0]->{DISTRIBUTION} = {}; },
-			
 			# Asemmble distribution
 			MATCH	=>	\&assemble_recurrence_distribution,
 			
@@ -84,9 +81,12 @@ sub assemble_recurrence_distribution
 {
 	my $cxt = shift(); # Get context (READ/WRITE)
 	
+	# Create a distribution if not created yet
+	$cxt->{DISTRIBUTION} //= {};
+	
 	# Get relevant context variables
-	my ($distribution) 
-		= @$cxt{qw( DISTRIBUTION )};
+	my $distribution = $cxt->{DISTRIBUTION};
+	
 	my %opts = %{ $cxt->{OPTIONS} };
 	
 	my %mutation = %{ parse_mutation({
@@ -127,12 +127,12 @@ sub print_recurrence_distribution
 
 	# Assemble output fields
 	my @output_line_fields = qw(MUTATIONS AFFECTED_DONORS_PER_MUTATION);
-	my %output = ();
 
 	# Print heading lines
 	print  $output "# Project: $project_str\tGene: $gene_str\tTested donors: $tested_donors\n";
 	print  $output join( "\t", @output_line_fields)."\n";
 
+	my %output = ();
 	foreach my $key (sort {$a <=> $b} keys %$distribution){
 		# Assemble output
 		$output{AFFECTED_DONORS_PER_MUTATION} = $key;
