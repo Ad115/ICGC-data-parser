@@ -331,6 +331,7 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 		# Assemble a context hash to pass along
 		my $context = {
 			ACTIONS	=>	$actions,
+			RAW_OPTIONS	=>	$raw_opt
 		};
 		my %actions = %{ $actions };
 		
