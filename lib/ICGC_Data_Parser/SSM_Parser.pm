@@ -5,18 +5,19 @@ package ICGC_Data_Parser::SSM_Parser;
 	use Exporter qw'import';
 
 	our @EXPORT_OK = qw'get_vcf_line parse_mutation get_gene_data get_project_data 
-						get_vcf_headers parse_vcf_headers get_query_re specified';
+						get_vcf_headers parse_vcf_headers get_query_re specified
+						parse_SSM_file';
 						
 	our %EXPORT_TAGS = (
 		'parse' => [qw' get_vcf_line get_vcf_headers parse_mutation get_gene_data
-						get_project_data specified get_query_re'
+						get_project_data specified get_query_re parse_SSM_file'
 					]
 	);
 
 #============================================================
 
 use ICGC_Data_Parser::Ensembl qw(get_gene_id_data);
-use ICGC_Data_Parser::Tools qw(:debug);
+use ICGC_Data_Parser::Tools qw(:general_io :debug);
 
 #============================================================
 
@@ -318,7 +319,111 @@ use ICGC_Data_Parser::Tools qw(:debug);
 
 		return \%mutation;
 	}#-----------------------------------------------------------
+	
+	use Getopt::Long qw(GetOptionsFromArray :config bundling); # To parse command-line arguments
+	
+	sub parse_SSM_file
+	{
+	## INITIALIZATION
+		# Get arguments
+		my ($raw_opt, $actions) = @_;
+		
+		# Assemble a context hash to pass along
+		my $context = {
+			ACTIONS	=>	$actions,
+		};
+		my %actions = %{ $actions };
+		
+		### CALL THE BEGIN BLOCK
+		###
+		$actions{BEGIN}->($context) if $actions{BEGIN};
+		###
+		###
+		
+		
+		# Parse command line options into the options(opt) hash
+		$context->{OPTIONS} //= {};
+		GetOptionsFromArray($raw_opt, $context->{OPTIONS},
+			'in|i||vcf=s',
+			'out|o=s',
+			'gene|g=s',
+			'project|p=s',
+			'offline|f',
+			'help|h'
+		);
+		my %opt = %{ $context->{OPTIONS} };
 
-	#============================================================
+
+		my $input = *STDIN;# Open input file
+		if( $opt{in} )  { open_input( $input, full_path($opt{in}) ); }
+
+
+		my $output = *STDOUT; # Open output file
+		if ( $opt{out} )  { open_output( $output, full_path($opt{out}) ); }
+		
+		# Update context
+		$context->{INPUT} = $input;
+		$context->{OUTPUT} = $output;
+
+		### CALL THE HELP BLOCK
+		### Check if user asked for help
+		if( $opt{help} ) { $actions{HELP}->($context) if $actions{HELP} or die "No help available yet"; }
+		###
+		###
+
+	## LOCAL DATA INITIALIZATION
+
+		# Get gene's data
+		my %gene = %{ get_gene_data($opt{gene}, $opt{offline}) };
+		# Get project's data
+		my %project = %{ get_project_data($opt{project}) };
+		# Get header fields
+		my $headers = get_vcf_headers($input);
+
+		# Update context
+		$context->{GENE} = \%gene;
+		$context->{PROJECT} = \%project;
+		$context->{HEADERS} = $headers;
+		
+		###
+		### CALL THE START BLOCK
+		$actions{START}->($context) if $actions{START};
+		###
+		###
+
+		
+	## MAIN QUERY
+		
+		while(my $line = get_vcf_line($input)) # Get mutation by mutation
+		{
+			# Update context
+			$context->{LINE} = $line;
+			
+			# Check for specified gene and project
+			if ($line =~ $gene{regexp} and $line =~ $project{regexp})
+			{
+				###
+				### CALL THE LOOP MATCH BLOCK
+				$actions{MATCH}->($context) if $actions{MATCH};
+				###
+				###
+			}
+			else {
+				###
+				### CALL THE LOOP NO_MATCH BLOCK
+				$actions{NO_MATCH}->($context) if $actions{NO_MATCH};
+				###
+				###
+			}
+		}
+		
+		###
+		### CALL THE END BLOCK
+		$actions{END}->($context) if $actions{END};
+		###
+		###
+	}#-----------------------------------------------------------
+	
+#============================================================
 
 1; # Return success

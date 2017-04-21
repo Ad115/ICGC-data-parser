@@ -1,9 +1,8 @@
 #! /usr/bin/perl
 
 package GetRecurrenceData;
-
 use Exporter qw'import';
-	our @EXPORT_OK = qw'main';
+	our @EXPORT = qw'get_recurrence_data';
 
 #=====================================================================
 
@@ -49,87 +48,44 @@ Author: Andrés García García @ Oct 2016.
 END
 
 use ICGC_Data_Parser::SSM_Parser qw(:parse);
-use ICGC_Data_Parser::Tools qw(:general_io full_path);
+use ICGC_Data_Parser::Tools qw(:general_io :debug);
 
-use Getopt::Long qw(:config bundling); # To parse command-line arguments
-
-__PACKAGE__->main(@ARGV) unless caller();
+__PACKAGE__->main( @ARGV ) unless caller();
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 sub main
 {
+	# Get class
 	my $self = shift;
 	
-## INITIALIZATION
-    # Parse command line options(@ARGV) into the options hash(%opt)
-    GetOptions(\%opt,
-        'in|i||vcf=s',
-        'out|o=s',
-        'gene|g=s',
-        'project|p=s',
-		'offline|f',
-        'help|h'
-        );
-
-
-    my $input = *STDIN;# Open input file
-    if( $opt{in} )  { open_input( $input, full_path($opt{in}) ); }
-
-
-    my $output = *STDOUT; # Open output file
-    if ( $opt{out} )  { open_output( $output, full_path($opt{out}) ); }
-
-    # Check if user asked for help
-    if( $opt{help} ) { print_and_exit($doc_str); }
-
-## LOCAL DATA INITIALIZATION
-
-	# Get gene's data
-	my %gene = %{ get_gene_data($opt{gene}, $opt{offline}) };
-	# Get project's data
-	my %project = %{ get_project_data($opt{project}) };
-
-	# Assemble output fields
-	my @output_line_fields = qw(MUTATION_ID PROJ_AFFECTED_DONORS PROJ_TESTED_DONORS TOTAL_AFFECTED_DONORS TOTAL_TESTED_DONORS);
-
-	# Print heading lines
-	print  $output "# Project: $project{str}\tGene: $gene{str}\n";
-	print  $output join( "\t", @output_line_fields)."\n";
-	
-
-## MAIN QUERY
-
-	# Get header fields
-	my $headers = get_vcf_headers($input);
-	
-	while(my $line = get_vcf_line($input)) # Get mutation by mutation
-	{
-		# Check for specified gene and project
-		if ($line =~ $gene{regexp} and $line =~ $project{regexp})
+	parse_SSM_file(\@_,
+		# Dispatch table
 		{
-            # Get recurrence data
-			my %output = %{ $self->get_recurrence_data({
-						line => $line,
-						headers => $headers,
-						gene => $opt{gene},
-						project => $opt{project},
-						offline => $opt{offline}
-					}
-				)
-			};
-
-            # Output
-			print_fields($output, \%output, \@output_line_fields);
+			# Register output fields in context
+			BEGIN	=>	sub { 
+							$_[0]->{OUTPUT_FIELDS} = [qw(MUTATION_ID PROJ_AFFECTED_DONORS PROJ_TESTED_DONORS TOTAL_AFFECTED_DONORS TOTAL_TESTED_DONORS)];
+						},
+			   
+			# Print header line
+			START	=>	\&print_header,
+			
+			# Print the mutation recurrence data
+			MATCH	=>	\&print_recurrence_data,
+			
+			# Print help and exit
+			HELP	=>	sub { print_and_exit $doc_str }
 		}
-	}
+	);
 }#===============>> END OF MAIN ROUTINE <<=====================
+
 
 #	===========
 #	Subroutines
 #	===========
+
+
 sub get_recurrence_data
 {
 	# Get arguments
-	my $self = shift;
 	my %args = %{ shift() };
 
 	# Parse the mutation data
@@ -147,4 +103,40 @@ sub get_recurrence_data
 	};
 }#-----------------------------------------------------------
 
-1; # Always return 1
+sub print_header
+{
+	my %context = %{ shift() }; # Get context (READ ONLY)
+	
+	# Get relevant context variables
+	my ($project, $gene, $output, $output_fields) 
+		= @context{qw(PROJECT GENE OUTPUT OUTPUT_FIELDS)};
+
+	# Print heading lines
+	print  $output "# Project: $project->{str}\tGene: $gene->{str}\n";
+	print  $output join( "\t", @$output_fields)."\n";
+}#-----------------------------------------------------------
+
+sub print_recurrence_data
+{
+	my %cxt = %{ shift() }; # Get context (READ ONLY)
+	
+	# Get relevant context variables
+	my ($output, $output_fields) 
+		= @cxt{qw(OUTPUT OUTPUT_FIELDS)};
+	
+	# Get recurrence data
+	my %output = %{ get_recurrence_data({
+				line => $cxt{LINE},
+				headers => $cxt{HEADERS},
+				gene => $cxt{OPTIONS}->{gene},
+				project => $cxt{OPTIONS}->{project},
+				offline => $cxt{OPTIONS}->{offline}
+			}
+		)
+	};
+
+    # Output
+	print_fields($output, \%output, $output_fields);
+}#-----------------------------------------------------------
+
+1; 

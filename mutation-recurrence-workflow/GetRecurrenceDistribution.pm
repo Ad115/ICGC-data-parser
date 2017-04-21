@@ -48,61 +48,82 @@ Author: Andrés García García @ Oct 2016.
 END
 
 use ICGC_Data_Parser::SSM_Parser qw(:parse);
-use ICGC_Data_Parser::Tools qw(:general_io);
-
-use Getopt::Long qw(:config bundling); # To parse command-line arguments
+use ICGC_Data_Parser::Tools qw(:general_io :debug);
 
 __PACKAGE__->main( @ARGV ) unless caller();
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 sub main
 {
-## INITIALIZATION
 	# Get class
 	my $self = shift;
-    # Parse command line options into the options(opt) hash
-    GetOptions(\%opt,
-        'in|i||vcf=s',
-        'out|o=s',
-        'gene|g=s',
-        'project|p=s',
-		'offline|f',
-        'help|h'
-        );
+	
+	parse_SSM_file(\@_,
+		# Dispatch table
+		{
+			# Register empty distribution in context
+			START	=>	sub { $_[0]->{DISTRIBUTION} = {}; },
+			
+			# Asemmble distribution
+			MATCH	=>	\&assemble_recurrence_distribution,
+			
+			# Print distribution
+			END	=>	\&print_recurrence_distribution,
+			
+			# Print help and exit
+			HELP	=>	sub { print_and_exit $doc_str }
+		}
+	);
+}#===============>> END OF MAIN ROUTINE <<=====================
 
 
-    my $input = *STDIN;# Open input file
-    if( $opt{in} )  { open_input( $input, full_path($opt{in}) ); }
+#	===========
+#	Subroutines
+#	===========
 
-
-    my $output = *STDOUT; # Open output file
-    if( $opt{out} )  { open_output( $output, full_path($opt{out}) ); }
-
-    # Check if user asked for help
-    if( $opt{help} ) { print_and_exit($doc_str); }
-
-## MAIN QUERY
-
-	my %distribution = %{ 
-		$self -> get_reccurrence_distribution({
-				input => $input,
-				gene => $opt{gene},
-				project => $opt{project},
-				offline => $opt{offline}
+sub assemble_recurrence_distribution
+{
+	my $cxt = shift(); # Get context (READ/WRITE)
+	
+	# Get relevant context variables
+	my ($distribution) 
+		= @$cxt{qw( DISTRIBUTION )};
+	my %opts = %{ $cxt->{OPTIONS} };
+	
+	my %mutation = %{ parse_mutation({
+				line => $cxt->{LINE},
+				headers => $cxt->{HEADERS},
+				gene => $opts{gene},
+				project => $opts{project},
+				offline => $opts{offline}
 			}
 		)
 	};
-	my $tested_donors = $distribution{TESTED_DONORS};
-	delete $distribution{TESTED_DONORS};
-
-## OUTPUT
-
-	# Get project's data
-	my $project_str = (specified $opt{project}) ? $opt{project} : "All";
 	
-	# Get gene's data
-	my $gene_str 
-		= get_gene_data($opt{gene}, $opt{offline})
-					->{str};
+	# Associate AFFECTED_DONORS : MUTATIONS
+	if (specified $opts{project}){
+		# When a project is specified
+		$distribution->{ $mutation{INFO}->{OCCURRENCE}->[0]->{affected_donors} }++;
+		$cxt->{ TESTED_DONORS } = $mutation{INFO}->{OCCURRENCE}->[0]->{tested_donors};
+	} else{
+		# When all projects are parsed
+		$distribution->{ $mutation{INFO}->{affected_donors} }++;
+		$cxt->{ TESTED_DONORS } = $mutation{INFO}->{tested_donors};
+	}
+}
+
+sub print_recurrence_distribution
+{
+	my %context = %{ shift() }; # Get context (READ ONLY)
+	
+	# Get relevant context variables
+	my ($output, $distribution, $tested_donors) 
+		= @context{qw(OUTPUT DISTRIBUTION TESTED_DONORS)};
+	
+	my $project_str = $context{PROJECT}->{str};
+	
+	my $gene_str = $context{GENE}->{str};
+
+	## OUTPUT
 
 	# Assemble output fields
 	my @output_line_fields = qw(MUTATIONS AFFECTED_DONORS_PER_MUTATION);
@@ -112,71 +133,14 @@ sub main
 	print  $output "# Project: $project_str\tGene: $gene_str\tTested donors: $tested_donors\n";
 	print  $output join( "\t", @output_line_fields)."\n";
 
-	foreach my $key (sort {$a <=> $b} keys %distribution){
+	foreach my $key (sort {$a <=> $b} keys %$distribution){
 		# Assemble output
 		$output{AFFECTED_DONORS_PER_MUTATION} = $key;
-		$output{MUTATIONS} = $distribution{$key};
+		$output{MUTATIONS} = $distribution->{$key};
 
 		print_fields($output, \%output, \@output_line_fields);
 	}
 
-}#===============>> END OF MAIN ROUTINE <<=====================
+}
 
-#	===========
-#	Subroutines
-#	===========
-
-sub get_reccurrence_distribution
-{
-	# Get arguments
-	my $self = shift;
-	my %args = %{ shift() };
-	# $input, $gene, $project
-
-	# Get header fields
-	my $headers = get_vcf_headers($args{input});
-	
-	# Get regular expressions for the gene and project
-	my %regexp = %{ get_query_re( {
-				project	=>	$args{project},
-				gene	=>	$args{gene}
-			},
-			$args{offline}
-		)
-	};
-	
-	#Initialize distribution
-	my %distribution = ();
-	
-	while(my $line = get_vcf_line($args{input})) # Get mutation by mutation
-	{
-		# Check for specified gene and project
-		if ($line =~ $regexp{gene} and $line =~ $regexp{project})
-		{
-            # Parse the mutation data
-			my %mutation = %{ parse_mutation({
-						line	=>	$line,
-						headers	=>	$headers,
-						gene	=>	$args{gene},
-						project	=>	$args{project},
-						offline	=>	$args{offline}
-					}
-				)
-			};
-
-			# Associate AFFECTED_DONORS : MUTATIONS
-			if (specified $args{project}){
-				# When a project is specified
-				$distribution{ $mutation{INFO}->{OCCURRENCE}->[0]->{affected_donors} }++;
-				$distribution{ TESTED_DONORS } = $mutation{INFO}->{OCCURRENCE}->[0]->{tested_donors};
-			} else{
-				# When all projects are parsed
-				$distribution{ $mutation{INFO}->{affected_donors} }++;
-				$distribution{ TESTED_DONORS } = $mutation{INFO}->{tested_donors};
-			}
-		}
-	}
-	return \%distribution;
-}#-----------------------------------------------------------
-
-1;
+1; 
