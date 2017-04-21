@@ -197,11 +197,11 @@ For the command ``GetRecurrenceData.pm -g TP53 -p BRCA-EU -i $ICGC_DATA`` (ICGC_
 STEPS 1 and 2: Fetching and counting of the recurrence data
 ---------------------------------------------------------------
 
-This is implemented in the scripts ``GetRecurrenceDistribution.pm`` and ``GetRecurrenceDistribution.inherited.pm`` (inherits from ``GetRecurrenceData.pm``). Both have the same API and outputs, so are interchangeable.
+This is implemented in the script ``GetRecurrenceDistribution.pm``.
 
-To automate large jobs, the scripts ``get-recurrence-distributions.all-projects.sge`` and ``get-recurrence-distributions.BRCA.EU.sge`` are Sun Grid Engine wrappers of the previous scripts to paralellize obtaining the distributions of several genes, thus making the process much faster.
+To automate large jobs, the scripts ``get-recurrence-distributions.all-projects.sge`` and ``get-recurrence-distributions.BRCA.EU.sge`` are Sun Grid Engine wrappers of the previous script to paralellize obtaining the distributions of several genes, thus making the process much faster.
 
-The scripts retrieve the mutation recurrence distribution in the next fields:
+The script retrieve the mutation recurrence distribution in the next fields:
 
  - MUTATIONS
  - AFFECTED_DONORS_PER_MUTATION
@@ -268,7 +268,7 @@ For the command ``GetRecurrenceDistribution.pm -g TP53 -p BRCA-EU -i $ICGC_DATA`
 STEP 3: Display (plotting) and analysis of the results
 ---------------------------------------------------------
 
-This is implemented in the script ``recurrence-distribution-plots.nb``.
+This is implemented in the Wolfram Language script ``recurrence-distribution-plots.nb`` (**TODO:** Change to a free platform, maybe Python or Javascript).
 
 The script has as input the mutation recurrence distributions in the format of the output of the ``GetRecurrenceDistribution`` scripts. And as output, the script plots the distributions, both all in the same graph, and in separate graphs.
 

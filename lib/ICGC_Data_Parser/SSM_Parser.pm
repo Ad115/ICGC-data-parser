@@ -5,18 +5,19 @@ package ICGC_Data_Parser::SSM_Parser;
 	use Exporter qw'import';
 
 	our @EXPORT_OK = qw'get_vcf_line parse_mutation get_gene_data get_project_data 
-						get_vcf_headers parse_vcf_headers get_query_re specified';
+						get_vcf_headers parse_vcf_headers get_query_re specified
+						parse_SSM_file';
 						
 	our %EXPORT_TAGS = (
 		'parse' => [qw' get_vcf_line get_vcf_headers parse_mutation get_gene_data
-						get_project_data specified get_query_re'
+						get_project_data specified get_query_re parse_SSM_file'
 					]
 	);
 
 #============================================================
 
-use ICGC_Data_Parser::Ensembl qw(get_gene_query_data get_gene_id);
-use ICGC_Data_Parser::Tools qw(:debug);
+use ICGC_Data_Parser::Ensembl qw(get_gene_id_data);
+use ICGC_Data_Parser::Tools qw(:general_io :debug);
 
 #============================================================
 
@@ -114,32 +115,23 @@ use ICGC_Data_Parser::Tools qw(:debug);
 	{
 		my $to_compile = shift;
 		
-		return ($to_compile) ? qr/$to_compile/ : qr/.*/;
+		return (specified $to_compile) ? qr/$to_compile/ : qr/.*/;
 	}#-----------------------------------------------------------
 	
 	sub gene_regexp_compile
 	{
-		my $gene = shift;
+		my ($gene, $offline) = @_;
 		
-		# Compile gene regexp
-		my $gene_re;
-		# Check if a gene was specified
-		if ( specified $gene ){
-			# If specified, compile the gene's stable ID
-			my $gene_id = get_gene_id( $gene );
-			$gene_re = qr/$gene_id/;
-		} else{
-			# If not, compile a match to everything
-			$gene_re = qr/.*/;
-		}
+		# Get gene stable id
+		my $gene_id = get_gene_id_data( $gene, $offline )->[0];
 		
-		return $gene_re;
+		return regexp_compile($gene_id);
 	}
 
 	sub get_query_re
 	# Get a regexp of the gene and/or project specified
 	{
-		my $arg = shift;
+		my ($arg, $offline) = @_;
 		
 		# Check if labeled strings where asked for
 		if ( ref $arg eq 'HASH')
@@ -150,7 +142,7 @@ use ICGC_Data_Parser::Tools qw(:debug);
 			{
 				# If user asked for the gene's rexexp
 				# Compile gene regexp
-				my $gene_re = gene_regexp_compile( $args{gene} );
+				my $gene_re = gene_regexp_compile( $args{gene}, $offline );
 				
 				# Check if user asked for the project regexp too
 				if ( exists $args{project} ){
@@ -166,9 +158,11 @@ use ICGC_Data_Parser::Tools qw(:debug);
 					return $gene_re;
 				}
 			
-			} else{
+			} elsif (exists $args{project}){
 				# Only wanted project regexp, return it
 				return regexp_compile($args{project});
+			} else {
+				die "Hash argument must have one of 'project' and 'gene' as keys";
 			}
 		} else{
 			# A simple expression was given to compile. Compile and return it
@@ -184,21 +178,10 @@ use ICGC_Data_Parser::Tools qw(:debug);
 		my ($gene_name, $gene_id);
 
 		# Get gene_id and label
-		if( $offline ){
-			# Check if user asked not to connect to Ensembl db
-			if ( $gene !~ /ENSG[0-9.]*/ ){
-				die("Option '--offline' requires gene 'all' or gene's Ensembl stable id"
-					."i.e., as an example, instead of gene TP53, gene must be ENSG00000141510\n"
-				);
-			}
-			$gene_id = $gene;
-			$gene_name = '';
-		} else{
-			($gene_name, $gene_id) = @{ get_gene_query_data($gene) };
-		}
+		($gene_id, $gene_name) = @{ get_gene_id_data($gene, $offline) };
 
 		my $gene_str = ($gene_id) ? "$gene_name($gene_id)" : "All";
-		my $gene_re = ($gene_id) ? qr/$gene_id/ : qr/.*/;
+		my $gene_re = get_query_re($gene_id, $offline);
 
 		return {
 			raw	=>	$gene,
@@ -214,7 +197,7 @@ use ICGC_Data_Parser::Tools qw(:debug);
 		my $project = shift;
 		
 		my $project_str = (specified $project) ? $project : "All";
-		my $project_re = (specified $project) ? qr/$project/ : qr/.*/;
+		my $project_re = get_query_re($project);
 		# Get project's data
 		return {
 			raw	=>	$project,
@@ -237,13 +220,13 @@ use ICGC_Data_Parser::Tools qw(:debug);
 	sub get_consequence_data
 	# Get the consequence data as a hash array from the mutation line
 	{
-	    my ($line, $gene) = @_;
+	    my %args = %{ shift() };
 
 		# Get the gene regular expression
-		my $gene_re = get_query_re({gene => $gene});
+		my $gene_re = get_query_re({gene => $args{gene}}, $args{offline});
 
 	    # Get the CONSEQUENCE field
-	    $line =~ /CONSEQUENCE=(.*?);/;
+	    $args{line} =~ /CONSEQUENCE=(.*?);/;
 
 	    # Split multiple consequences
 		my @consequences
@@ -269,13 +252,13 @@ use ICGC_Data_Parser::Tools qw(:debug);
 	sub get_occurrence_data
 	# Get the occurrence data as a hash array from the mutation line
 	{
-		my ($line, $project) = @_;
+		my %args = %{ shift() };
 
 		# Get the project regular expression
-		my $project_re = get_query_re($project);
+		my $project_re = get_query_re($args{project});
 
 		# Get the OCCURRENCE field
-		$line =~ /OCCURRENCE=(.*?);/;
+		$args{line} =~ /OCCURRENCE=(.*?);/;
 
 		# Split multiple occurrences
 	    my @occurrences
@@ -306,8 +289,8 @@ use ICGC_Data_Parser::Tools qw(:debug);
 			'project_count'	=>	$3,
 			'tested_donors'	=>	$4
 		);
-		$INFO{CONSEQUENCE} = get_consequence_data($args{line}, $args{gene});
-		$INFO{OCCURRENCE} = get_occurrence_data($args{line}, $args{project});
+		$INFO{CONSEQUENCE} = get_consequence_data(\%args);
+		$INFO{OCCURRENCE} = get_occurrence_data(\%args);
 
 		return \%INFO;
 	}#-----------------------------------------------------------
@@ -336,7 +319,111 @@ use ICGC_Data_Parser::Tools qw(:debug);
 
 		return \%mutation;
 	}#-----------------------------------------------------------
+	
+	use Getopt::Long qw(GetOptionsFromArray :config bundling); # To parse command-line arguments
+	
+	sub parse_SSM_file
+	{
+	## INITIALIZATION
+		# Get arguments
+		my ($raw_opt, $actions) = @_;
+		
+		# Assemble a context hash to pass along
+		my $context = {
+			ACTIONS	=>	$actions,
+		};
+		my %actions = %{ $actions };
+		
+		### CALL THE BEGIN BLOCK
+		###
+		$actions{BEGIN}->($context) if $actions{BEGIN};
+		###
+		###
+		
+		
+		# Parse command line options into the options(opt) hash
+		$context->{OPTIONS} //= {};
+		GetOptionsFromArray($raw_opt, $context->{OPTIONS},
+			'in|i||vcf=s',
+			'out|o=s',
+			'gene|g=s',
+			'project|p=s',
+			'offline|f',
+			'help|h'
+		);
+		my %opt = %{ $context->{OPTIONS} };
 
-	#============================================================
+
+		my $input = *STDIN;# Open input file
+		if( $opt{in} )  { open_input( $input, full_path($opt{in}) ); }
+
+
+		my $output = *STDOUT; # Open output file
+		if ( $opt{out} )  { open_output( $output, full_path($opt{out}) ); }
+		
+		# Update context
+		$context->{INPUT} = $input;
+		$context->{OUTPUT} = $output;
+
+		### CALL THE HELP BLOCK
+		### Check if user asked for help
+		if( $opt{help} ) { $actions{HELP}->($context) if $actions{HELP} or die "No help available yet"; }
+		###
+		###
+
+	## LOCAL DATA INITIALIZATION
+
+		# Get gene's data
+		my %gene = %{ get_gene_data($opt{gene}, $opt{offline}) };
+		# Get project's data
+		my %project = %{ get_project_data($opt{project}) };
+		# Get header fields
+		my $headers = get_vcf_headers($input);
+
+		# Update context
+		$context->{GENE} = \%gene;
+		$context->{PROJECT} = \%project;
+		$context->{HEADERS} = $headers;
+		
+		###
+		### CALL THE START BLOCK
+		$actions{START}->($context) if $actions{START};
+		###
+		###
+
+		
+	## MAIN QUERY
+		
+		while(my $line = get_vcf_line($input)) # Get mutation by mutation
+		{
+			# Update context
+			$context->{LINE} = $line;
+			
+			# Check for specified gene and project
+			if ($line =~ $gene{regexp} and $line =~ $project{regexp})
+			{
+				###
+				### CALL THE LOOP MATCH BLOCK
+				$actions{MATCH}->($context) if $actions{MATCH};
+				###
+				###
+			}
+			else {
+				###
+				### CALL THE LOOP NO_MATCH BLOCK
+				$actions{NO_MATCH}->($context) if $actions{NO_MATCH};
+				###
+				###
+			}
+		}
+		
+		###
+		### CALL THE END BLOCK
+		$actions{END}->($context) if $actions{END};
+		###
+		###
+	}#-----------------------------------------------------------
+	
+#============================================================
 
 1; # Return success
