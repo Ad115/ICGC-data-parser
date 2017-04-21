@@ -47,10 +47,12 @@ Author: Andrés García García @ Oct 2016.
 
 END
 
+
 use ICGC_Data_Parser::SSM_Parser qw(:parse);
 use ICGC_Data_Parser::Tools qw(:general_io :debug);
 
 __PACKAGE__->main( @ARGV ) unless caller();
+
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 sub main
 {
