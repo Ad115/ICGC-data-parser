@@ -320,6 +320,22 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 		return \%mutation;
 	}#-----------------------------------------------------------
 	
+	sub try_action
+	{
+		my ($context, $action, $otherwise) = @_;
+		
+		my %actions = %{ $context->{ACTIONS} };
+		
+		# Try to execute the action
+		eval { $actions{$action}->($context) if $actions{$action}; };
+		
+		# If there was something wrong, say it and execute the $otherwise callback
+		if ($@) { 
+			warn $@;
+			$otherwise->($context);
+		}
+	}#-----------------------------------------------------------
+	
 	use Getopt::Long qw(GetOptionsFromArray :config bundling); # To parse command-line arguments
 	
 	sub parse_SSM_file
@@ -337,7 +353,7 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 		
 		### CALL THE BEGIN BLOCK
 		###
-		$actions{BEGIN}->($context) if $actions{BEGIN};
+		try_action $context, 'BEGIN';
 		###
 		###
 		
@@ -368,7 +384,7 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 
 		### CALL THE HELP BLOCK
 		### Check if user asked for help
-		if( $opt{help} ) { $actions{HELP}->($context) if $actions{HELP} or die "No help available yet"; }
+		if( $opt{help} ) { try_action $context, 'HELP' , sub {die "No help available yet"}; }
 		###
 		###
 
@@ -388,7 +404,7 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 		
 		###
 		### CALL THE START BLOCK
-		$actions{START}->($context) if $actions{START};
+		try_action $context, 'START';
 		###
 		###
 
@@ -402,7 +418,7 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 			
 			###
 			### CALL THE LOOP ANY BLOCK
-			$actions{ANY}->($context) if $actions{ANY};
+			try_action $context, 'ANY' ;
 			###
 			###
 			
@@ -411,14 +427,14 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 			{
 				###
 				### CALL THE LOOP MATCH BLOCK
-				$actions{MATCH}->($context) if $actions{MATCH};
+				try_action $context, 'MATCH';
 				###
 				###
 			}
 			else {
 				###
 				### CALL THE LOOP NO_MATCH BLOCK
-				$actions{NO_MATCH}->($context) if $actions{NO_MATCH};
+				try_action $context, 'NO_MATCH';
 				###
 				###
 			}
@@ -426,10 +442,11 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 		
 		###
 		### CALL THE END BLOCK
-		$actions{END}->($context) if $actions{END};
+		try_action $context, 'END';
 		###
 		###
 	}#-----------------------------------------------------------
+	
 	
 #============================================================
 

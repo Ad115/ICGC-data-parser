@@ -248,8 +248,6 @@ our %features; # Associates a feature's (gene, exon, etc...) stable_id with it's
 		my $overlapping_ids 
 			= $kwargs->{OVERLAPPING_GENE_IDs} 
 				//= [map { $_ -> stable_id() } @overlapping];
-		tweet $overlapping_ids, "final";
-		
 		
 		my $slice_interval
 			= $kwargs->{SLICE_INTERVAL} 
@@ -269,11 +267,8 @@ our %features; # Associates a feature's (gene, exon, etc...) stable_id with it's
 					//= { 	START => $gene -> seq_region_start(), 
 							END => $gene -> seq_region_end()
 						};
-			tweet $gene_interval, "gene_interval";
-			tweet $slice_interval, "slice_interval";
 			# Does the gene really overlaps the slice?
 			$overlaps = overlap($gene_interval, $slice_interval);
-			print "Overlap? $overlaps\n";
 			return if $overlaps;
 		}
 		return 1;
