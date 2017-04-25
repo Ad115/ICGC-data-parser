@@ -4,7 +4,7 @@ package ICGC_Data_Parser::Tools;
 	use warnings;
 	use Exporter qw'import';
 
-	our @EXPORT_OK = qw'print_and_exit open_input open_output print_fields tweeter tweet full_path';
+	our @EXPORT_OK = qw'print_and_exit open_input open_output print_fields tweeter tweet full_path uniq';
 	our %EXPORT_TAGS = (
 		'general_io'	=>	[qw'print_and_exit open_input open_output print_fields full_path'],
 		'debug'	=>	[qw'tweeter tweet']
@@ -44,7 +44,7 @@ use Data::Dumper; # To preety print hashes easily
     sub uniq
     # Remove repeated entries from array
     {
-        my @array = @{shift()};
+        my @array = @_;
 
         my %seen;
         return grep !($seen{$_}++), @array;

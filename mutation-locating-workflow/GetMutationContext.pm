@@ -53,13 +53,15 @@ sub main
 	parse_SSM_file(\@_,
 		# Dispatch table
 		{
-			# Register output fields in context
-			BEGIN	=>	sub { 
-							$_[0]->{OUTPUT_FIELDS} = [qw(MUTATION_ID MUTATION POSITION_GRCh37 POSITION_GRCh38 RELATIVE_POSITION OVERLAPPED_GENES AFFECTED_GENES PROJECT(S))];
+			START	=>	sub { 
+							my $context = shift; # Get context
+							
+							# Register output fields in context
+							$context->{OUTPUT_FIELDS} = [qw(MUTATION_ID MUTATION POSITION_GRCh37 POSITION_GRCh38 RELATIVE_POSITION OVERLAPPED_GENES CONSEQUENCE(S) PROJECT(S))];
+							
+							# Print header line
+							print_header($context);
 						},
-			   
-			# Print header line
-			START	=>	\&print_header,
 			
 			# Print the mutation recurrence data
 			MATCH	=>	\&print_context_data,
@@ -92,16 +94,17 @@ sub get_mutation_context
 						 map { $_->{project_code} } @{ $mutation{INFO}->{OCCURRENCE} } 
 					);
 	
-	my $affected_genes = join( ',', 
+	my $consequences = join( ',', 
 							uniq
-								map { "$_->{gene_affected}($_->{gene_symbol})" } 
-										grep { $_ -> {gene_affected} }
-											@{ $mutation{INFO}->{CONSEQUENCE} } 
+								map { "$_->{gene_affected}($_->{gene_symbol}):$_->{consequence_type}" } 
+									grep { $_ -> {gene_affected} }
+										@{ $mutation{INFO}->{CONSEQUENCE} } 
 						);
 	
 	my $overlapped_genes = join( ',', 
 								 map {	get_Gene_print_data($_) }
-									get_overlapping_genes($mutation{CHROM}, $pos_GRCh38, 1));
+									get_overlapping_genes($mutation{CHROM}, $pos_GRCh38, 1)
+							);
 	
 	my $relative_position = get_gene_context($mutation{CHROM}, $pos_GRCh38, 1);
 	
@@ -111,7 +114,7 @@ sub get_mutation_context
 		POSITION_GRCh37	=>	"chr$mutation{CHROM}:$mutation{POS}",
 		POSITION_GRCh38	=>	"chr$mutation{CHROM}:$pos_GRCh38",
 		RELATIVE_POSITION	=>	$relative_position,
-		OVERLAPPED_GENES	=>	$overlapped_genes,
+		'CONSEQUENCE(S)'	=>	$consequences,
 		AFFECTED_GENES	=>	$affected_genes,
 		'PROJECT(S)'	=>	$projects
 	};
