@@ -1,5 +1,8 @@
 .directory
 docs/_*/
 mutation-recurrence-workflow/results/
+mutation-locating-workflow/results/
+**/job*
+
 
 
