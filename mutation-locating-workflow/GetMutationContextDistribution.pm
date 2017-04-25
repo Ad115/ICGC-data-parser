@@ -1,8 +1,8 @@
 #! /usr/bin/perl
 
-package GetMutationContext;
+package GetMutationContextDistribution;
 use Exporter qw'import';
-	our @EXPORT = qw'get_recurrence_data';
+	our @EXPORT = qw'';
 
 #=====================================================================
 
@@ -52,19 +52,12 @@ sub main
 	
 	parse_SSM_file(\@_,
 		# Dispatch table
-		{
-			START	=>	sub { 
-							my $context = shift; # Get context
-							
-							# Register output fields in context
-							$context->{OUTPUT_FIELDS} = [qw(MUTATION_ID MUTATION POSITION_GRCh37 POSITION_GRCh38 RELATIVE_POSITION OVERLAPPED_GENES CONSEQUENCE(S) PROJECT(S))];
-							
-							# Print header line
-							print_header($context);
-						},
+		{			
+			# Collect the mutation recurrence data
+			MATCH	=>	\&assemble_context_distribution,
 			
-			# Print the mutation recurrence data
-			MATCH	=>	\&print_context_data,
+			# Print the resulting data
+			END	=>	\&print_context_distribution,
 			
 			# Print help and exit
 			HELP	=>	sub { print_and_exit $doc_str }
@@ -76,6 +69,34 @@ sub main
 #	===========
 #	Subroutines
 #	===========
+
+sub assemble_context_distribution
+{
+	my $cxt = shift(); # Get context (READ/WRITE)
+	
+	# Create a distribution if not created yet
+	$cxt->{DISTRIBUTION} //= {};
+	
+	# Get relevant context variables
+	my $distribution = $cxt->{DISTRIBUTION};
+	
+	my %opts = %{ $cxt->{OPTIONS} };
+	
+	# Get context data
+	my %context_data = %{ get_mutation_context({
+				line => $cxt->{LINE},
+				headers => $cxt->{HEADERS},
+				gene => $cxt->{OPTIONS}->{gene},
+				project => $cxt->{OPTIONS}->{project},
+				offline => $cxt->{OPTIONS}->{offline}
+			}
+		)
+	};
+	
+	# Assemble distribution
+	my $relative_position = $context_data{RELATIVE_POSITION};
+	$distribution->{$relative_position}++;
+}
 
 
 sub get_mutation_context
@@ -136,27 +157,27 @@ sub print_header
 	print  $output join( "\t", @$output_fields)."\n";
 }#-----------------------------------------------------------
 
-sub print_context_data
+sub print_context_distribution
 {
-	my %cxt = %{ shift() }; # Get context (READ ONLY)
+	my %context = %{ shift() }; # Get context (READ ONLY)
 	
 	# Get relevant context variables
-	my ($output, $output_fields) 
-		= @cxt{qw(OUTPUT OUTPUT_FIELDS)};
+	my ($distribution, $output) = @context{qw'DISTRIBUTION OUTPUT'};
 	
-	# Get recurrence data
-	my %output = %{ get_mutation_context({
-				line => $cxt{LINE},
-				headers => $cxt{HEADERS},
-				gene => $cxt{OPTIONS}->{gene},
-				project => $cxt{OPTIONS}->{project},
-				offline => $cxt{OPTIONS}->{offline}
-			}
-		)
-	};
+	## OUTPUT
 
-    # Output
-	print_fields($output, \%output, $output_fields);
+	# Assemble output fields
+	$context{OUTPUT_FIELDS} = [qw(RELATIVE_POSITION RELATIVE_POSITION_COUNT)];
+	print_header(\%context);
+
+	my %output = ();
+	foreach my $key (sort {$a <=> $b} keys %$distribution){
+		# Assemble output
+		$output{RELATIVE_POSITION} = $key;
+		$output{RELATIVE_POSITION_COUNT} = $distribution->{$key};
+	}
+	print_fields($output, \%output, $context{OUTPUT_FIELDS});
+
 }#-----------------------------------------------------------
 
 1; 
