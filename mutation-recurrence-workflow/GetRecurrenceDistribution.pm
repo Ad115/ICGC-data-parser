@@ -61,13 +61,13 @@ sub main
 		# Dispatch table
 		{
 			# If asked for help
-			HELP	=>	sub { print_and_exit $doc_str }
+			HELP	=>	sub { print_and_exit $doc_str },
 			
 			# Asemmble distribution at matching line
 			MATCH	=>	\&assemble_recurrence_distribution,
 			
 			# Print distribution at the end
-			END	=>	\&print_recurrence_distribution,
+			END	=>	\&print_recurrence_distribution
 		}
 	);
 }#===============>> END OF MAIN ROUTINE <<=====================
