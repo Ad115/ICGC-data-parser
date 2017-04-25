@@ -60,14 +60,14 @@ sub main
 	parse_SSM_file(\@_,
 		# Dispatch table
 		{
-			# Asemmble distribution
+			# If asked for help
+			HELP	=>	sub { print_and_exit $doc_str }
+			
+			# Asemmble distribution at matching line
 			MATCH	=>	\&assemble_recurrence_distribution,
 			
-			# Print distribution
+			# Print distribution at the end
 			END	=>	\&print_recurrence_distribution,
-			
-			# Print help and exit
-			HELP	=>	sub { print_and_exit $doc_str }
 		}
 	);
 }#===============>> END OF MAIN ROUTINE <<=====================
