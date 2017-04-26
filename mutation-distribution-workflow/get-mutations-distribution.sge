@@ -1,0 +1,40 @@
+#! /bin/bash
+
+# Keep current environment
+#$ -V
+
+# Run through the bash shell
+#$ -S /bin/bash
+
+# Join STDOUT & STDERR
+#$ -j yes
+
+# Use current working directory
+#$ -cwd
+
+# If modules are needed, source modules environment (Do not delete the next line):
+. /etc/profile.d/modules.sh
+
+# Name the job array
+#$ -N job.mutation-context-distribution
+
+# Use as many jobs as needed
+#$ -t 1-3
+
+#===============>> BEGINNING OF MAIN ROUTINE <<=====================
+
+    GENE=all
+    PROJECTS=(BRCA-EU GBM-US all)
+    PROJECT=${PROJECTS[$SGE_TASK_ID - 1]}
+
+    OUT_FILE="./results/${GENE}.${PROJECT}.mutations-distribution.tsv"
+
+    # Analysis...
+    if [ ! -f $OUT_FILE ]; then
+    	echo "Now doing mutation distribution analysis: gene $GENE, project $PROJECT @ $(date +%F.%R)"
+	./GetMutationDistribution.pm -g $GENE -p $PROJECT -o $OUT_FILE -i $ICGC_DATA
+    fi
+
+    echo "Done: gene $GENE, project $PROJECT @ $(date +%F.%R)"
+
+#==================>> END OF MAIN ROUTINE <<========================
