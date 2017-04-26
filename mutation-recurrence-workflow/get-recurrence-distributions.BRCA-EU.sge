@@ -32,7 +32,7 @@
     # Analysis...
     if [ ! -f $OUT_FILE ]; then
     	echo "Now doing mutation recurrence analysis: gene $GENE, project $PROJECT @ $(date +%F.%R)"
-	./get-recurrence-distribution.pm -g $GENE -p $PROJECT -o $OUT_FILE -i $ICGC_DATA
+	./GetRecurrenceDistribution.pm -g $GENE -p $PROJECT -o $OUT_FILE -i $ICGC_DATA
     fi
 
     echo "Done: gene $GENE, project $PROJECT @ $(date +%F.%R)"
