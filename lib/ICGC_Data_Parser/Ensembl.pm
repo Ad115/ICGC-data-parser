@@ -182,7 +182,7 @@ our %features; # Associates a feature's (gene, exon, etc...) stable_id with it's
 		my $projection = $GRCh37_slice->project('chromosome', 'GRCh38');
 		
 		my @slices = map { $_ -> to_Slice() } @$projection;
-		die "Error while mapping from GRCh37 to GRCh38 assembly!";
+		die "Error while mapping from GRCh37 to GRCh38 assembly!" unless @slices;
 
 		return $slices[0];
 	}#-----------------------------------------------------------

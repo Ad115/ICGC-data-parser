@@ -332,7 +332,7 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 		# If there was something wrong, say it and execute the $otherwise callback
 		if ($@) { 
 			warn $@;
-			$otherwise->($context);
+			$otherwise->($context) if $otherwise;
 		}
 	}#-----------------------------------------------------------
 	
