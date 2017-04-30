@@ -2,6 +2,8 @@
 docs/_*/
 **/results/
 **/job*
+data/ssm_all*
+data/ssm_splitted
 
 
 
