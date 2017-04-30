@@ -317,11 +317,13 @@ our %features; # Associates a feature's (gene, exon, etc...) stable_id with it's
 				my $exon_phase 
 					= $features{ $overlapping_ids->[$i] }->{PHASE}
 						//= $exon -> phase();
+				return -1 if ($exon_phase == -1);
+				
 				my $exon_start = $exon_interval->{START};
 				my $slice_start = $slice_interval->{START};
+				
 				# Calculation of the phase
 				$mutation_phase = ( $exon_phase + ($slice_start - $exon_start) ) % 3;
-				$mutation_phase = -1 if ($exon_phase == -1);
 
 				return $mutation_phase;
 			}
