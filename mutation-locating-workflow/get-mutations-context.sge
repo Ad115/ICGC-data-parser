@@ -16,23 +16,26 @@
 . /etc/profile.d/modules.sh
 
 # Name the job array
-#$ -N job.mutation-context
+#$ -N job.mc_BRCA-EU
 
-# Use as many jobs as needed
-#$ -t 1-3
+# Use as many jobs as needed (the number of files the ssm file is split on)
+#$ -t 1-234
 
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 
-    GENE=all
-    PROJECTS=(BRCA-EU GBM-US all)
-    PROJECT=${PROJECTS[$SGE_TASK_ID - 1]}
+    FILE_DIR=../data/ssm_splitted
+    FILES=($(ls $FILE_DIR)) # The directory of the splitted files
 
-    OUT_FILE="./results/${GENE}.${PROJECT}.mutations_context.tsv"
+    GENE=all
+    PROJECT=BRCA-EU
+
+    FILE=$FILE_DIR/${FILES[$SGE_TASK_ID]}
+    OUT_FILE="./results/${GENE}.${PROJECT}.mutations_context.${SGE_TASK_ID}.tsv"
 
     # Analysis...
     if [ ! -f $OUT_FILE ]; then
-    	echo "Now doing mutation's gene context analysis: gene $GENE, project $PROJECT @ $(date +%F.%R)"
-	./GetMutationContext.pm -g $GENE -p $PROJECT -o $OUT_FILE -i $ICGC_DATA
+    	echo "Now doing mutation's gene context analysis: file $FILE, gene $GENE, project $PROJECT @ $(date +%F.%R)"
+	./GetMutationContext.pm -g $GENE -p $PROJECT -o $OUT_FILE -i $FILE
     fi
 
     echo "Done: gene $GENE, project $PROJECT @ $(date +%F.%R)"
