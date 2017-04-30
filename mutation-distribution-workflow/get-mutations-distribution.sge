@@ -16,7 +16,7 @@
 . /etc/profile.d/modules.sh
 
 # Name the job array
-#$ -N job.mutation-context-distribution
+#$ -N job.m-distribution
 
 # Use as many jobs as needed
 #$ -t 1-3
