@@ -1,8 +1,9 @@
-
 package ICGC_Data_Parser::SSM_Parser;
 	use strict;
 	use warnings;
 	use Exporter qw'import';
+	use Carp qw(croak confess carp cluck); # Module warnings and errors
+		#$Carp::Verbose=1; 
 
 	our @EXPORT_OK = qw'get_vcf_line parse_mutation get_gene_data get_project_data 
 						get_vcf_headers parse_vcf_headers get_query_re specified
@@ -101,7 +102,7 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 			return $i if ($col_name eq $fields[$i]);
 		}
 
-		die "Column '$col_name' not found!\n!";
+		croak "Column '$col_name' not found!\n!";
 	}#-----------------------------------------------------------
 
 	sub specified
@@ -162,7 +163,7 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 				# Only wanted project regexp, return it
 				return regexp_compile($args{project});
 			} else {
-				die "Hash argument must have one of 'project' and 'gene' as keys";
+				confess "Hash argument must have one of 'project' and 'gene' as keys";
 			}
 		} else{
 			# A simple expression was given to compile. Compile and return it
@@ -326,13 +327,24 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 		
 		my %actions = %{ $context->{ACTIONS} };
 		
-		# Try to execute the action
-		eval { $actions{$action}->($context) if $actions{$action}; };
-		
-		# If there was something wrong, say it and execute the $otherwise callback
-		if ($@) { 
-			warn $@;
-			$otherwise->($context) if $otherwise;
+		### Check if user defined it's own try_action method
+		if (defined $actions{CALLER}) {
+			$actions{CALLER}->($context, $action, $otherwise);
+			
+		} else {
+		### Default call
+			# Try to execute the action
+			if ($actions{$action}){
+				eval { $actions{$action}->($context) }; 
+			} else {
+				$otherwise->($context) if $otherwise;
+			}
+			
+			# If there was something wrong, say it and execute the $otherwise callback
+			if ($@) { 
+				carp $@;
+				$otherwise->($context) if $otherwise;
+			}
 		}
 	}#-----------------------------------------------------------
 	
@@ -384,7 +396,7 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 
 		### CALL THE HELP BLOCK
 		### Check if user asked for help
-		if( $opt{help} ) { try_action $context, 'HELP' , sub {die "No help available yet"}; }
+		if( $opt{help} ) { try_action $context, 'HELP' , sub {croak "No help available yet"}; }
 		###
 		###
 
