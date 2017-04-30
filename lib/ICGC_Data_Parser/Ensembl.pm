@@ -222,7 +222,7 @@ our %features; # Associates a feature's (gene, exon, etc...) stable_id with it's
         ##  ## CHECK IF IT IS INTRONIC, EXONIC OR NON-CODING-EXONIC
 			my $phase = get_slice_phase($kwargs);
 			
-			if ( !$phase ){
+			if ( not defined $phase ){
 				return 'INTRONIC';
 			} elsif ( $phase == -1 ) {
 				return 'NON-CODING-EXONIC';
