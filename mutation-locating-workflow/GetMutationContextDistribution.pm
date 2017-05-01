@@ -1,6 +1,8 @@
 #! /usr/bin/perl
 
 package GetMutationContextDistribution;
+use lib '.';
+	use GetMutationContext qw(get_mutation_context print_header);
 use Exporter qw'import';
 	our @EXPORT = qw'';
 
@@ -52,8 +54,7 @@ sub main
 	
 	parse_SSM_file(\@_,
 		# Dispatch table
-		{			
-			# Collect the mutation recurrence data
+		{	# Collect the mutation recurrence data
 			MATCH	=>	\&assemble_context_distribution,
 			
 			# Print the resulting data
@@ -96,66 +97,8 @@ sub assemble_context_distribution
 	# Assemble distribution
 	my $relative_position = $context_data{RELATIVE_POSITION};
 	$distribution->{$relative_position}++;
-}
-
-
-sub get_mutation_context
-{
-	# Get arguments
-	my %args = %{ shift() };
-
-	# Parse the mutation data
-	my %mutation = %{ parse_mutation(\%args) };
-	#tweet \%mutation;
-
-	# Assemble output
-	my $pos_GRCh38 = map_GRCh37_to_GRCh38( $mutation{'CHROM'}, $mutation{'POS'}, 1 )->[0];
-	
-	my $projects = join( ',', 
-						 map { $_->{project_code} } @{ $mutation{INFO}->{OCCURRENCE} } 
-					);
-	
-	my $consequences = join( ',', 
-							uniq
-								map { "$_->{gene_affected}($_->{gene_symbol}):$_->{consequence_type}" } 
-									grep { $_ -> {gene_affected} }
-										@{ $mutation{INFO}->{CONSEQUENCE} } 
-						);
-	
-	my $slice = fetch_slice($mutation{CHROM}, $pos_GRCh38, 1);
-	my $overlapping = $slice -> get_all_Genes();
-	
-	my $overlapped_genes = join( ',', 
-								 map {	get_Gene_print_data($_) }
-									@{ $overlapping }
-							);
-	
-	my $relative_position = get_gene_context({SLICE => $slice, OVERLAPPING_GENES => $overlapping});
-	
-	return {
-		MUTATION_ID	=>	$mutation{ID},
-		MUTATION	=>	$mutation{INFO}->{mutation},
-		POSITION_GRCh37	=>	"chr$mutation{CHROM}:$mutation{POS}",
-		POSITION_GRCh38	=>	"chr$mutation{CHROM}:$pos_GRCh38",
-		RELATIVE_POSITION	=>	$relative_position,
-		OVERLAPPED_GENES	=>	$overlapped_genes,
-		'CONSEQUENCE(S)'	=>	$consequences,
-		'PROJECT(S)'	=>	$projects
-	};
 }#-----------------------------------------------------------
 
-sub print_header
-{
-	my %context = %{ shift() }; # Get context (READ ONLY)
-	
-	# Get relevant context variables
-	my ($project, $gene, $output, $output_fields) 
-		= @context{qw(PROJECT GENE OUTPUT OUTPUT_FIELDS)};
-
-	# Print heading lines
-	print  $output "# Project: $project->{str}\tGene: $gene->{str}\n";
-	print  $output join( "\t", @$output_fields)."\n";
-}#-----------------------------------------------------------
 
 sub print_context_distribution
 {

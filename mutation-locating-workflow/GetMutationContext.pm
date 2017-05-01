@@ -2,7 +2,7 @@
 
 package GetMutationContext;
 use Exporter qw'import';
-	our @EXPORT = qw'get_recurrence_data';
+	our @EXPORT_OK = qw'get_mutation_context print_header';
 
 #=====================================================================
 
