@@ -30,7 +30,7 @@
     PROJECT=BRCA-EU
 
     FILE=$FILE_DIR/${FILES[$SGE_TASK_ID]}
-    OUT_FILE="./results/${GENE}.${PROJECT}.mutations_context.${SGE_TASK_ID}.tsv"
+    OUT_FILE="./results/${GENE}.${PROJECT}.mutations-context.${SGE_TASK_ID}.tsv"
 
     # Analysis...
     if [ ! -f $OUT_FILE ]; then
