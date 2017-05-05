@@ -118,8 +118,9 @@ sub print_context_distribution
 		# Assemble output
 		$output{RELATIVE_POSITION} = $key;
 		$output{RELATIVE_POSITION_COUNT} = $distribution->{$key};
+		print_fields($output, \%output, $context{OUTPUT_FIELDS});
+
 	}
-	print_fields($output, \%output, $context{OUTPUT_FIELDS});
 
 }#-----------------------------------------------------------
 
