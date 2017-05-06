@@ -7,7 +7,7 @@ package ICGC_Data_Parser::SSM_Parser;
 
 	our @EXPORT_OK = qw'get_vcf_line parse_mutation get_gene_data get_project_data 
 						get_vcf_headers parse_vcf_headers get_query_re specified
-						parse_SSM_file';
+						parse_SSM_file parse_fields';
 						
 	our %EXPORT_TAGS = (
 		'parse' => [qw' get_vcf_line get_vcf_headers parse_mutation get_gene_data
