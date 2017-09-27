@@ -4,7 +4,7 @@
 Welcome to the ICGC Data Parser's documentation!
 ================================================
 
-The ICGC Data Parser is a project whose goal is the implementation of tools to automate parsing of data from the International Cancer Genome Consortium data releases, in particular, the simple somatic mutation aggregates.
+The ICGC Data Parser is a project whose goal is the implementation of tools to facilitate the parsing of SSM data from the International Cancer Genome Consortium data releases, in particular, the simple somatic mutation aggregates. The proyect was developed by **Andrés García García** (GitHub: Ad115), **Maribel Hernandez Rosales and Roberto Romero Ramirez Arias**.
 
 Table of contents:
 
