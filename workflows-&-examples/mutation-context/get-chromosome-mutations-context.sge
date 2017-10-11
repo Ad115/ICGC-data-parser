@@ -1,0 +1,44 @@
+#! /bin/bash
+
+# Keep current environment
+#$ -V
+
+# Run through the bash shell
+#$ -S /bin/bash
+
+# Join STDOUT & STDERR
+#$ -j yes
+
+# Use current working directory
+#$ -cwd
+
+# If modules are needed, source modules environment (Do not delete the next line):
+. /etc/profile.d/modules.sh
+
+# Name the job array
+#$ -N job.mc_all
+
+# Use as many jobs as needed (the number of files the ssm file is split on)
+#$ -t 1-234
+
+#===============>> BEGINNING OF MAIN ROUTINE <<=====================
+
+    FILE_DIR=../../data/ssm_splitted200000
+    FILES=($(ls $FILE_DIR)) # The directory of the splitted files
+
+    GENE=all
+    PROJECT=all
+    CHROM=all
+
+    FILE=$FILE_DIR/${FILES[$SGE_TASK_ID]}
+    OUT_FILE="../../../results/${GENE}.${PROJECT}.chrom${CHROM}.mutations-context.${SGE_TASK_ID}.tsv"
+
+    # Analysis...
+    if [ ! -f $OUT_FILE ]; then
+    	echo "Now doing mutation's gene context analysis: file $FILE, gene $GENE, project $PROJECT, chromosome $CHROM @ $(date +%F.%R)"
+	./GetMutationsContext.pm -g $GENE -p $PROJECT -c $CHROM -o $OUT_FILE -i $FILE
+    fi
+
+    echo "Done: gene $GENE, project $PROJECT, chromosome $CHROM @ $(date +%F.%R)"
+
+#==================>> END OF MAIN ROUTINE <<========================
