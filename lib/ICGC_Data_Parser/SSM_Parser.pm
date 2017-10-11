@@ -354,12 +354,13 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 	{
 	## INITIALIZATION
 		# Get arguments
-		my ($raw_opt, $actions) = @_;
+		my ($data, $actions) = @_;
 		
 		# Assemble a context hash to pass along
 		my $context = {
 			ACTIONS	=>	$actions,
-			RAW_OPTIONS	=>	$raw_opt
+			RAW_OPTIONS	=>	$data->{RAW_OPTIONS},
+			EXPECTED_OPTIONS =>  $data->{EXPECTED_OPTIONS}
 		};
 		my %actions = %{ $actions };
 		
@@ -372,13 +373,14 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 		
 		# Parse command line options into the options(opt) hash
 		$context->{OPTIONS} //= {};
-		GetOptionsFromArray($raw_opt, $context->{OPTIONS},
+		GetOptionsFromArray($context->{RAW_OPTIONS}, $context->{OPTIONS},
 			'in|i||vcf=s',
 			'out|o=s',
 			'gene|g=s',
 			'project|p=s',
 			'offline|f',
-			'help|h'
+			'help|h',
+			@{ $context->{EXPECTED_OPTIONS} } # Concatenate the expected user options
 		);
 		my %opt = %{ $context->{OPTIONS} };
 

@@ -50,9 +50,19 @@ sub main
 	# Get class
 	my $self = shift;
 	
-	parse_SSM_file(\@_,
-		# Dispatch table
+	parse_SSM_file(
+        # Context data
+        {
+            # Raw command-line options
+            RAW_OPTIONS =>  \@_,
+            
+            # Format strings for the expected command-line options (other than in, out and help)
+            EXPECTED_OPTIONS   =>  [ 'chrom|c=s' ],
+        },
+        
+		# Table of actions
 		{
+            # Do this just before parsing the file
 			START	=>	sub { 
 							my $context = shift; # Get context
 							
@@ -80,11 +90,8 @@ sub main
 
 sub get_mutation_context
 {
-	# Get arguments
-	my %args = %{ shift() };
-
-	# Parse the mutation data
-	my %mutation = %{ parse_mutation(\%args) };
+	# Get the mutation data
+	my %mutation = %{ shift() };
 	#tweet \%mutation;
 
 	# Assemble output
@@ -108,7 +115,7 @@ sub get_mutation_context
 								 map {	get_Gene_print_data($_) }
 									@{ $overlapping }
 							);
-	
+
 	my $relative_position = get_gene_context({SLICE => $slice, OVERLAPPING_GENES => $overlapping});
 	
 	return {
@@ -130,9 +137,12 @@ sub print_header
 	# Get relevant context variables
 	my ($project, $gene, $output, $output_fields) 
 		= @context{qw(PROJECT GENE OUTPUT OUTPUT_FIELDS)};
+		
+    my $chrom = $context{OPTIONS}{chrom};
+    $chrom = 'All' unless $chrom;
 
 	# Print heading lines
-	print  $output "# Project: $project->{str}\tGene: $gene->{str}\n";
+	print  $output "# Project: $project->{str}\tGene: $gene->{str}\tChromosome: $chrom\n";
 	print  $output join( "\t", @$output_fields)."\n";
 }#-----------------------------------------------------------
 
@@ -144,19 +154,26 @@ sub print_context_data
 	my ($output, $output_fields) 
 		= @cxt{qw(OUTPUT OUTPUT_FIELDS)};
 	
-	# Get recurrence data
-	my %output = %{ get_mutation_context({
+	my $mutation = parse_mutation({
 				line => $cxt{LINE},
 				headers => $cxt{HEADERS},
 				gene => $cxt{OPTIONS}->{gene},
 				project => $cxt{OPTIONS}->{project},
 				offline => $cxt{OPTIONS}->{offline}
-			}
-		)
-	};
+            }
+        );
+	
+	my $chrom = $cxt{OPTIONS}{chrom};
+	
+	if ($chrom eq $mutation->{CHROM}) {
+	# Filter by chromosome
+	
+        # Get context data
+        my $context_data = get_mutation_context($mutation);
 
-    # Output
-	print_fields($output, \%output, $output_fields);
+        # Output
+        print_fields($output, $context_data, $output_fields);
+    }
 }#-----------------------------------------------------------
 
 1; 
