@@ -10,7 +10,7 @@ use Exporter qw'import';
 
 our $doc_str = <<END;
 
-Usage: ./locate_in_genome.pl [--in=<file>] [--out=<outfile>] [--help]
+Usage: $0 [--in=<file>] [--out=<outfile>] [--help]
 
 ============================
  Locate mutations in genome
