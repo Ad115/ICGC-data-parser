@@ -47,18 +47,20 @@ Installing BioPerl
 ------------------
 (Reference: `BioPerl <http://bioperl.org/INSTALL.html>`_)
 
- - In the console line type: ``cpan``, or: ``perl -MCPAN -e shell``, and if it's the first time you excecute that, cpan will enter a configuration process. Preferably say yes to all :P .
-
- - Once there type:
+ - First, install *cpanminus* by entering in a terminal:
  
- .. code-block:: none
+ .. code-block:: bash
  
-	cpan>  install Module::Build
-	cpan>  o conf prefer_installer MB
-	cpan>  o conf commit
-	cpan>  install CJFIELDS/BioPerl-1.6.924.tar.gz
+    cpan App:cpanminus
 
-It most surely will take a while executing lots of tests. You'll only have to be patient and say yes to everything it prompts. When it's done, type Ctrl-D to exit cpan.
+
+ - Then, install *BioPerl* with it:
+ 
+ .. code-block:: bash
+ 
+    cpanm Bio::Perl
+
+It most surely will take a while executing lots of tests. You'll only have to be patient and say yes to everything it prompts.
 
 That's it! You now have BioPerl installed on your machine! :D
 
@@ -71,26 +73,28 @@ Installing Ensembl Perl API
 
  Now, what we are all here for:
 
- - First, choose a folder in which to install the library. In the following, I'll assume that folder is ~/ensembl-api. In that folder you will install and decompress the files:
+ - First, choose a folder in which to install the library. In the following, I'll assume that folder is ``~/ensembl-api``. 
+   In that folder you will install and decompress the files:
  
-.. code-block:: bash
+    .. code-block:: bash
 
-	cd ~/ensembl-api
-	wget ftp://ftp.ensembl.org/pub/ensembl-api.tar.gz
-	sudo tar -zxvf ensembl-api.tar.gz
+        cd ~/ensembl-api
+        wget ftp://ftp.ensembl.org/pub/ensembl-api.tar.gz
+        sudo tar -zxvf ensembl-api.tar.gz
 
- - Now, you need to tell Perl where to find those files, so you must type the following:
+    
+ - Now, you need to tell Perl where to find those files, so type the following:
 
-.. code-block:: bash
+    .. code-block:: bash
 
-	PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl/modules
-	PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl-compara/modules
-	PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl-variation/modules
-	PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl-funcgen/modules
-	PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl-io/modules
-	PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl-tools/modules
-	export PERL5LIB
+        PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl/modules
+        PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl-compara/modules
+        PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl-variation/modules
+        PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl-funcgen/modules
+        PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl-io/modules
+        PERL5LIB=${PERL5LIB}:${HOME}/ensembl-api/ensembl-tools/modules
+        export PERL5LIB
 
-And to avoid having to type that every time you start a terminal window, add those lines at the end of the file ``.bashrc`` in your home.
+Add those lines at the end of the file ``.bashrc`` in your home to avoid having to type that every time you start a terminal window.
 
   Aaaaanddd... We're done! :D
