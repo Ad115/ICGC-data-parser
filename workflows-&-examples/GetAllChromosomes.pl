@@ -4,7 +4,6 @@ use ICGC_Data_Parser::SSM_Parser qw(:parse);
 use ICGC_Data_Parser::Tools qw(:general_io :debug);
 
 parse_SSM_file(
-
         # Context information
         {
             RAW_OPTIONS =>  \@ARGV
@@ -33,12 +32,13 @@ parse_SSM_file(
                         # Fetch the context
                         my $context = shift();
                         
-                        # Display the distribution
+                        my $output = $context->{OUTPUT};
                         my $chromosomes = $context->{CHROMOSOMES};
                         
+                        # Display the distribution
                         foreach my $chrom (sort keys %$chromosomes) {
-                            print "Mutations in chromosome $chrom:   $chromosomes->{$chrom}\n";
+                            print $output "Mutations in chromosome $chrom:   $chromosomes->{$chrom}\n";
                         }
                     }
-        }
-);
+        } # --- ACTIONS
+); # --- parse_SSM_file
