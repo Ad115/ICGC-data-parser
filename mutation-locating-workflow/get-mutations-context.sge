@@ -16,18 +16,18 @@
 . /etc/profile.d/modules.sh
 
 # Name the job array
-#$ -N job.mc_BRCA-EU
+#$ -N job.mc_all
 
 # Use as many jobs as needed (the number of files the ssm file is split on)
 #$ -t 1-234
 
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 
-    FILE_DIR=../data/ssm_splitted
+    FILE_DIR=../data/ssm_splitted200000
     FILES=($(ls $FILE_DIR)) # The directory of the splitted files
 
     GENE=all
-    PROJECT=BRCA-EU
+    PROJECT=all
 
     FILE=$FILE_DIR/${FILES[$SGE_TASK_ID]}
     OUT_FILE="./results/${GENE}.${PROJECT}.mutations-context.${SGE_TASK_ID}.tsv"

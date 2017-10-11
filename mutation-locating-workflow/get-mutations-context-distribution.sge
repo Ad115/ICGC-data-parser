@@ -16,25 +16,25 @@
 . /etc/profile.d/modules.sh
 
 # Name the job array
-#$ -N job.mcd_BRCA-EU
+#$ -N job.mcd_all
 
 # Use as many jobs as needed (the number of files the ssm file is split on)
 #$ -t 1-234
 
 #===============>> BEGINNING OF MAIN ROUTINE <<=====================
 
-    FILE_DIR=../data/ssm_splitted
+    FILE_DIR=../data/ssm_splitted200000
     FILES=($(ls $FILE_DIR)) # The directory of the splitted files
 
     GENE=all
-    PROJECT=BRCA-EU
+    PROJECT=all
 
     FILE=$FILE_DIR/${FILES[$SGE_TASK_ID]}
     OUT_FILE="./results/${GENE}.${PROJECT}.mutations-context-distribution.${SGE_TASK_ID}.tsv"
 
     # Analysis...
     if [ ! -f $OUT_FILE ]; then
-        echo "Now doing mutation's gene context analysis: file $FILE, gene $GENE, project $PROJECT @ $(date +%F.%R)"
+        echo "Now doing mutation's gene context distribution analysis: file $FILE, gene $GENE, project $PROJECT @ $(date +%F.%R)"
         ./GetMutationContextDistribution.pm -g $GENE -p $PROJECT -o $OUT_FILE -i $FILE
     fi
 
