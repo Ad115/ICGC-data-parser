@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 
-package GetRecurrenceDistribution;
+package GetMutationDistribution;
 use Exporter qw'import';
 	our @EXPORT = qw'main';
 
@@ -57,17 +57,24 @@ sub main
 	# Get class
 	my $self = shift;
 	
-	parse_SSM_file(\@_,
-		# Dispatch table
+	parse_SSM_file(
+        # Context data
+        {   
+            # Raw command-line options
+            RAW_OPTIONS =>  \@_
+        },
+        
+		# Table of actions
 		{
+            ### TODO: This script cannot be called with the -g flag (makes no sense)
 			# If asked for help
 			HELP	=>	sub { print_and_exit $doc_str },
 			
 			# Asemmble distribution at matching line
-			MATCH	=>	\&assemble_recurrence_distribution,
+			MATCH	=>	\&assemble_mutation_distribution,
 			
 			# Print distribution at the end
-			END	=>	\&print_recurrence_distribution
+			END	=>	\&print_mutation_distribution
 		}
 	);
 }#===============>> END OF MAIN ROUTINE <<=====================
@@ -77,7 +84,20 @@ sub main
 #	Subroutines
 #	===========
 
-sub assemble_recurrence_distribution
+sub print_header
+{
+	my %context = %{ shift() }; # Get context (READ ONLY)
+	
+	# Get relevant context variables
+	my ($project, $gene, $output, $output_fields) 
+		= @context{qw(PROJECT GENE OUTPUT OUTPUT_FIELDS)};
+
+	# Print heading lines
+	print  $output "# Project: $project->{str}\tGene: $gene->{str}\n";
+	print  $output join( "\t", @$output_fields)."\n";
+}#-----------------------------------------------------------
+
+sub assemble_mutation_distribution
 {
 	my $cxt = shift(); # Get context (READ/WRITE)
 	
@@ -89,57 +109,51 @@ sub assemble_recurrence_distribution
 	
 	my %opts = %{ $cxt->{OPTIONS} };
 	
-	my %mutation = %{ parse_mutation({
-				line => $cxt->{LINE},
-				headers => $cxt->{HEADERS},
-				gene => $opts{gene},
-				project => $opts{project},
-				offline => $opts{offline}
-			}
-		)
-	};
+	# Associate GENE_ID:mutations_found in gene
+	my @gene_ids = $cxt->{LINE} =~ /(ENSG[0-9.]*)/;
 	
-	# Associate AFFECTED_DONORS : MUTATIONS
-	if (specified $opts{project}){
-		# When a project is specified
-		$distribution->{ $mutation{INFO}->{OCCURRENCE}->[0]->{affected_donors} }++;
-		$cxt->{ TESTED_DONORS } = $mutation{INFO}->{OCCURRENCE}->[0]->{tested_donors};
-	} else{
-		# When all projects are parsed
-		$distribution->{ $mutation{INFO}->{affected_donors} }++;
-		$cxt->{ TESTED_DONORS } = $mutation{INFO}->{tested_donors};
-	}
-}
+	map { $distribution->{$_}++ } @gene_ids;
+}#-----------------------------------------------------------
 
-sub print_recurrence_distribution
+sub print_mutation_distribution
 {
 	my %context = %{ shift() }; # Get context (READ ONLY)
 	
 	# Get relevant context variables
-	my ($output, $distribution, $tested_donors) 
-		= @context{qw(OUTPUT DISTRIBUTION TESTED_DONORS)};
-	
-	my $project_str = $context{PROJECT}->{str};
-	my $gene_str = $context{GENE}->{str};
+	my ($output, $distribution) 
+		= @context{qw(OUTPUT DISTRIBUTION)};
 
 	## OUTPUT
 
 	# Assemble output fields
-	my @output_line_fields = qw(MUTATIONS AFFECTED_DONORS_PER_MUTATION);
+	$context{OUTPUT_FIELDS} = [qw(MUTATIONS_COUNT GENE_COUNT GENES)];
+	print_header(\%context);
 
-	# Print heading lines
-	print  $output "# Project: $project_str\tGene: $gene_str\tTested donors: $tested_donors\n";
-	print  $output join( "\t", @output_line_fields)."\n";
-
-	my %output = ();
-	foreach my $key (sort {$a <=> $b} keys %$distribution){
+	# Arrange distribution
+	my %mutation_frequency = ();
+	foreach my $gene_id (keys %$distribution){
+		
+		# Assemble gene mutation frequency distribution
+		$mutation_frequency{$distribution->{$gene_id}}->{GENE_COUNT}++;
+		
+		# Append ID to the gene id's found
+		if (defined $mutation_frequency{$distribution->{$gene_id}}->{GENES}){
+			$mutation_frequency{$distribution->{$gene_id}}->{GENES} .= ",$gene_id";
+		} else {
+			$mutation_frequency{$distribution->{$gene_id}}->{GENES} = $gene_id;
+		}
+	}
+	
+	# Print output
+	foreach my $key (sort {$a <=> $b} keys %mutation_frequency){
 		# Assemble output
-		$output{AFFECTED_DONORS_PER_MUTATION} = $key;
-		$output{MUTATIONS} = $distribution->{$key};
+		$output{MUTATIONS_COUNT} = $key;
+		$output{GENES} = $mutation_frequency{$key}->{GENES};
+		$output{GENE_COUNT} = $mutation_frequency{$key}->{GENE_COUNT};
 
-		print_fields($output, \%output, \@output_line_fields);
+		print_fields($output, \%output, $context{OUTPUT_FIELDS});
 	}
 
-}
+}#-----------------------------------------------------------
 
 1; 

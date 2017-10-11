@@ -10,7 +10,7 @@ use Exporter qw'import';
 
 our $doc_str = <<END;
 
-Usage: ./locate_in_genome.pl [--in=<file>] [--out=<outfile>] [--help]
+Usage: $0 [--in=<file>] [--out=<outfile>] [--help]
 
 ============================
  Locate mutations in genome
@@ -52,7 +52,15 @@ sub main
 	# Get class
 	my $self = shift;
 	
-	parse_SSM_file(\@_,
+	parse_SSM_file(
+        # Context data
+        {
+            # Raw command-line options
+            RAW_OPTIONS =>  \@_,
+            
+            # Format strings for the expected command-line options (other than in, out and help)
+            EXPECTED_OPTIONS   =>  [ 'chrom|c=s' ],
+        },
 		# Dispatch table
 		{	# Collect the mutation recurrence data
 			MATCH	=>	\&assemble_context_distribution,
@@ -83,20 +91,28 @@ sub assemble_context_distribution
 	
 	my %opts = %{ $cxt->{OPTIONS} };
 	
-	# Get context data
-	my %context_data = %{ get_mutation_context({
-				line => $cxt->{LINE},
-				headers => $cxt->{HEADERS},
-				gene => $cxt->{OPTIONS}->{gene},
-				project => $cxt->{OPTIONS}->{project},
-				offline => $cxt->{OPTIONS}->{offline}
-			}
-		)
-	};
+	# Parse mutation
+	my $mutation = parse_mutation({
+				line => $cxt{LINE},
+				headers => $cxt{HEADERS},
+				gene => $cxt{OPTIONS}->{gene},
+				project => $cxt{OPTIONS}->{project},
+				offline => $cxt{OPTIONS}->{offline}
+            }
+        );
+
+    my $chrom = $cxt{OPTIONS}{chrom};
 	
-	# Assemble distribution
-	my $relative_position = $context_data{RELATIVE_POSITION};
-	$distribution->{$relative_position}++;
+	if (!$chrom or ($chrom eq $mutation->{CHROM})) {
+	# Filter by chromosome
+	
+        # Get context data
+        my $context_data = get_mutation_context($mutation);
+	
+        # Assemble distribution
+        my $relative_position = $context_data{RELATIVE_POSITION};
+        $distribution->{$relative_position}++;
+    }
 }#-----------------------------------------------------------
 
 

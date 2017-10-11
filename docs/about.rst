@@ -6,6 +6,8 @@ About the ICGC-data-parser
 
 Scripts to automate parsing of data from the International Cancer Genome Consortium data releases, in particular, the simple somatic mutation aggregates.
 
+Developed by  Andrés García (https://agargar.wordpress.com/), Maribel Hernandez and Roberto Romero.
+
 --------------------------
 Download and installation
 --------------------------

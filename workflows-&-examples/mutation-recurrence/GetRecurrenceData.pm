@@ -59,8 +59,14 @@ sub main
 	# Get class
 	my $self = shift;
 	
-	parse_SSM_file(\@_,
-		# Dispatch table
+	parse_SSM_file(
+        # Context data
+        {   
+            # Raw command-line options
+            RAW_OPTIONS =>  \@_
+        },
+        
+		# Table of actions
 		{
 			# Register output fields in context
 			BEGIN	=>	sub { 
