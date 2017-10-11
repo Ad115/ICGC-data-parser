@@ -165,7 +165,7 @@ sub print_context_data
 	
 	my $chrom = $cxt{OPTIONS}{chrom};
 	
-	if ($chrom eq $mutation->{CHROM}) {
+	if (!$chrom or ($chrom eq $mutation->{CHROM})) {
 	# Filter by chromosome
 	
         # Get context data

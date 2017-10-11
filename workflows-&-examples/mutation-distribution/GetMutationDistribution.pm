@@ -57,9 +57,16 @@ sub main
 	# Get class
 	my $self = shift;
 	
-	parse_SSM_file(\@_,
-		# Dispatch table
+	parse_SSM_file(
+        # Context data
+        {   
+            # Raw command-line options
+            RAW_OPTIONS =>  \@_
+        },
+        
+		# Table of actions
 		{
+            ### TODO: This script cannot be called with the -g flag (makes no sense)
 			# If asked for help
 			HELP	=>	sub { print_and_exit $doc_str },
 			
