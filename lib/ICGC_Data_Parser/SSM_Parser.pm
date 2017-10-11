@@ -317,7 +317,6 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 		my %mutation = %line;
 
 		$mutation{INFO} = parse_INFO(\%args);
-
 		return \%mutation;
 	}#-----------------------------------------------------------
 	
@@ -429,6 +428,14 @@ use ICGC_Data_Parser::Tools qw(:general_io :debug);
 		{
 			# Update context
 			$context->{LINE} = $line;
+			$context->{MUTATION} = parse_mutation({
+                                            line => $line,
+                                            headers => $headers,
+                                            gene => $context->{OPTIONS}{gene},
+                                            project => $context->{OPTIONS}{project},
+                                            offline => $context->{OPTIONS}{offline}
+                                        }
+                                    );
 			
 			###
 			### CALL THE LOOP ANY BLOCK
