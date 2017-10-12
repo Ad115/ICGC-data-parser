@@ -90,7 +90,7 @@ use Data::Dumper; # To preety print hashes easily
 
     sub print_fields
     # USAGE: print_fields(\%hash, \@keys)
-    # Print orderly the values corresponding to the given keys of the hash
+    # Print in order the values corresponding to the given keys of the hash
     # Prints in TSV format
     {
     	my $output = shift;
