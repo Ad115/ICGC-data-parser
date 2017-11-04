@@ -6,6 +6,7 @@ data/ssm_all*
 data/ssm_splitted*
 data/data_release*
 **.sqlite
+**.ipynb_checkpoints
 
 
 
