@@ -31,4 +31,6 @@ x = [ point[0] for point in recurrence ]
 y = [ point[1] for point in recurrence ]
 
 plt.plot(x, y)
+plt.yscale('log')
+plt.xscale('log')
 plt.show()
