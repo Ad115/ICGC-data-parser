@@ -6,7 +6,7 @@ from schema_definition import *
 
 # < -- Connect to the database (imported from schema definition)
 
-db.bind(provider='sqlite', filename='mutations_test.sqlite')
+db.bind(provider='sqlite', filename='mutations.sqlite')
 db.generate_mapping()
 
 # < -- Get the recurrence distribution
@@ -22,8 +22,8 @@ with p.db_session:
 
 # < -- Plot the distribution
 
-import seaborn as sns
 import matplotlib.pyplot as plt
+plt.switch_backend('agg')
 
 print(recurrence)
 
@@ -33,4 +33,5 @@ y = [ point[1] for point in recurrence ]
 plt.plot(x, y)
 plt.yscale('log')
 plt.xscale('log')
-plt.show()
+plt.savefig('recurrence-distribution.png')
+plt.close()

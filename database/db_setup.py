@@ -10,8 +10,8 @@ from schema_definition import *
 import os
 
 # Initialize a database
-cwd = os.getcwd()
-db_file = f'{cwd}/mutations_test.sqlite'
+dir = '/u/scratch/andres/data'
+db_file = f'{dir}/mutations.sqlite'
 db.bind(provider='sqlite', filename=db_file, create_db=True)
 
 # Map the objects to tables
@@ -51,6 +51,7 @@ def add_mutation_to_db(mutation):
 @db_session
 def load_mutations(filename, mutations_to_commit=100_000):
     # Commit once in a while
+    mutations_committed = 0
     countdown_to_commit = mutations_to_commit
     # Add mutation by mutation
     for raw_mutation in open_vcf(filename):
@@ -61,10 +62,14 @@ def load_mutations(filename, mutations_to_commit=100_000):
         if countdown_to_commit <= 0:
             countdown_to_commit = mutations_to_commit
             commit()
+            # Log the commit
+            mutations_committed += mutations_to_commit
+            print(f'Total committed mutations: {mutations_committed}')
 # ---
 
 
-load_mutations('../data/ssm_mixed.vcf')
+load_mutations('../data/ssm_all.vcf')
+print('Finished')
 
 # < -- Check the generated tables
 
