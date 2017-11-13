@@ -5,6 +5,7 @@ docs/_*/
 data/ssm_all*
 data/ssm_splitted*
 data/data_release*
+data/data-release*
 **.sqlite
 **.ipynb_checkpoints
 **/__pycache__
