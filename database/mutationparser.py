@@ -1,14 +1,51 @@
+"""
+VCF mutations file parser.
+
+Module with functions destined to parse mutations in a VCF file with the
+format of the ICGC Data Release's SSM aggregate.
+
+Usage is mostly of the function read_mutations that disassembles the mutation 
+into a dictionary.
+
+Example::
+
+       file_with_mutations = 'ssm.aggregated.vcf'
+       
+       for mutation in read_mutations(filename):
+           print(mutation)
+"""
+
+
+# < --- VCF file parsing
+
+def read_mutations(filename):
+    """
+    Helper function that returns a generator of the mutations parsed from the file
+    """
+    for raw_mutation in open_vcf(filename):
+        # Yield the parsed mutation
+        yield parse_mutation(raw_mutation)
+# ---
+
 def open_vcf(filename):
-    """A generator to handle VCF files easily"""
+    """A generator to handle VCF files easily.
+    
+    Open the file with the given filename and yield every line that doesn't
+    start with '#' (such as comment and header lines)
+    """
     # Open the VCF file
     with open(filename) as file:
         # Yield only the lines that aren't comments
         for line in file:
             if not line.startswith('#'):
                 yield line
+# ---
     
     
-# < -- Functions to parse each mutation
+    
+# < --- Mutation parsing
+
+# < -- Parse the raw mutation 
 
 def parse_mutation(raw_mutation):
     """Decompose a raw mutation line into fields, returns it as a dict"""
