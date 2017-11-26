@@ -15,8 +15,7 @@ are mapped to records of the database.
 
 from pony.orm import (Database, # The main db mapper object
                       Required, Optional, # The db types
-                      Set, PrimaryKey,
-                      exists)
+                      Set, PrimaryKey)
 
 
 
@@ -31,19 +30,22 @@ database = Database()
 # < --- Definition of the database schema.
 #           The classes here defined are the ones relevant to the SQL 
 #           mapping of the data in the ICGC Data Releases.
-class GetMixin():
+class GetOrCreateMixin:
     """
-    Auxiliary class that implements an auxiliary method
-    get_or_create to avoid creating duplicate records
+    Class that implements a default get_or_create method.
+    
+    The method get_or_create avoids creating duplicate records.
+    
     """
+    
     @classmethod
-    def get_or_create(cls, params):
-        if exists():
-            return o
-        return cls(**params)
+    def get_or_create(cls, **params):
+        'Get an instance with the given parameters or create it.'
+        return cls.get(**params) or cls(**params)
 # ---
 
-class Mutation(database.Entity, GetMixin):
+
+class Mutation(database.Entity, GetOrCreateMixin):
     """
     The class representing a mutation.
     
@@ -64,7 +66,7 @@ class Mutation(database.Entity, GetMixin):
 # ---
 
 
-class Consequence(database.Entity, GetMixin):
+class Consequence(database.Entity, GetOrCreateMixin):
     """
     A consequence of a mutation.
     
@@ -85,7 +87,7 @@ class Consequence(database.Entity, GetMixin):
     mutations = Set(Mutation)
 
 
-class OccurrenceByProject(database.Entity, GetMixin):
+class OccurrenceByProject(database.Entity, GetOrCreateMixin):
     """
     The class representing an occurrence specific to a project.
     
@@ -100,7 +102,7 @@ class OccurrenceByProject(database.Entity, GetMixin):
     mutations = Set(Mutation)
 
 
-class OccurrenceGlobal(database.Entity, GetMixin):
+class OccurrenceGlobal(database.Entity, GetOrCreateMixin):
     """
     The class representing a global mutation occurrence.
     
