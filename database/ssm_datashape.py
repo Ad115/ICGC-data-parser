@@ -37,12 +37,13 @@ The file is structured in the following way:
         - OCCURRENCE: Mutation occurrence counts broken down by project. Which has itself the next subfields:
            1. project_code,
            2. affected_donors,
-           3. tested_donors,
-           4. frequency
+           4. tested_donors,
+           5. frequency
 
         - affected_donors: Total number of donors with the current mutation.
         - mutation: Somatic mutation definition, in the form BEFORE>AFTER.
         - project_count: Number of projects with the current mutation.
+        - studies (new in data release 25).
         - tested_donors: Total number of donors with SSM data available.
         
 """
@@ -68,6 +69,7 @@ tuple_fields = [('consequence','string'),
 occurrence_global_fields = [('affected_donors', 'int32'),
                             ('mutation', 'string'),
                             ('project_count','int32'), 
+                            ('studies', 'string')
                             ('tested_donors', 'int32')]
 
 # All fields that will be in the database
