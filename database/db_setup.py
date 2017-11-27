@@ -12,8 +12,8 @@ Example::
 import odo
 from os.path import abspath
 from tempfile import NamedTemporaryFile
-from .ssm_datashape import all_fields
-from .mutationparse import mutations_to_table_from
+from ssm_datashape import all_fields
+from mutationparse import mutations_to_table_from
 
 
 # < --- Assemble the datashape of the data
