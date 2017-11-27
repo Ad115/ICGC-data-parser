@@ -9,6 +9,7 @@ Example::
        mutations_to_table_from('ssm.vcf', 
                                out_separator='\t',
                                out_header=True)
+
 """
 
 from ssm_datashape import (MutationSimple, 
@@ -139,6 +140,9 @@ def clean_occurrence_global(raw_occurrence):
     Returns a colection with the values 'value'
     """
     # Separate into the corresponding fields
-    occurrence = ( keyvalue.split('=') for keyvalue in raw_occurrence )
-    return [value for key,value in occurrence]
+    occurrence = dict( keyvalue.split('=') for keyvalue in raw_occurrence )
+    # Handle the case of the files before data release 25
+    if 'studies' not in occurrence:
+        occurrence['studies'] = 'None'
+    return [value for key,value in occurrence.items()]
 # ---

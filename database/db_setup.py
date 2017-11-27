@@ -73,6 +73,11 @@ if __name__ == '__main__':
                 postgresql://username:password@54.252.14.53:10000/database::table
                 mysql:///path/to/database.mysql::table
             
+            Note:
+
+                When the table name is not given, the ODO module may launch an exception like::
+                
+                    AssertionError: datashape must be Record type, got var * {
             '''
     )
     # Parse the mutation data file
