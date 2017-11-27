@@ -69,7 +69,7 @@ tuple_fields = [('consequence','string'),
 occurrence_global_fields = [('affected_donors', 'int32'),
                             ('mutation', 'string'),
                             ('project_count','int32'), 
-                            ('studies', '?string'),
+                            ('studies', 'string'),
                             ('tested_donors', 'int32')]
 
 # All fields that will be in the database
