@@ -31,8 +31,7 @@ def load_mutations(from_file, to_db):
     for very big files.
     """
     # 1. < --- Open the file and read the mutations
-    mutations = mutations_to_table_from(
-                    '../data/ssm_mixed.vcf')
+    mutations = mutations_to_table_from(from_file)
     
     # 2. < --- Create the intermediate CSV file
     
