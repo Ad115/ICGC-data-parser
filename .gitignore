@@ -9,5 +9,5 @@ data/data-release*
 **.sqlite
 **.ipynb_checkpoints
 **/__pycache__
-
+**/.fuse_hidden*
 
