@@ -5,35 +5,65 @@ Handle requests to the Ensembl REST API.
 import json
 import requests
 import time
+import sys
+
+from ensemblrest import EnsemblRest
 
 
-class Connection:
-    """Handle requests to the Ensembl REST API."""
-    
-    # < --- Defaults
-
-    grch38_server = "http://rest.ensembl.org"
-    grch37_server = "http://grch37.rest.ensembl.org"
-
-    headers = { "Content-Type" : "application/json", 
-                "Accept" : "application/json"}  
-    
-    # Response status codes
-    MAX_RATE_LIMIT = 429
-    
-    
-    def __init__(self):
-        # Initialize defaults
-        self.server = self.grch38_server
-        self.headers = self.headers
-    # ---
-    
-    def region_str(self, chrom, start, end=None, strand=+1):
-        "Assemble a region string as '{chrom}:{start}..{end}:{strand}'"
-        if end is None:
-            end = start+1
+def region_str(chrom, start, end=None, strand=+1):
+    "Assemble a region string as '{chrom}:{start}..{end}:{strand}'"
+    if end is None:
+        end = start+1
         
-        return '{}:{}..{}:{}'.format(chrom, start, end, strand)
+    return '{}:{}..{}:{}'.format(chrom, start, end, strand)
+# ---
+
+
+class Client(EnsemblRest):
+    """Handle requests to the Ensembl REST API.
+    
+    Optimizations are made to ensure fast handling of
+    several related requests.
+    
+    """
+    
+    def make_request(self,
+                     method,
+                     params,
+                     handle_rate_limit=True,
+                     max_attempts=3):
+        """Perform a given request. 
+        
+        If maximum request rate limit is exceded, wait to try again.
+        """ 
+        attempt = 0
+        while attempt < max_attempts:
+            attempt += 1
+
+            try:
+                # < --- Make the request
+                result = method(**params)
+                # exit while on success
+                break
+
+            except EnsemblRestRateLimitError:
+                # Maximum requests rate exceded
+                # Need to wait
+                if handle_rate_limit:
+                    wait_time = self.retry_after
+                    sys.stderr.write('Maximum requests limit reached, waiting for' 
+                                     + str(wait_time)
+                                     + 'secs')
+                    time.sleep(wait_time * attempt)
+                else:
+                    raise
+
+            finally:
+                if attempt >= max_attempts:
+                    raise Exception("max attempts exceeded (%s)" %(max_attempts))
+
+        
+        return result
     # ---
     
     def assembly_map(self, region, from_assembly='GRCh37', 
@@ -59,55 +89,44 @@ class Connection:
                 
             
         """
-        # Assemble the request data
-        endpoint = (  '/map/' 
-                    + species + '/'
-                    + from_assembly + '/' 
-                    + region + '/'
-                    + to_assembly )        
 
         # Make the request
-        r = self.make_request('GET', 
-                              request=self.server+endpoint, 
-                              headers=self.headers)
+        data = self.make_request(method=self.getMapAssemblyOneToTwo,
+                                 params={'asm_one':from_assembly,
+                                         'asm_two':to_assembly,
+                                         'species':species,
+                                         'region':region})
 
-        # Decode the response
-        data = r.json()
-        return data['mappings'][0]
+        return data
     # ---
+    
+    def assembly_info(self, species='human', **kwargs):
+        """List the currently available assemblies for 
+        a species, along with toplevel sequences, chromosomes 
+        and cytogenetic bands.
         
-    def make_request(self,
-                     method,
-                     request, 
-                     headers=headers):
-        """Perform a given request. 
-        
-        If maximum request rate limit is exceded, wait to try again.
+        Parameters:
+            species: str (optional, default 'human')
+                Species name/alias. Examples: 'homo_sapiens', 'human'
+                
+            bands: bool (optional, default False) 	
+                If True, include karyotype band information. Only display 
+                if band information is available.
+            
+            callback: str (optional) 	
+                Name of the callback subroutine to be returned by the 
+                requested JSONP response. Required ONLY when using JSONP 
+                as the serialisation method. Please see the user guide.
+                
+            synonyms: bool (optional, default False)
+                If set to 1, include information about known synonyms.
         """
-        if method == 'GET':
-            method = requests.get
-        elif method == 'POST':
-            method = requests.post
-        else:
-            raise ValueError
-        
-        done = False
-        while not done:
-            # < --- Make the request
-            r = method(request, headers=headers)
+        # Make the request
+        data = self.make_request(method=self.getInfoAssembly,
+                                 params={'species':species,
+                                         **kwargs})
 
-            # < --- Check the response
-            if not r.ok:
-                if r.status_code == self.MAX_RATE_LIMIT:
-                    # Maximum requests rate exceded
-                    # Need to wait
-                    wait_time = r.headers['Retry-After']
-                    time.sleep(wait)
-                else:
-                    r.raise_for_status()
-                    
-            else:
-                done = True
-        
-        return r
+        return data
     # ---
+        
+# Client
