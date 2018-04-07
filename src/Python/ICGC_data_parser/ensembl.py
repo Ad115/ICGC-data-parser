@@ -7,7 +7,7 @@ import requests
 import time
 import sys
 
-from ensemblrest import EnsemblRest
+from ensemblrest import EnsemblRest, EnsemblRestRateLimitError
 
 
 def region_str(chrom, start, end=None, strand=+1):
@@ -60,7 +60,7 @@ class Client(EnsemblRest):
 
             finally:
                 if attempt >= max_attempts:
-                    raise Exception("max attempts exceeded (%s)" %(max_attempts))
+                    raise Exception("Max attempts exceeded (%s)" %(max_attempts))
 
         
         return result
@@ -85,9 +85,7 @@ class Client(EnsemblRest):
                 Version of the output assembly. Example: 'GRCh38'.
                 
             species: str
-                Species name/alias. Example: 'homo_sapiens', 'human'.
-                
-            
+                Species name/alias. Example: 'homo_sapiens', 'human'.  
         """
 
         # Make the request
