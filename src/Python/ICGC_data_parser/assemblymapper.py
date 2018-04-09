@@ -16,21 +16,24 @@ class AssemblyMapper:
         1064620
         
     """
+    # No need to request several times the same info
+    map_cache = dict()
     
     def __init__(self, from_assembly='GRCh37', 
                        to_assembly='GRCh38', 
                        species='human'):
         """
-        Parameters:
+        Parameters
+        ----------
         
-            from_assembly: str
-                Version of the input assembly. Example: 'GRCh37'.
+        from_assembly: str, optional
+                Version of the input assembly. Default 'GRCh37'.
                 
-            to_assembly: str
-                Version of the output assembly. Example: 'GRCh38'.
+        to_assembly: str, optional
+                Version of the output assembly. Default 'GRCh38'.
                 
-            species: str
-                Species name/alias. Example: 'homo_sapiens', 'human'.
+        species: str, optional
+                Species name/alias. Default 'human'.
         """
         # The interface to the Ensembl REST API
         self.client = ensembl.Client()
@@ -41,38 +44,57 @@ class AssemblyMapper:
         # whole mapping information at once and storing 
         # it in an interval tree data structure for 
         # efficient lookup.
-        self.assembly_map = self._fetch_mapping_info(from_assembly, 
-                                                     to_assembly,
-                                                     species)
+        self.assembly_map = self._fetch_mapping(from_assembly, 
+                                                to_assembly,
+                                                species)
     # ---
     
-    def _fetch_mapping_info(self, from_assembly, to_assembly, species):
+    def _fetch_mapping(self, from_assembly, to_assembly, species):
+        """Fetch the mapping, either make it anew or use a cached one."""
+        map_key = from_assembly + to_assembly + species
+        
+        if map_key in self.map_cache:
+            # Mapping information already fetched, return it
+            return self.map_cache[map_key]
+        else:
+            # Need to assemble the mapping information
+            mapping = self._assemble_mapping(from_assembly, 
+                                             to_assembly,
+                                             species)
+            # Cache the assembled mapping
+            self.__class__.map_cache[map_key] = mapping
+            
+            return mapping
+    # ---
+    
+    def _assemble_mapping(self, from_assembly, to_assembly, species):
         """Assemble the interval tree with the information 
         for the given mapping.
         """
         client = self.client
-        
+
         # Get the chromosome sizes
         genome_info = client.assembly_info(species=species)
         chromosomes = {item['name']: item['length'] 
                             for item in genome_info['top_level_region']
                             if item['coord_system'] == 'chromosome'} 
-        
+
         # Initialize the mapping structure
         # (An interval tree for each chromosome)
         assembly_map = dict()
-        
+
         for chrom, chrom_len in chromosomes.items():
             # Query the mapping information
             # for the entire chromosome
-            region = ensembl.region_str(chrom, 
-                                        start=1, end=chrom_len)
+            region = ensembl.region_str(chrom, start=1, 
+                                               end=chrom_len)
             map_ = client.assembly_map(region, from_assembly, 
                                                to_assembly)
-            
+
             # Assemble into the mapping structure
             assembly_map[chrom] = self._interval_tree(map_['mappings'], 
                                                       chrom_len)
+
         return assembly_map
     # ---
             
