@@ -7,22 +7,22 @@ import click
 import vcf
 import sys
 
-import ensembl
+from src.Python.ICGC_data_parser import AssemblyMapper, SSM_Reader
 
 
 # Command line interface
 @click.command()
-@click.option('--input', '-i', help='VCF file to read from.')
+@click.argument('input')
 @click.option('--output', '-o', help='VCF file to write output.')
 def main(input, output):
-    """Map an ICGC mutations VCF from assembly GRCh37 to GRCh38."""
+    """Map an ICGC mutations VCF file from assembly GRCh37 to GRCh38."""
     
     # --- Open the mutations file
-    mutations = vcf.Reader(filename=input)
+    mutations = SSM_Reader(filename=input)
 
-    # --- Connect to the Ensembl REST API
-    #     (Web service, provides mapping between assemblies)
-    c = ensembl.Client()
+    # --- Instantiate mapper 
+    mapper = AssemblyMapper(from_assembly='GRCh37', 
+                            to_assembly='GRCh38')
 
     # --- Open the mapped file (coordinates in GRCh38)
     # The old file is used as template for the new one,
@@ -34,26 +34,15 @@ def main(input, output):
 
     
     # --- Assembly mapping
-    regions = [] # Buffers to make several queries at once
-    records = []
     for record in mutations:
         chrom = record.CHROM
         pos = record.POS
-        # Accumulate on buffer
-        records.append(record)
-        regions.append(ensembl.region_str(chrom, pos))
         
-        if len(regions) >= 10: 
-            mappings = c.assembly_map(region=regions,
-                                  from_assembly='GRCh37',
-                                  to_assembly='GRCh38')
-            mappings = mappings['mappings']
-            
-            # Flush buffers
-            print(mappings)
-            # Write mapped data to new file
-            record.POS = map_['mappings'][0]['mapped']['start']
-            mapped_mutations.write_record(record)
+        # Map
+        record.POS = mapper.map(chrom, pos)
+        
+        # Write mapped data to new file
+        mapped_mutations.write_record(record)
 # ---
 
 
