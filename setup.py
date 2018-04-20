@@ -113,7 +113,8 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=['src.Python.ICGC_data_parser'],  # Required
+    packages=find_packages('src/Python'),  # Required
+    package_dir={'':'src/Python'},   # tell distutils where packages are
 
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is

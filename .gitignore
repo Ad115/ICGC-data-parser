@@ -1,5 +1,5 @@
 dist/
-**/*.egginfo/
+**/*.egg-info/
 Tests.ipynb
 .directory
 docs/_*/

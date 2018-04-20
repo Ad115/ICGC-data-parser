@@ -14,7 +14,7 @@ Download and installation
 
 The core module is in PyPi, you can install it using::
 
-    pip install ICGC_data_parser
+    pip install ICGC-data-parser
     
 Although the whole example notebooks and helper VCF manipulation scripts are 
 in the the `GitHub repository <https://github.com/Ad115/ICGC-data-parser>`__. 
