@@ -150,4 +150,6 @@ setup(
         'Source': 'https://github.com/Ad115/ICGC-data-parser/',
         'Author': 'https://agargar.wordpress.com/'
     },
+    # Include also files in MANIFEST.in
+    include_package_data = True
 )
