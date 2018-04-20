@@ -3,7 +3,6 @@ Handle requests to the Ensembl REST API.
 """
 
 import json
-import requests
 import time
 import sys
 
