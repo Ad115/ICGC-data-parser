@@ -11,9 +11,12 @@ A library to ease the parsing of data from the International Cancer Genome
 Consortium data releases, in particular, the simple somatic mutation 
 aggregates.
 
-   
+
+Tutorial
+========   
+
 Installation
-============
+------------
 
 Install via `PyPI <https://pypi.org/project/ICGC-data-parser/>`__:
 
@@ -23,7 +26,7 @@ Install via `PyPI <https://pypi.org/project/ICGC-data-parser/>`__:
 
     
 Data download
-=============
+-------------
 
 The base data for the scripts is the ICGC's aggregated of the simple
 somatic mutation data. Which can be downloded using
@@ -64,8 +67,8 @@ In the future this will be solved in a more elegant way, but for
 now this is what we've got.
 
 
-Tutorial
-========
+Usage
+-----
 
 The main class in the project is the ``SSM_Reader``. It allows to read
 easily the ICGC mutations file:
@@ -210,7 +213,7 @@ Meta
 a.garcia230395@gmail.com
 
 
-**Pages**: 
+**Project pages**: 
 `Docs <https://icgc-data-parser.readthedocs.io>`__ - `@GitHub <https://github.com/Ad115/ICGC-data-parser/>`__ - `@PyPI <https://pypi.org/project/ICGC-data-parser/>`__
 
 Distributed under the MIT license. See
