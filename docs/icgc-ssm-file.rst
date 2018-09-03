@@ -1,13 +1,15 @@
 
-==============================================
-About the ICGC's simple somatic mutations file
-==============================================
 
-This is about the infamous ``simple_somatic_mutations.aggregated.vcf`` file presented in each ICGC Data Release which contain an aggregated of the information of all simple somatic mutations found accross all patients in all cancer projects is found.
+The ICGC's mutations file
+=========================
 
-The top 500 lines of this file (ICGC data release 22) can be found at the `ssm_head500.vcf <https://github.com/Ad115/ICGC-data-parser/tree/develop/sample-data/ssm_head500.vcf>`_ file in the ``sample-data`` folder of this repo.
+This is about the infamous ``simple_somatic_mutations.aggregated.vcf`` file 
+presented in each ICGC Data Release which contains an aggregated of the 
+information of all simple somatic mutations found accross all patients in all 
+cancer projects is found.
 
---------
+
+
 Download
 --------
 
@@ -19,9 +21,11 @@ This file can be downloaded from `the ICGC site data releases site <https://dcc.
 
 To resume an interrupted download use the ``-c`` switch on the previous command.
 
-Then, the file can be extracted with the ``gunzip`` command.
+Then, the file can be extracted with the ``gunzip`` command (or not, the :py:class:`ICGC_data_parser.SSM_Reader`
+can read compressed files too ;D).
 
----------
+
+
 Structure
 ---------
 
@@ -31,7 +35,7 @@ In general, the format is similar to a TSV file in which the comments are marked
 
 
 Fields and Header lines
------------------------
+.......................
 
 Next are the 13 heading lines from a SSM file (data release 22)::
 
@@ -69,7 +73,7 @@ This is what we can see in those lines:
 .. _the-column-headers:
 
 The column headers
-------------------
+..................
 
 The data is split in these fields:
   - **CHROM**: The chromosome the mutation is in.
@@ -84,7 +88,7 @@ The data is split in these fields:
 .. _the-info-field:
   
 The INFO field
---------------
+..............
 
 This field annotates predicted consequences, and seen occurrences of the current mutation. The consequences are as seen by the SnpEff package.
 
@@ -120,14 +124,14 @@ In the file, *the parts are separated with a semicolon (* ``;`` *), and each par
 
   - **tested_donors**: Total number of donors with SSM data available.
 
-------------------------------
+
 Interpreting a sample mutation
 ------------------------------
 
 Now we come to try to read an example mutation from the data.
 
 The mutation
-------------
+............
 
 .. code-block:: none
 
@@ -135,6 +139,6 @@ The mutation
 	1       100000022       MU39532371      C       T       .       .       CONSEQUENCE=||||||intergenic_region||,RP11-413P11.1|ENSG00000224445|1|RP11-413P11.1-001|ENST00000438829||upstream_gene_variant||;OCCURRENCE=SKCA-BR|1|70|0.01429;affected_donors=1;mutation=C>T;project_count=1;tested_donors=10638
 
 The interpretation
-------------------
+..................
 
 We can see the data for the mutation **MU39532371**, which is in the chromosome number *1*, at the position *100000022*, and is defined as *C>T*, with no quality or filtering information available. We can also see in the INFO that this mutation has two consequences: one as a mutation ocurring in an intergenic region, and one as a mutation that affects the *ENSG00000224445* gene and it's *ENST00000438829* transcript provoking an *upstream_gene_variant*. Besides, it was found in a sample from the Great Britain's skin cancer ICGC project (*SKCA-BR*) with *1* patient affected out of the *70* in the project and of the *10638* accross all projects.

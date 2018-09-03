@@ -25,6 +25,7 @@ class BufferedReader:
     
     def __iter__(self):
         return self
+    # ---
     
     def __next__(self):
         if self.buffer:
@@ -61,18 +62,21 @@ class SSM_Reader(vcf.Reader):
     # --- 
     
     def push_line(self, line):
+        """Rebuffers line so that it is parsed next."""
         self.reader.push(line)
     # ---
     
-    def iter_lines(self):
-        return self.reader
-    # ---
-    
     def next_line(self):
+        """Fetch the next raw line from the file."""
         return next(self.reader)
     # ---
     
-    def next_array(self):
+    def next_array(self, strict_whitespace=False):
+        """Fetch the next line splitted into fields.
+        
+        If ``strict_whitespace`` is True, then split on tabs rather than 
+        whitespace. This allows for fields with spaces in them.
+        """
         return next(self.reader).split('\t')
     # ---
     
@@ -123,9 +127,9 @@ class SSM_Reader(vcf.Reader):
         return parse
     # ---
     
-    def parse_lines(self, filters=None):
-        """Iterate through the file, filtering out the 
-        lines not matching the regular expressions given.  
+    def iter_lines(self, filters=None):
+        """Iterate through the file's raw lines, filtering out the ones not 
+        matching the regular expressions given.  
         """
         if filters is None:
             filters = []
@@ -159,7 +163,7 @@ class SSM_Reader(vcf.Reader):
                 ...
             
         """
-        for line in self.parse_lines(filters=filters):
+        for line in self.iter_lines(filters=filters):
             # The parser reads the record from
             # self.reader, so, we must rebuffer 
             # the line to parse it.
