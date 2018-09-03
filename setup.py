@@ -14,7 +14,7 @@ from os import path
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
-with open(path.join(here, 'src/Python/README.rst'), encoding='utf-8') as f:
+with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 # Get the version from the VERSION file
@@ -84,8 +84,10 @@ setup(
         'Development Status :: 3 - Alpha',
 
         # Indicate who your project is intended for
+        'Intended Audience :: Information Technology',
         'Intended Audience :: Science/Research',
         'Intended Audience :: Education',
+        'Intended Audience :: Developers',
         'Topic :: Scientific/Engineering :: Artificial Life',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
         'Topic :: Scientific/Engineering :: Medical Science Apps.',
@@ -102,7 +104,7 @@ setup(
     # project page. What does your project relate to?
     #
     # Note that this is a string of words separated by whitespace, not a list.
-    keywords='vcf data mutations',  # Optional
+    keywords='vcf data mutations icgc parsing',  # Optional
 
     # You can just specify package directories manually here if your project is
     # simple. Or you can use find_packages().
@@ -113,8 +115,7 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=find_packages('src/Python'),  # Required
-    package_dir={'':'src/Python'},   # tell distutils where packages are
+    packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
 
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is
@@ -122,7 +123,7 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['jupyter', 'py'],  # Optional
+    install_requires=['vcf'],  # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
@@ -133,7 +134,7 @@ setup(
     # Similar to `install_requires` above, these must be valid existing
     # projects.
     extras_require={  # Optional
-        'dev': ['jupyter', 'pyensemblrest', 'intervaltree']
+        'dev': ['jupyter', 'matplotlib', 'numpy', 'seaborn', 'scipy']
     },
 
     # List additional URLs that are relevant to your project as a dict.
@@ -146,7 +147,6 @@ setup(
     # maintainers, and where to support the project financially. The key is
     # what's used to render the link text on PyPI.
     project_urls={  # Optional
-        'Bug Reports': 'https://github.com/Ad115/ICGC-data-parser/issues',
         'Say Thanks!': 'https://saythanks.io/to/Ad115',
         'Source': 'https://github.com/Ad115/ICGC-data-parser/',
         'Author': 'https://agargar.wordpress.com/'

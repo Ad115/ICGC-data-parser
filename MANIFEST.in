@@ -1,3 +1,3 @@
-include mutations_distribution.ipynb  
-include recurrence-distribution.ipynb
+include *.ipynb
 include vcf_*.py
+include data/chromosome-data.tsv

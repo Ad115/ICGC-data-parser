@@ -7,7 +7,8 @@ import click
 import vcf
 import sys
 
-from src.Python.ICGC_data_parser import AssemblyMapper, SSM_Reader
+from ICGC_data_parser import SSM_Reader
+from ensembl_rest import AssemblyMapper
 
 
 # Command line interface
