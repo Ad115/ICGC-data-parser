@@ -148,6 +148,7 @@ setup(
     # what's used to render the link text on PyPI.
     project_urls={  # Optional
         'Say Thanks!': 'https://saythanks.io/to/Ad115',
+        'Documentation': 'https://icgc-data-parser.readthedocs.io',
         'Source': 'https://github.com/Ad115/ICGC-data-parser/',
         'Author': 'https://agargar.wordpress.com/'
     },

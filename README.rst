@@ -22,7 +22,7 @@ Install via `PyPI <https://pypi.org/project/ICGC-data-parser/>`__:
 
 ::
 
-    pip install ICGC_data_parser
+    $ pip install ICGC_data_parser
 
     
 Data download
@@ -70,8 +70,9 @@ now this is what we've got.
 Usage
 -----
 
-The main class in the project is the ``SSM_Reader``. It allows to read
-easily the ICGC mutations file:
+The main class in the project is the `SSM_Reader 
+<https://icgc-data-parser.readthedocs.io/en/master/api-documentation.html#ICGC_data_parser.SSM_Reader>`__. 
+It allows to read easily the ICGC mutations file:
 
 .. code:: python
 
@@ -87,9 +88,11 @@ easily the ICGC mutations file:
     # The filename keyord argument is important, else we get an IndexError
     
 
-The ``SSM_Reader.parse`` method allows to iterate through the records of
-the file and access the parts of the record. You can also specify
-regular expressions to filter only the lines you want:
+The `SSM_Reader.parse 
+<https://icgc-data-parser.readthedocs.io/en/master/api-documentation.html#ICGC_data_parser.SSM_Reader.parse>`__ 
+method allows to iterate through the records of the file and access the parts 
+of the record. You can also specify regular expressions to filter only the 
+lines you want:
 
 .. code:: python
 
@@ -138,7 +141,9 @@ subfields):
     # The description of the CONSEQUENCE subfield
     >>> print(reader.infos['CONSEQUENCE'].desc)
 
-    Mutation consequence predictions annotated by SnpEff (subfields: gene_symbol|gene_affected|gene_strand|transcript_name|transcript_affected|protein_affected|consequence_type|cds_mutation|aa_mutation)
+    Mutation consequence predictions annotated by SnpEff 
+    (subfields: gene_symbol|gene_affected|gene_strand|transcript_name|transcript_affected|protein_affected|consequence_type|cds_mutation|aa_mutation)
+    
 
 .. code:: python
 
@@ -146,7 +151,9 @@ subfields):
     # The description of the OCCURRENCE subfield
     >>> print(reader.infos['OCCURRENCE'].desc)
 
-    Mutation occurrence counts broken down by project (subfields: project_code|affected_donors|tested_donors|frequency)
+    Mutation occurrence counts broken down by project 
+    (subfields: project_code|affected_donors|tested_donors|frequency)
+
 
 Sometimes we want to also parse the information in those subfields. For
 this purpose, the ``SSM_Reader.subfield_parser`` factory method is
@@ -180,18 +187,22 @@ allows easy access to the data:
     ...
 
 The library also contains some helper scripts to manipulate VCF files
-(like the ICGC mutations file): - ``vcf_map_assembly.py``: Creates a new
-VCF with the positions mapped to another genome assembly. This is useful
-because currently the positions reported by ICGC are in the human genome
-assembly GRCh37, while the most recent (and the one the rest of the
-world uses) is the GRCh38 assembly. - ``vcf_sample.py``: Creates a new
-VCF with a fraction of the mutations in the original. The mutations are
-randomly sampled but maintain the order they had in the original file.
-This is useful when one wants to make small test analysis on the data,
-but still wants the results to be representative of all the mutations. -
-``vcf_split.py``: Splits the input VCF into several (also valid VCFs),
-this is useful in case one wants to split the analyses into processes
-that receive one file each.
+(like the ICGC mutations file): 
+
+- ``vcf_map_assembly.py``: Creates a new VCF with the positions mapped to 
+  another genome assembly. This is useful because currently the positions 
+  reported by ICGC are in the human genome assembly GRCh37, while the most recent
+  (and the one the rest of the world uses) is the GRCh38 assembly. 
+
+- ``vcf_sample.py``: Creates a new VCF with a fraction of the mutations in the
+  original. The mutations are randomly sampled but maintain the order they had in
+  the original file. This is useful when one wants to make small test analysis on
+  the data, but still wants the results to be representative of all the 
+  mutations. 
+
+- ``vcf_split.py``: Splits the input VCF into several (also valid VCFs),
+  this is useful in case one wants to split the analyses into processes
+  that receive one file each.
 
 The specific documentation of the scripts can be obtained by executing:
 

@@ -17,7 +17,7 @@ This file can be downloaded from `the ICGC site data releases site <https://dcc.
 
 .. code-block:: bash 
 
-	wget https://dcc.icgc.org/api/v1/download?fn=/current/Summary/simple_somatic_mutation.aggregated.vcf.gz
+	$ wget https://dcc.icgc.org/api/v1/download?fn=/current/Summary/simple_somatic_mutation.aggregated.vcf.gz
 
 To resume an interrupted download use the ``-c`` switch on the previous command.
 
@@ -128,7 +128,7 @@ In the file, *the parts are separated with a semicolon (* ``;`` *), and each par
 Interpreting a sample mutation
 ------------------------------
 
-Now we come to try to read an example mutation from the data.
+Now we are ready to interpret an example mutation line from the data.
 
 The mutation
 ............
@@ -141,4 +141,4 @@ The mutation
 The interpretation
 ..................
 
-We can see the data for the mutation **MU39532371**, which is in the chromosome number *1*, at the position *100000022*, and is defined as *C>T*, with no quality or filtering information available. We can also see in the INFO that this mutation has two consequences: one as a mutation ocurring in an intergenic region, and one as a mutation that affects the *ENSG00000224445* gene and it's *ENST00000438829* transcript provoking an *upstream_gene_variant*. Besides, it was found in a sample from the Great Britain's skin cancer ICGC project (*SKCA-BR*) with *1* patient affected out of the *70* in the project and of the *10638* accross all projects.
+We can see the data for the mutation **MU39532371**, which is in the chromosome number *1*, at the position *100000022*, and is defined as *C>T*, with no quality or filtering information available. We can also see in the INFO that this mutation has two consequences: one as a mutation ocurring in an intergenic region, and one as a mutation that affects the *ENSG00000224445 (RP11-413P11.1)* gene and it's *ENST00000438829 (RP11-413P11.1-001)* transcript provoking an *upstream_gene_variant*. Besides, it was found in a sample from the Great Britain's skin cancer ICGC project (*SKCA-BR*) with *1* patient affected out of the *70* in the project and of the *10638* accross all projects.

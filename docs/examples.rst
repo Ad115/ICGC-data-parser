@@ -2,7 +2,8 @@ Examples
 ========
 
 Now we demonstrate more involved examples of what can be done with the
-library.
+library. Please read the :ref:`Tutorial` first to get started.
+
 
 Finding the distribution of mutation consequences
 -------------------------------------------------
@@ -109,47 +110,9 @@ themselves as randomly as they can: |Mutation recurrence distribution|
 
 .. |Mutation recurrence distribution| image:: assets/recurrence-distribution.png
 
-.. code:: python
 
-    from collections import Counter
-    from ICGC_data_parser import SSM_Reader
-    
-    # Open the mutations file
-    mutations = SSM_Reader(filename='data/ssm_sample.vcf')
-    
-    # Fetch recurrence data per mutation
-    recurrence_distribution = Counter(mutation.INFO['affected_donors'] 
-                                       for mutation in mutations)
-    
-    total = sum(recurrence_distribution.values())
-    for mut_recurrence,n in recurrence_distribution.most_common():
-        print(f'{n/total :<10.3%} : Mutations recurred in {mut_recurrence} patients.')
-
-
-::
-
-    92.324%    : Mutations recurred in 1 patients.
-    6.058%     : Mutations recurred in 2 patients.
-    0.990%     : Mutations recurred in 3 patients.
-    0.327%     : Mutations recurred in 4 patients.
-    0.132%     : Mutations recurred in 5 patients.
-    0.061%     : Mutations recurred in 6 patients.
-    0.035%     : Mutations recurred in 7 patients.
-    0.026%     : Mutations recurred in 8 patients.
-    0.015%     : Mutations recurred in 9 patients.
-    0.012%     : Mutations recurred in 10 patients.
-    0.010%     : Mutations recurred in 11 patients.
-    0.003%     : Mutations recurred in 14 patients.
-    0.002%     : Mutations recurred in 15 patients.
-    0.002%     : Mutations recurred in 12 patients.
-    0.001%     : Mutations recurred in 20 patients.
-    0.001%     : Mutations recurred in 21 patients.
-    0.001%     : Mutations recurred in 13 patients.
-
-
-
-Finding the distribution of mutation recurrence among patients
---------------------------------------------------------------
+Finding the distribution of mutatios among genes
+------------------------------------------------
 
 From the above example, we can see that, per nucleotide, the mutations
 can be considered essentially random. But, we can try to take a more
